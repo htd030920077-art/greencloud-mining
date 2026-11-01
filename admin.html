@@ -1,0 +1,1375 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>GreenCloud Admin - Quản Trị Hệ Thống</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background-color: #070b14;
+      color: #f1f5f9;
+      line-height: 1.5;
+      font-size: 13px;
+      padding-bottom: 85px;
+      min-height: 100vh;
+    }
+    .mono {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    }
+
+    /* Top Bar */
+    .top-bar {
+      background: #0f172a;
+      border-bottom: 1px solid #1e293b;
+      padding: 12px 16px;
+      position: sticky;
+      top: 0;
+      z-index: 40;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .brand-logo {
+      width: 34px;
+      height: 34px;
+      background: linear-gradient(135deg, #10b981, #059669);
+      border-radius: 9px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      color: #070b14;
+      font-size: 17px;
+      box-shadow: 0 0 12px rgba(16, 185, 129, 0.4);
+    }
+    .brand-info h1 {
+      font-size: 13.5px;
+      font-weight: 800;
+      color: #fff;
+      letter-spacing: 0.5px;
+    }
+    .brand-sub {
+      font-size: 10px;
+      color: #10b981;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      background: #10b981;
+      border-radius: 50%;
+      box-shadow: 0 0 8px #10b981;
+      animation: pulse 1.5s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.85); }
+    }
+
+    .container {
+      padding: 14px;
+      max-width: 680px;
+      margin: 0 auto;
+    }
+
+    /* Cards & Containers */
+    .card {
+      background: #0f172a;
+      border: 1px solid #1e293b;
+      border-radius: 14px;
+      padding: 15px;
+      margin-bottom: 14px;
+      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.35);
+    }
+    .card-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    /* Stats Grid */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+    .stat-card {
+      background: #0b1120;
+      border: 1px solid #1e293b;
+      border-radius: 12px;
+      padding: 12px;
+    }
+    .stat-label {
+      font-size: 10.5px;
+      color: #64748b;
+      margin-bottom: 4px;
+    }
+    .stat-val {
+      font-size: 19px;
+      font-weight: 800;
+      color: #fff;
+    }
+    .stat-desc {
+      font-size: 10px;
+      color: #10b981;
+      margin-top: 2px;
+    }
+
+    /* Responsive Mobile Cards (Replaces wide tables) */
+    .item-card {
+      background: #0b1120;
+      border: 1px solid #1e293b;
+      border-radius: 12px;
+      padding: 12px;
+      margin-bottom: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .item-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #1e293b;
+      padding-bottom: 8px;
+    }
+    .item-title {
+      font-weight: 700;
+      color: #fff;
+      font-size: 13px;
+    }
+    .item-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11.5px;
+    }
+    .item-row span:first-child {
+      color: #94a3b8;
+    }
+    .item-row span:last-child {
+      color: #e2e8f0;
+      font-weight: 600;
+    }
+
+    /* Badges */
+    .badge {
+      display: inline-block;
+      padding: 2px 7px;
+      border-radius: 6px;
+      font-size: 10px;
+      font-weight: 700;
+    }
+    .badge-success { background: #064e3b; color: #34d399; border: 1px solid #059669; }
+    .badge-warning { background: #451a03; color: #fbbf24; border: 1px solid #d97706; }
+    .badge-danger { background: #450a0a; color: #f87171; border: 1px solid #dc2626; }
+    .badge-blue { background: #082f49; color: #38bdf8; border: 1px solid #0284c7; }
+
+    /* Buttons */
+    .btn {
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 11.5px;
+      font-weight: 700;
+      border: none;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      touch-action: manipulation;
+      transition: all 0.15s;
+    }
+    .btn:active {
+      transform: scale(0.97);
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: #070b14;
+    }
+    .btn-blue {
+      background: linear-gradient(135deg, #0284c7, #0369a1);
+      color: #fff;
+    }
+    .btn-secondary {
+      background: #1e293b;
+      color: #e2e8f0;
+      border: 1px solid #334155;
+    }
+    .btn-danger {
+      background: #dc2626;
+      color: #fff;
+    }
+    .btn-sm {
+      padding: 5px 9px;
+      font-size: 10.5px;
+      border-radius: 6px;
+    }
+
+    /* Inputs */
+    .input-field {
+      width: 100%;
+      background: #020617;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      padding: 9px 12px;
+      color: #fff;
+      font-size: 12.5px;
+      outline: none;
+    }
+    .input-field:focus {
+      border-color: #38bdf8;
+    }
+    .input-label {
+      font-size: 11px;
+      color: #94a3b8;
+      margin-bottom: 4px;
+      display: block;
+      font-weight: 600;
+    }
+
+    /* Bottom Navigation Bar */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: #0f172a;
+      border-top: 1px solid #1e293b;
+      display: flex;
+      justify-content: space-around;
+      padding: 6px 0;
+      z-index: 50;
+      max-width: 680px;
+      margin: 0 auto;
+    }
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      color: #64748b;
+      font-size: 10px;
+      font-weight: 600;
+      cursor: pointer;
+      padding: 5px 8px;
+      border-radius: 8px;
+      touch-action: manipulation;
+    }
+    .nav-item.active {
+      color: #10b981;
+    }
+    .nav-icon {
+      font-size: 18px;
+    }
+
+    /* Tabs */
+    .tab-content {
+      display: none;
+    }
+    .tab-content.active {
+      display: block;
+      animation: fadeIn 0.2s ease-out;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Modals */
+    .modal-backdrop {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.85);
+      display: none !important;
+      pointer-events: none !important;
+      opacity: 0;
+      visibility: hidden;
+      align-items: center;
+      justify-content: center;
+      padding: 14px;
+      z-index: -1;
+      transition: opacity 0.2s ease;
+    }
+    .modal-backdrop.show {
+      display: flex !important;
+      pointer-events: auto !important;
+      opacity: 1;
+      visibility: visible;
+      z-index: 9999 !important;
+    }
+    .modal-box {
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 16px;
+      width: 100%;
+      max-width: 500px;
+      max-height: 90vh;
+      overflow-y: auto;
+      padding: 18px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
+    }
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      border-bottom: 1px solid #1e293b;
+      padding-bottom: 8px;
+    }
+    .modal-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: #fff;
+    }
+    .modal-close {
+      background: none;
+      border: none;
+      color: #64748b;
+      font-size: 20px;
+      cursor: pointer;
+      line-height: 1;
+      padding: 4px;
+    }
+
+    /* Modal Navigation Pills */
+    .modal-tabs {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      padding-bottom: 8px;
+      margin-bottom: 12px;
+      border-bottom: 1px solid #1e293b;
+    }
+    .modal-tab-btn {
+      background: #0b1120;
+      border: 1px solid #1e293b;
+      color: #94a3b8;
+      padding: 5px 10px;
+      border-radius: 8px;
+      font-size: 11px;
+      font-weight: 700;
+      white-space: nowrap;
+      cursor: pointer;
+    }
+    .modal-tab-btn.active {
+      background: #1e293b;
+      border-color: #10b981;
+      color: #34d399;
+    }
+
+    /* Downline Tree Styles */
+    .tree-node {
+      background: #0b1120;
+      border: 1px solid #1e293b;
+      border-radius: 10px;
+      padding: 10px;
+      margin-bottom: 8px;
+    }
+    .tree-node.f1 {
+      border-left: 3.5px solid #10b981;
+    }
+    .tree-node.f2 {
+      border-left: 3.5px solid #0284c7;
+      margin-left: 14px;
+      background: #081224;
+    }
+    .tree-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 4px;
+    }
+    .tree-name {
+      font-weight: 700;
+      color: #fff;
+      font-size: 12px;
+    }
+    .tree-meta {
+      font-size: 10.5px;
+      color: #94a3b8;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    /* Toast */
+    #toast {
+      position: fixed;
+      top: 55px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-20px);
+      background: #10b981;
+      color: #070b14;
+      font-weight: 700;
+      padding: 8px 18px;
+      border-radius: 20px;
+      font-size: 12px;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+      z-index: 10000;
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.25s ease;
+    }
+    #toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Bar -->
+  <header class="top-bar">
+    <div class="brand">
+      <div class="brand-logo">G</div>
+      <div class="brand-info">
+        <h1>GREENCLOUD ADMIN</h1>
+        <div class="brand-sub"><span class="status-dot"></span> Quản Trị Hệ Thống 24/7</div>
+      </div>
+    </div>
+    <button class="btn btn-secondary btn-sm" onclick="testTelegramBot()">⚡ Test Telegram Bot</button>
+  </header>
+
+  <div class="container">
+
+    <!-- TAB 1: TỔNG QUAN -->
+    <div id="tabOverview" class="tab-content active">
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-label">Tổng Thợ Đào</div>
+          <div class="stat-val mono" id="statUsersCount">4</div>
+          <div class="stat-desc">3 kích hoạt gói (75%)</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Tổng Tiền Nạp (VND)</div>
+          <div class="stat-val mono" style="color:#10b981;" id="statTotalDeposits">464.000 đ</div>
+          <div class="stat-desc">MB: 0829594887</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Lệnh Rút Chờ Duyệt</div>
+          <div class="stat-val mono" style="color:#fbbf24;" id="statPendingWithdraw">1 Lệnh</div>
+          <div class="stat-desc">150.000 đ cần chuyển</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Bot Telegram</div>
+          <div class="stat-val mono" style="color:#38bdf8; font-size:15px; margin-top:3px;">ONLINE 24/7</div>
+          <div class="stat-desc">Chat ID: 7865394196</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">
+          <span>THÔNG TIN TÀI KHOẢN MB BANK NHẬN NẠP</span>
+          <span class="badge badge-success">SePay Đang Quét</span>
+        </div>
+        <div class="item-card" style="margin-bottom:0;">
+          <div class="item-row">
+            <span>Ngân Hàng:</span>
+            <span>MB Bank (Ngân Hàng Quân Đội)</span>
+          </div>
+          <div class="item-row">
+            <span>Số Tài Khoản:</span>
+            <span class="mono" style="color:#38bdf8; font-size:13px;">0829594887</span>
+          </div>
+          <div class="item-row">
+            <span>Chủ Tài Khoản:</span>
+            <span style="color:#fff;">DANG HIEU THANG</span>
+          </div>
+          <div class="item-row">
+            <span>Cú Pháp Nhận Diện:</span>
+            <span class="mono" style="color:#10b981;">GC... (Gói) • NC... (Hũ)</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">
+          <span>PHÍM TẮT NHANH</span>
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+          <button class="btn btn-blue" onclick="switchNavTab('tabDownlines', document.querySelectorAll('.nav-item')[3])">🌳 Kiểm Tra Cấp Dưới (Tree)</button>
+          <button class="btn btn-primary" onclick="switchNavTab('tabWithdrawals', document.querySelectorAll('.nav-item')[1])">📤 Xử Lý Lệnh Rút (1)</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 2: QUẢN LÝ RÚT TIỀN -->
+    <div id="tabWithdrawals" class="tab-content">
+      <div class="card">
+        <div class="card-title">
+          <span>DANH SÁCH LỆNH RÚT TIỀN VỀ NGÂN HÀNG</span>
+          <span class="badge badge-warning" id="withdrawBadgeCount">1 Chờ Duyệt</span>
+        </div>
+        <div id="withdrawListContainer"></div>
+      </div>
+    </div>
+
+    <!-- TAB 3: QUẢN LÝ NẠP TIỀN -->
+    <div id="tabDeposits" class="tab-content">
+      <div class="card">
+        <div class="card-title">
+          <span>LỊCH SỬ NẠP TIỀN MB BANK (0829594887)</span>
+          <button class="btn btn-secondary btn-sm" onclick="showToast('✓ Đã đồng bộ dữ liệu SePay mới nhất!')">🔄 Làm Mới</button>
+        </div>
+        <div id="depositListContainer"></div>
+      </div>
+    </div>
+
+    <!-- TAB 4: DANH SÁCH & CHỈNH SỬA THÀNH VIÊN -->
+    <div id="tabMembers" class="tab-content">
+      <div class="card">
+        <div class="card-title">
+          <span>TẤT CẢ THÀNH VIÊN HỆ THỐNG</span>
+        </div>
+        <div style="margin-bottom:12px;">
+          <input type="text" class="input-field" id="memberSearchInput" placeholder="🔍 Tìm theo UID, Tên hoặc SĐT..." oninput="filterMembers()">
+        </div>
+        <div id="memberListContainer"></div>
+      </div>
+    </div>
+
+    <!-- TAB 5: MỤC CHECK XEM CẤP DƯỚI CỦA TẤT CẢ THÀNH VIÊN -->
+    <div id="tabDownlines" class="tab-content">
+      <div class="card">
+        <div class="card-title">
+          <span>🌳 KIỂM TRA THÀNH VIÊN CẤP DƯỚI (CÂY HOA HỒNG)</span>
+        </div>
+        <p style="font-size:11px; color:#94a3b8; margin-bottom:12px;">
+          Chọn bất kỳ thợ đào nào dưới đây để xem toàn bộ phả hệ cấp dưới (F1 hưởng 7%, F2 hưởng 3%), tiến độ nạp tiền và doanh số đội nhóm:
+        </p>
+
+        <div style="margin-bottom:14px;">
+          <label class="input-label">CHỌN THỢ ĐÀO CẦN KIỂM TRA TUYẾN DƯỚI</label>
+          <select class="input-field" id="downlineSelectUser" onchange="renderDownlineTreeForSelected()">
+          </select>
+        </div>
+
+        <!-- Khung thống kê đội nhóm của user được chọn -->
+        <div class="stats-grid" id="downlineSummaryBox">
+          <div class="stat-card">
+            <div class="stat-label">Cấp Trên (Sponsor)</div>
+            <div class="mono" style="font-size:13px; font-weight:700; color:#38bdf8;" id="downlineSponsorName">Hệ Thống (Root)</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Tổng F1 (Trực Tiếp)</div>
+            <div class="stat-val mono" style="color:#10b981;" id="downlineF1Count">0 người</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Tổng F2 (Gián Tiếp)</div>
+            <div class="stat-val mono" style="color:#38bdf8;" id="downlineF2Count">0 người</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Doanh Số Đội Nhóm</div>
+            <div class="stat-val mono" style="color:#f59e0b; font-size:16px;" id="downlineTotalVolume">0 đ</div>
+          </div>
+        </div>
+
+        <!-- Cây thành viên chi tiết -->
+        <div style="font-size:12px; font-weight:700; color:#fff; margin:14px 0 8px 0; display:flex; justify-content:space-between; align-items:center;">
+          <span>DANH SÁCH CHI TIẾT CẤP DƯỚI (F1 & F2)</span>
+          <span style="font-size:10px; color:#10b981;">F1: 7% • F2: 3%</span>
+        </div>
+
+        <div id="downlineTreeContainer"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Bottom Navigation -->
+  <nav class="bottom-nav">
+    <div class="nav-item active" onclick="switchNavTab('tabOverview', this)">
+      <span class="nav-icon">📊</span>
+      <span>Tổng Quan</span>
+    </div>
+    <div class="nav-item" onclick="switchNavTab('tabWithdrawals', this)">
+      <span class="nav-icon">📤</span>
+      <span>Duyệt Rút</span>
+    </div>
+    <div class="nav-item" onclick="switchNavTab('tabDeposits', this)">
+      <span class="nav-icon">📥</span>
+      <span>Nạp Tiền</span>
+    </div>
+    <div class="nav-item" onclick="switchNavTab('tabDownlines', this)">
+      <span class="nav-icon">🌳</span>
+      <span>Cấp Dưới</span>
+    </div>
+    <div class="nav-item" onclick="switchNavTab('tabMembers', this)">
+      <span class="nav-icon">👥</span>
+      <span>Thành Viên</span>
+    </div>
+  </nav>
+
+  <!-- MODAL: CHỈNH SỬA CHI TIẾT THÀNH VIÊN (5 CHUYÊN MỤC) -->
+  <div class="modal-backdrop" id="modalEditMember">
+    <div class="modal-box">
+      <div class="modal-header">
+        <div>
+          <div class="modal-title" id="editModalUserName">Chỉnh Sửa Thành Viên</div>
+          <div class="mono" style="font-size:11px; color:#38bdf8;" id="editModalUserUid">UID: GC-5829104821</div>
+        </div>
+        <button class="modal-close" onclick="closeModal('modalEditMember')">✕</button>
+      </div>
+
+      <!-- Navigation 5 Tabs inside Modal -->
+      <div class="modal-tabs">
+        <button class="modal-tab-btn active" onclick="switchModalTab('modTabSec', this)">1. Bảo Mật / PIN</button>
+        <button class="modal-tab-btn" onclick="switchModalTab('modTabBal', this)">2. Số Dư / Hũ</button>
+        <button class="modal-tab-btn" onclick="switchModalTab('modTabRig', this)">3. Gói Máy Đào</button>
+        <button class="modal-tab-btn" onclick="switchModalTab('modTabBnk', this)">4. Ngân Hàng</button>
+        <button class="modal-tab-btn" onclick="switchModalTab('modTabRef', this)">5. Tuyến Giới Thiệu</button>
+      </div>
+
+      <!-- SUBTAB 1: BẢO MẬT & ĐỊNH DANH -->
+      <div id="modTabSec" class="modal-tab-content">
+        <div class="input-group" style="margin-bottom:10px;">
+          <label class="input-label">HỌ VÀ TÊN THẬT</label>
+          <input type="text" class="input-field" id="editUserFullName">
+        </div>
+        <div class="input-group" style="margin-bottom:10px;">
+          <label class="input-label">SĐT / TÊN ĐĂNG NHẬP</label>
+          <input type="text" class="input-field" id="editUserPhone">
+        </div>
+        <div class="input-group" style="margin-bottom:10px;">
+          <label class="input-label">MẬT KHẨU ĐĂNG NHẬP</label>
+          <input type="text" class="input-field" id="editUserPass">
+        </div>
+        <div class="input-group" style="margin-bottom:10px;">
+          <label class="input-label">MÃ PIN RÚT TIỀN (6 CHỮ SỐ)</label>
+          <div style="display:flex; gap:6px;">
+            <input type="text" maxlength="6" class="input-field mono" id="editUserPin">
+            <button class="btn btn-secondary btn-sm" onclick="resetUserPin('123456')">Reset về 123456</button>
+          </div>
+        </div>
+        <div class="input-group" style="margin-bottom:10px;">
+          <label class="input-label">TRẠNG THÁI TÀI KHOẢN</label>
+          <select class="input-field" id="editUserStatus">
+            <option value="active">🟢 Đang Hoạt Động Bình Thường</option>
+            <option value="locked_withdraw">🟡 Tạm Khóa Chức Năng Rút Tiền</option>
+            <option value="banned">🔴 Khóa Tài Khoản (Banned)</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- SUBTAB 2: SỐ DƯ & HŨ -->
+      <div id="modTabBal" class="modal-tab-content" style="display:none;">
+        <div class="input-group" style="margin-bottom:10px;">
+          <label class="input-label">SỐ DƯ VÍ THU NHẬP CHÍNH (CÓ THỂ RÚT - VNĐ)</label>
+          <input type="number" class="input-field mono" id="editUserBalance">
+          <div style="display:flex; gap:6px; margin-top:6px;">
+            <button class="btn btn-secondary btn-sm" onclick="adjustBalance('main', 10000)">+10K</button>
+            <button class="btn btn-secondary btn-sm" onclick="adjustBalance('main', 50000)">+50K</button>
+            <button class="btn btn-secondary btn-sm" onclick="adjustBalance('main', 100000)">+100K</button>
+            <button class="btn btn-secondary btn-sm" onclick="adjustBalance('main', -50000)">-50K</button>
+          </div>
+        </div>
+        <div class="input-group" style="margin-bottom:10px;">
+          <label class="input-label">SỐ DƯ HŨ TIỀN NÂNG CẤP (VNĐ)</label>
+          <input type="number" class="input-field mono" id="editUserUpgradeBalance">
+          <div style="display:flex; gap:6px; margin-top:6px;">
+            <button class="btn btn-secondary btn-sm" onclick="adjustBalance('upg', 20000)">+20K</button>
+            <button class="btn btn-secondary btn-sm" onclick="adjustBalance('upg', 50000)">+50K</button>
+            <button class="btn btn-secondary btn-sm" onclick="adjustBalance('upg', 100000)">+100K</button>
+          </div>
+        </div>
+        <div class="input-group" style="margin-bottom:10px;">
+          <label class="input-label">LÝ DO THAY ĐỔI SỐ DƯ (AUDIT LOG)</label>
+          <input type="text" class="input-field" id="editBalanceReason" placeholder="Ví dụ: Bù lỗi hệ thống / Thưởng sự kiện">
+        </div>
+      </div>
+
+      <!-- SUBTAB 3: GÓI MÁY ĐÀO -->
+      <div id="modTabRig" class="modal-tab-content" style="display:none;">
+        <p style="font-size:11px; color:#94a3b8; margin-bottom:10px;">Chỉnh sửa số lượng máy đào đang sở hữu của thành viên:</p>
+        <div style="display:flex; flex-direction:column; gap:6px;" id="editPackagesList"></div>
+        <div class="input-group" style="margin-top:10px;">
+          <label class="input-label">ÉP XUNG PHẦN CỨNG (%)</label>
+          <input type="number" class="input-field mono" id="editUserOverclock" placeholder="% tăng công suất">
+        </div>
+      </div>
+
+      <!-- SUBTAB 4: NGÂN HÀNG THỤ HƯỞNG -->
+      <div id="modTabBnk" class="modal-tab-content" style="display:none;">
+        <div class="input-group" style="margin-bottom:10px;">
+          <label class="input-label">NGÂN HÀNG</label>
+          <select class="input-field" id="editUserBankName">
+            <option value="MBBank">MBBank (Ngân Hàng Quân Đội)</option>
+            <option value="Vietcombank">Vietcombank</option>
+            <option value="Techcombank">Techcombank</option>
+            <option value="VietinBank">VietinBank</option>
+            <option value="ACB">ACB Bank</option>
+            <option value="MoMo">Ví MoMo</option>
+          </select>
+        </div>
+        <div class="input-group" style="margin-bottom:10px;">
+          <label class="input-label">SỐ TÀI KHOẢN</label>
+          <input type="text" class="input-field mono" id="editUserBankAcc">
+        </div>
+        <div class="input-group" style="margin-bottom:10px;">
+          <label class="input-label">TÊN CHỦ TÀI KHOẢN (IN HOA)</label>
+          <input type="text" class="input-field" id="editUserBankHolder">
+        </div>
+      </div>
+
+      <!-- SUBTAB 5: TUYẾN GIỚI THIỆU -->
+      <div id="modTabRef" class="modal-tab-content" style="display:none;">
+        <div class="input-group" style="margin-bottom:10px;">
+          <label class="input-label">NGƯỜI BẢO TRỢ (SPONSOR UID)</label>
+          <input type="text" class="input-field mono" id="editUserSponsorUid">
+        </div>
+        <div class="input-group" style="margin-bottom:10px;">
+          <label class="input-label">LƯỢT QUAY HỘP QUÀ TẶNG THƯỞNG</label>
+          <input type="number" class="input-field mono" id="editUserGiftSpins">
+        </div>
+        <button class="btn btn-blue" style="width:100%; margin-top:8px;" onclick="viewSelectedUserDownlinesFromModal()">🌳 Chuyển Sang Xem Cây Cấp Dưới Của Thợ Đào Này</button>
+      </div>
+
+      <div style="display:flex; gap:8px; margin-top:16px;">
+        <button class="btn btn-secondary" style="flex:1;" onclick="closeModal('modalEditMember')">Hủy</button>
+        <button class="btn btn-primary" style="flex:1;" onclick="saveMemberEdits()">Lưu Toàn Bộ Thay Đổi</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast">Thông báo</div>
+
+  <script>
+    /* ========================================================
+       CONFIG TELEGRAM BOT & MOCK DATABASE
+    ======================================================== */
+    const TELEGRAM_BOT_TOKEN = '9196510643:AAGzXlYNEeCxz_Pchrg7528VBkaB53sXpd4';
+    const TELEGRAM_CHAT_ID = '7865394196';
+
+    function sendTelegramAdmin(text) {
+      const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage?chat_id=${TELEGRAM_CHAT_ID}&text=${encodeURIComponent(text)}&parse_mode=Markdown`;
+      fetch(url).catch(e => console.log('Telegram err:', e));
+    }
+
+    function testTelegramBot() {
+      sendTelegramAdmin("⚡ *Test Kết Nối Bot Thành Công!*\nGreenCloud Admin Panel đã kết nối với tài khoản MB Bank 0829594887 (DANG HIEU THANG).");
+      showToast("✓ Đã gửi thông điệp kiểm tra tới Telegram Bot!");
+    }
+
+    /* Mạng lưới thành viên hoàn chỉnh với cấu trúc Cây Tuyến Dưới (Downline Tree) */
+    let membersData = [
+      {
+        uid: '5829104821',
+        name: 'Hà Trung Đức',
+        phone: '0988776655',
+        pass: 'duc123456',
+        pin: '123456',
+        status: 'active',
+        sponsor: null, // Gốc (Root)
+        balance: 245000,
+        upgradeBalance: 20000,
+        overclock: 6,
+        giftSpins: 3,
+        bank: { name: 'MBBank', acc: '0388999888', holder: 'HA TRUNG DUC' },
+        packages: { free: 1, '76k': 2, '104k': 1, '208k': 0, '416k': 0, '832k': 0, '1500k': 0 },
+        createdAt: '01/11/2026'
+      },
+      {
+        uid: '6192847102',
+        name: 'Nguyễn Văn An',
+        phone: '0912345678',
+        pass: 'an999',
+        pin: '654321',
+        status: 'active',
+        sponsor: '5829104821', // F1 của Hà Trung Đức
+        balance: 85000,
+        upgradeBalance: 15000,
+        overclock: 3,
+        giftSpins: 1,
+        bank: { name: 'Vietcombank', acc: '1012398481', holder: 'NGUYEN VAN AN' },
+        packages: { free: 1, '76k': 0, '104k': 1, '208k': 0, '416k': 0, '832k': 0, '1500k': 0 },
+        createdAt: '01/11/2026'
+      },
+      {
+        uid: '9283741029',
+        name: 'Lê Hoàng Long',
+        phone: '0977889900',
+        pass: 'longrig4080',
+        pin: '112233',
+        status: 'active',
+        sponsor: '5829104821', // F1 của Hà Trung Đức
+        balance: 310000,
+        upgradeBalance: 40000,
+        overclock: 8,
+        giftSpins: 2,
+        bank: { name: 'Techcombank', acc: '19034829102', holder: 'LE HOANG LONG' },
+        packages: { free: 1, '76k': 0, '104k': 0, '208k': 1, '416k': 0, '832k': 0, '1500k': 0 },
+        createdAt: '02/11/2026'
+      },
+      {
+        uid: '7849102931',
+        name: 'Trần Thị Mai',
+        phone: '0981122334',
+        pass: 'mai789',
+        pin: '888999',
+        status: 'active',
+        sponsor: '6192847102', // F1 của An, F2 của Đức
+        balance: 42000,
+        upgradeBalance: 20000,
+        overclock: 0,
+        giftSpins: 0,
+        bank: { name: 'MBBank', acc: '0981122334', holder: 'TRAN THI MAI' },
+        packages: { free: 1, '76k': 1, '104k': 0, '208k': 0, '416k': 0, '832k': 0, '1500k': 0 },
+        createdAt: '02/11/2026'
+      },
+      {
+        uid: '3349182019',
+        name: 'Phạm Minh Tuấn',
+        phone: '0934567890',
+        pass: 'tuanfree',
+        pin: '000000',
+        status: 'active',
+        sponsor: '5829104821', // F1 của Hà Trung Đức (chưa nạp gói trả phí)
+        balance: 1200,
+        upgradeBalance: 20000,
+        overclock: 0,
+        giftSpins: 0,
+        bank: { name: 'MBBank', acc: '0934567890', holder: 'PHAM MINH TUAN' },
+        packages: { free: 1, '76k': 0, '104k': 0, '208k': 0, '416k': 0, '832k': 0, '1500k': 0 },
+        createdAt: '02/11/2026'
+      }
+    ];
+
+    let withdrawalsData = [
+      {
+        id: 'WD-9182',
+        uid: '5829104821',
+        name: 'Hà Trung Đức',
+        bank: 'MBBank',
+        acc: '0388999888',
+        holder: 'HA TRUNG DUC',
+        amount: 150000,
+        pinUsed: '123456',
+        time: '02/11/2026 14:35',
+        status: 'pending'
+      }
+    ];
+
+    let depositsData = [
+      {
+        id: 'DP-101',
+        uid: '5829104821',
+        name: 'Hà Trung Đức',
+        type: 'Nạp Gói Khởi Động 76K',
+        code: 'GC5829104821',
+        amount: 76000,
+        time: '01/11/2026 10:15',
+        status: 'success'
+      },
+      {
+        id: 'DP-102',
+        uid: '6192847102',
+        name: 'Nguyễn Văn An',
+        type: 'Nạp Gói Tiêu Chuẩn 104K',
+        code: 'GC6192847102',
+        amount: 104000,
+        time: '01/11/2026 14:20',
+        status: 'success'
+      },
+      {
+        id: 'DP-103',
+        uid: '9283741029',
+        name: 'Lê Hoàng Long',
+        type: 'Nạp Gói Nâng Cao 208K',
+        code: 'GC9283741029',
+        amount: 208000,
+        time: '02/11/2026 09:40',
+        status: 'success'
+      },
+      {
+        id: 'DP-104',
+        uid: '7849102931',
+        name: 'Trần Thị Mai',
+        type: 'Nạp Gói Khởi Động 76K',
+        code: 'GC7849102931',
+        amount: 76000,
+        time: '02/11/2026 11:05',
+        status: 'success'
+      }
+    ];
+
+    /* ========================================================
+       RENDER FUNCTIONS
+    ======================================================== */
+    function renderWithdrawals() {
+      const container = document.getElementById('withdrawListContainer');
+      const badge = document.getElementById('withdrawBadgeCount');
+      const statPend = document.getElementById('statPendingWithdraw');
+      const pendingCount = withdrawalsData.filter(w => w.status === 'pending').length;
+
+      badge.textContent = `${pendingCount} Chờ Duyệt`;
+      statPend.textContent = `${pendingCount} Lệnh`;
+
+      if (withdrawalsData.length === 0) {
+        container.innerHTML = '<div style="text-align:center; color:#64748b; padding:16px;">Không có lệnh rút tiền nào.</div>';
+        return;
+      }
+
+      container.innerHTML = withdrawalsData.map(w => `
+        <div class="item-card">
+          <div class="item-header">
+            <div>
+              <div class="item-title">${w.name}</div>
+              <div class="mono" style="font-size:10.5px; color:#38bdf8;">UID: GC-${w.uid} • Mã: ${w.id}</div>
+            </div>
+            <span class="badge ${w.status === 'pending' ? 'badge-warning' : (w.status === 'approved' ? 'badge-success' : 'badge-danger')}">
+              ${w.status === 'pending' ? 'Chờ Phê Duyệt' : (w.status === 'approved' ? 'Đã Chuyển Khoản' : 'Đã Từ Chối')}
+            </span>
+          </div>
+          <div class="item-row">
+            <span>Số Tiền Rút:</span>
+            <span class="mono" style="color:#f59e0b; font-size:14px; font-weight:800;">${w.amount.toLocaleString('vi-VN')} đ</span>
+          </div>
+          <div class="item-row">
+            <span>Ngân Hàng Thụ Hưởng:</span>
+            <span>${w.bank}</span>
+          </div>
+          <div class="item-row">
+            <span>Số Tài Khoản:</span>
+            <span class="mono" style="color:#38bdf8;">${w.acc}</span>
+          </div>
+          <div class="item-row">
+            <span>Chủ Tài Khoản:</span>
+            <span style="color:#fff;">${w.holder}</span>
+          </div>
+          <div class="item-row">
+            <span>Thời Gian Yêu Cầu:</span>
+            <span>${w.time}</span>
+          </div>
+          ${w.status === 'pending' ? `
+            <div style="display:flex; gap:8px; margin-top:6px;">
+              <button class="btn btn-primary" style="flex:1;" onclick="approveWithdrawal('${w.id}')">✓ Duyệt & Đã CK</button>
+              <button class="btn btn-danger" style="flex:1;" onclick="rejectWithdrawal('${w.id}')">✕ Từ Chối</button>
+            </div>
+          ` : `
+            <div style="font-size:10.5px; color:#64748b; text-align:center; padding-top:4px;">Giao dịch đã được xử lý hoàn tất.</div>
+          `}
+        </div>
+      `).join('');
+    }
+
+    function approveWithdrawal(wId) {
+      const item = withdrawalsData.find(w => w.id === wId);
+      if (!item) return;
+      item.status = 'approved';
+      renderWithdrawals();
+      showToast('✓ Đã phê duyệt và cập nhật trạng thái chuyển khoản!');
+      sendTelegramAdmin(`✅ *Lệnh Rút Tiền Đã Được Duyệt Thành Công!*\n- Thợ đào: ${item.name} (GC-${item.uid})\n- Số tiền: ${item.amount.toLocaleString('vi-VN')} đ\n- Ngân hàng: ${item.bank} - STK: \`${item.acc}\`\n- Chủ thẻ: ${item.holder}`);
+    }
+
+    function rejectWithdrawal(wId) {
+      const item = withdrawalsData.find(w => w.id === wId);
+      if (!item) return;
+      item.status = 'rejected';
+      renderWithdrawals();
+      showToast('✕ Đã từ chối lệnh rút tiền!');
+      sendTelegramAdmin(`❌ *Lệnh Rút Tiền Bị Từ Chối*\n- Thợ đào: ${item.name} (GC-${item.uid})\n- Số tiền: ${item.amount.toLocaleString('vi-VN')} đ\n- Lý do: Thông tin tài khoản không hợp lệ hoặc sai mã PIN.`);
+    }
+
+    function renderDeposits() {
+      const container = document.getElementById('depositListContainer');
+      container.innerHTML = depositsData.map(d => `
+        <div class="item-card">
+          <div class="item-header">
+            <div>
+              <div class="item-title">${d.type}</div>
+              <div class="mono" style="font-size:10.5px; color:#38bdf8;">${d.name} (GC-${d.uid})</div>
+            </div>
+            <span class="badge badge-success">Đã Khớp SePay</span>
+          </div>
+          <div class="item-row">
+            <span>Số Tiền Thực Nhận:</span>
+            <span class="mono" style="color:#10b981; font-weight:800; font-size:13.5px;">+${d.amount.toLocaleString('vi-VN')} đ</span>
+          </div>
+          <div class="item-row">
+            <span>Nội Dung / Mã CK:</span>
+            <span class="mono" style="color:#fff; background:#020617; padding:1px 6px; border-radius:4px;">${d.code}</span>
+          </div>
+          <div class="item-row">
+            <span>Thời Gian Nhận:</span>
+            <span>${d.time}</span>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function renderMembers(list = membersData) {
+      const container = document.getElementById('memberListContainer');
+      document.getElementById('statUsersCount').textContent = membersData.length;
+
+      container.innerHTML = list.map(m => {
+        const totalP = Object.values(m.packages).reduce((a, b) => a + b, 0);
+        const hasPaid = Object.entries(m.packages).some(([k, v]) => k !== 'free' && v > 0);
+
+        return `
+          <div class="item-card">
+            <div class="item-header">
+              <div>
+                <div class="item-title">${m.name}</div>
+                <div class="mono" style="font-size:10.5px; color:#38bdf8;">GC-${m.uid} • SĐT: ${m.phone}</div>
+              </div>
+              <span class="badge ${m.status === 'active' ? 'badge-success' : 'badge-danger'}">
+                ${m.status === 'active' ? (hasPaid ? 'Đã Nạp Gói' : 'Chưa Nạp') : 'Bị Khóa'}
+              </span>
+            </div>
+            <div class="item-row">
+              <span>Ví Chính / Hũ Nâng Cấp:</span>
+              <span class="mono"><b style="color:#10b981;">${m.balance.toLocaleString('vi-VN')} đ</b> / <b style="color:#38bdf8;">${m.upgradeBalance.toLocaleString('vi-VN')} đ</b></span>
+            </div>
+            <div class="item-row">
+              <span>Số Dàn Đào / Ép Xung:</span>
+              <span>${totalP} cụm (+${m.overclock}%)</span>
+            </div>
+            <div class="item-row">
+              <span>Ngân Hàng:</span>
+              <span>${m.bank.name} - ${m.bank.acc}</span>
+            </div>
+            <div style="display:flex; gap:6px; margin-top:6px;">
+              <button class="btn btn-blue btn-sm" style="flex:1;" onclick="openEditMemberModal('${m.uid}')">⚙️ Sửa Chi Tiết</button>
+              <button class="btn btn-secondary btn-sm" style="flex:1;" onclick="jumpToUserDownline('${m.uid}')">🌳 Xem Cấp Dưới</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function filterMembers() {
+      const q = document.getElementById('memberSearchInput').value.trim().toLowerCase();
+      if (!q) {
+        renderMembers();
+        return;
+      }
+      const filtered = membersData.filter(m => 
+        m.name.toLowerCase().includes(q) || 
+        m.uid.includes(q) || 
+        m.phone.includes(q)
+      );
+      renderMembers(filtered);
+    }
+
+    /* ========================================================
+       CHỨC NĂNG CỐT LÕI: KIỂM TRA CẤP DƯỚI CỦA TẤT CẢ THÀNH VIÊN
+    ======================================================== */
+    function populateDownlineUserSelect() {
+      const sel = document.getElementById('downlineSelectUser');
+      sel.innerHTML = membersData.map(m => `
+        <option value="${m.uid}">${m.name} (UID: GC-${m.uid}) - SĐT: ${m.phone}</option>
+      `).join('');
+    }
+
+    function jumpToUserDownline(uid) {
+      document.getElementById('downlineSelectUser').value = uid;
+      switchNavTab('tabDownlines', document.querySelectorAll('.nav-item')[3]);
+      renderDownlineTreeForSelected();
+    }
+
+    function renderDownlineTreeForSelected() {
+      const selectedUid = document.getElementById('downlineSelectUser').value;
+      const user = membersData.find(m => m.uid === selectedUid);
+      if (!user) return;
+
+      // 1. Tìm thông tin cấp trên (Sponsor / Upline)
+      const upline = membersData.find(m => m.uid === user.sponsor);
+      document.getElementById('downlineSponsorName').textContent = upline ? `${upline.name} (GC-${upline.uid})` : 'Hệ Thống Gốc (Root)';
+
+      // 2. Tìm danh sách F1 trực tiếp
+      const f1List = membersData.filter(m => m.sponsor === user.uid);
+      document.getElementById('downlineF1Count').textContent = `${f1List.length} người`;
+
+      // 3. Tìm danh sách F2 (Cấp dưới của từng F1)
+      let f2List = [];
+      f1List.forEach(f1 => {
+        const subF2 = membersData.filter(m => m.sponsor === f1.uid);
+        f2List = f2List.concat(subF2);
+      });
+      document.getElementById('downlineF2Count').textContent = `${f2List.length} người`;
+
+      // 4. Tính toán tổng doanh số nạp tiền của toàn đội F1 + F2
+      let totalTeamVolume = 0;
+      let totalCommissionEarned = 0;
+
+      f1List.forEach(f1 => {
+        const f1Deposits = depositsData.filter(d => d.uid === f1.uid);
+        const f1TotalDep = f1Deposits.reduce((acc, cur) => acc + cur.amount, 0);
+        totalTeamVolume += f1TotalDep;
+        totalCommissionEarned += f1TotalDep * 0.07; // F1: 7%
+      });
+
+      f2List.forEach(f2 => {
+        const f2Deposits = depositsData.filter(d => d.uid === f2.uid);
+        const f2TotalDep = f2Deposits.reduce((acc, cur) => acc + cur.amount, 0);
+        totalTeamVolume += f2TotalDep;
+        totalCommissionEarned += f2TotalDep * 0.03; // F2: 3%
+      });
+
+      document.getElementById('downlineTotalVolume').textContent = totalTeamVolume.toLocaleString('vi-VN') + ' đ';
+
+      // 5. Vẽ cây mạng lưới phân cấp trực quan
+      const container = document.getElementById('downlineTreeContainer');
+      if (f1List.length === 0) {
+        container.innerHTML = `
+          <div style="background:#0b1120; border:1px solid #1e293b; border-radius:10px; padding:18px; text-align:center; color:#64748b;">
+            Thợ đào <b>${user.name}</b> chưa có thành viên cấp dưới nào.
+          </div>
+        `;
+        return;
+      }
+
+      let treeHtml = '';
+      f1List.forEach(f1 => {
+        const f1Deposits = depositsData.filter(d => d.uid === f1.uid);
+        const f1TotalDep = f1Deposits.reduce((acc, cur) => acc + cur.amount, 0);
+        const f1HasPaid = f1TotalDep > 0;
+        const f1Comm = f1TotalDep * 0.07;
+
+        // Tìm F2 thuộc nhánh của F1 này
+        const myF2s = membersData.filter(m => m.sponsor === f1.uid);
+
+        treeHtml += `
+          <div class="tree-node f1">
+            <div class="tree-header">
+              <div>
+                <span class="badge badge-success" style="font-size:9.5px;">CẤP 1 (F1 - 7%)</span>
+                <span class="tree-name" style="margin-left:4px;">${f1.name}</span>
+                <span class="mono" style="color:#38bdf8; font-size:10.5px;">(GC-${f1.uid})</span>
+              </div>
+              <span class="badge ${f1HasPaid ? 'badge-success' : 'badge-warning'}">
+                ${f1HasPaid ? 'Đã Nạp ' + f1TotalDep.toLocaleString('vi-VN') + ' đ' : 'Chưa Nạp Gói'}
+              </span>
+            </div>
+            <div class="tree-meta">
+              <span>📱 SĐT: ${f1.phone}</span>
+              <span>📅 Tham gia: ${f1.createdAt}</span>
+              <span>💵 Hoa hồng đóng góp (7%): <b style="color:#10b981;">+${f1Comm.toLocaleString('vi-VN')} đ</b></span>
+              <span>👥 F2 Tuyến Dưới: <b>${myF2s.length} người</b></span>
+            </div>
+
+            <!-- Nhánh F2 hiển thị lồng vào bên trong -->
+            ${myF2s.length > 0 ? `
+              <div style="margin-top:8px; padding-top:8px; border-top:1px dashed #1e293b;">
+                ${myF2s.map(f2 => {
+                  const f2Deposits = depositsData.filter(d => d.uid === f2.uid);
+                  const f2TotalDep = f2Deposits.reduce((acc, cur) => acc + cur.amount, 0);
+                  const f2HasPaid = f2TotalDep > 0;
+                  const f2Comm = f2TotalDep * 0.03;
+
+                  return `
+                    <div class="tree-node f2">
+                      <div class="tree-header">
+                        <div>
+                          <span class="badge badge-blue" style="font-size:9.5px;">CẤP 2 (F2 - 3%)</span>
+                          <span class="tree-name" style="margin-left:4px;">${f2.name}</span>
+                          <span class="mono" style="color:#38bdf8; font-size:10.5px;">(GC-${f2.uid})</span>
+                        </div>
+                        <span class="badge ${f2HasPaid ? 'badge-success' : 'badge-warning'}">
+                          ${f2HasPaid ? 'Đã Nạp ' + f2TotalDep.toLocaleString('vi-VN') + ' đ' : 'Chưa Nạp'}
+                        </span>
+                      </div>
+                      <div class="tree-meta">
+                        <span>📱 SĐT: ${f2.phone}</span>
+                        <span>Giới thiệu bởi F1: <b>${f1.name}</b></span>
+                        <span>💵 Hoa hồng gián tiếp (3%): <b style="color:#38bdf8;">+${f2Comm.toLocaleString('vi-VN')} đ</b></span>
+                      </div>
+                    </div>
+                  `;
+                }).join('')}
+              </div>
+            ` : ''}
+          </div>
+        `;
+      });
+
+      container.innerHTML = treeHtml;
+    }
+
+    /* ========================================================
+       MODAL CHỈNH SỬA THÀNH VIÊN (5 PHẦN)
+    ======================================================== */
+    let currentEditingUid = null;
+
+    function openEditMemberModal(uid) {
+      currentEditingUid = uid;
+      const user = membersData.find(m => m.uid === uid);
+      if (!user) return;
+
+      document.getElementById('editModalUserName').textContent = `Chỉnh Sửa: ${user.name}`;
+      document.getElementById('editModalUserUid').textContent = `Mã Định Danh: GC-${user.uid}`;
+
+      // Tab 1
+      document.getElementById('editUserFullName').value = user.name;
+      document.getElementById('editUserPhone').value = user.phone;
+      document.getElementById('editUserPass').value = user.pass;
+      document.getElementById('editUserPin').value = user.pin;
+      document.getElementById('editUserStatus').value = user.status;
+
+      // Tab 2
+      document.getElementById('editUserBalance').value = user.balance;
+      document.getElementById('editUserUpgradeBalance').value = user.upgradeBalance;
+      document.getElementById('editBalanceReason').value = '';
+
+      // Tab 3
+      const pkgContainer = document.getElementById('editPackagesList');
+      const PKG_NAMES = {
+        free: 'Gói Miễn Phí (Free)',
+        '76k': 'Gói Khởi Động 76K',
+        '104k': 'Gói Tiêu Chuẩn 104K',
+        '208k': 'Gói Nâng Cao 208K',
+        '416k': 'Gói Chuyên Nghiệp 416K',
+        '832k': 'Gói Trang Trại 832K',
+        '1500k': 'Gói Cá Voi VIP 1.5M'
+      };
+      pkgContainer.innerHTML = Object.entries(PKG_NAMES).map(([k, label]) => `
+        <div style="display:flex; justify-content:space-between; align-items:center; background:#0b1120; padding:8px 10px; border-radius:8px; border:1px solid #1e293b;">
+          <span style="font-size:11.5px; color:#e2e8f0;">${label}</span>
+          <input type="number" min="0" class="input-field mono pkg-input" data-key="${k}" value="${user.packages[k] || 0}" style="width:70px; padding:4px 8px; text-align:center;">
+        </div>
+      `).join('');
+      document.getElementById('editUserOverclock').value = user.overclock;
+
+      // Tab 4
+      document.getElementById('editUserBankName').value = user.bank.name;
+      document.getElementById('editUserBankAcc').value = user.bank.acc;
+      document.getElementById('editUserBankHolder').value = user.bank.holder;
+
+      // Tab 5
+      document.getElementById('editUserSponsorUid').value = user.sponsor || '';
+      document.getElementById('editUserGiftSpins').value = user.giftSpins;
+
+      switchModalTab('modTabSec', document.querySelectorAll('.modal-tab-btn')[0]);
+      openModal('modalEditMember');
+    }
+
+    function switchModalTab(tabId, btn) {
+      document.querySelectorAll('.modal-tab-content').forEach(el => el.style.display = 'none');
+      document.querySelectorAll('.modal-tab-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById(tabId).style.display = 'block';
+      if (btn) btn.classList.add('active');
+    }
+
+    function resetUserPin(val) {
+      document.getElementById('editUserPin').value = val;
+      showToast('✓ Đã điền mã PIN mặc định 123456');
+    }
+
+    function adjustBalance(type, amount) {
+      if (type === 'main') {
+        const el = document.getElementById('editUserBalance');
+        el.value = Math.max(0, (parseFloat(el.value) || 0) + amount);
+      } else {
+        const el = document.getElementById('editUserUpgradeBalance');
+        el.value = Math.max(0, (parseFloat(el.value) || 0) + amount);
+      }
+    }
+
+    function viewSelectedUserDownlinesFromModal() {
+      closeModal('modalEditMember');
+      if (currentEditingUid) {
+        jumpToUserDownline(currentEditingUid);
+      }
+    }
+
+    function saveMemberEdits() {
+      const user = membersData.find(m => m.uid === currentEditingUid);
+      if (!user) return;
+
+      user.name = document.getElementById('editUserFullName').value.trim();
+      user.phone = document.getElementById('editUserPhone').value.trim();
+      user.pass = document.getElementById('editUserPass').value.trim();
+      user.pin = document.getElementById('editUserPin').value.trim();
+      user.status = document.getElementById('editUserStatus').value;
+
+      user.balance = parseFloat(document.getElementById('editUserBalance').value) || 0;
+      user.upgradeBalance = parseFloat(document.getElementById('editUserUpgradeBalance').value) || 0;
+
+      // Lưu số lượng máy đào
+      document.querySelectorAll('.pkg-input').forEach(inp => {
+        const key = inp.getAttribute('data-key');
+        user.packages[key] = parseInt(inp.value) || 0;
+      });
+      user.overclock = parseInt(document.getElementById('editUserOverclock').value) || 0;
+
+      user.bank.name = document.getElementById('editUserBankName').value;
+      user.bank.acc = document.getElementById('editUserBankAcc').value.trim();
+      user.bank.holder = document.getElementById('editUserBankHolder').value.trim().toUpperCase();
+
+      user.sponsor = document.getElementById('editUserSponsorUid').value.trim() || null;
+      user.giftSpins = parseInt(document.getElementById('editUserGiftSpins').value) || 0;
+
+      const reason = document.getElementById('editBalanceReason').value.trim();
+
+      renderMembers();
+      populateDownlineUserSelect();
+      closeModal('modalEditMember');
+      showToast('✓ Đã lưu toàn bộ thông tin thành viên thành công!');
+
+      sendTelegramAdmin(`👤 *Cập Nhật Thông Tin Thợ Đào*\n- Quản trị viên vừa chỉnh sửa thợ đào: ${user.name} (GC-${user.uid})\n- Số dư Ví: ${user.balance.toLocaleString('vi-VN')} đ | Hũ: ${user.upgradeBalance.toLocaleString('vi-VN')} đ\n- Trạng thái: ${user.status}\n${reason ? '- Ghi chú: ' + reason : ''}`);
+    }
+
+    /* ========================================================
+       MODAL & NAVIGATION UTILS
+    ======================================================== */
+    function openModal(id) {
+      const el = document.getElementById(id);
+      if (el) el.classList.add('show');
+    }
+
+    function closeModal(id) {
+      const el = document.getElementById(id);
+      if (el) el.classList.remove('show');
+    }
+
+    function switchNavTab(tabId, navElem) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+
+      const activeTab = document.getElementById(tabId);
+      if (activeTab) activeTab.classList.add('active');
+      if (navElem) navElem.classList.add('active');
+    }
+
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      if (!t) return;
+      t.textContent = msg;
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 2600);
+    }
+
+    // INIT
+    window.addEventListener('DOMContentLoaded', () => {
+      renderWithdrawals();
+      renderDeposits();
+      renderMembers();
+      populateDownlineUserSelect();
+      renderDownlineTreeForSelected();
+    });
+  </script>
+</body>
+</html>
