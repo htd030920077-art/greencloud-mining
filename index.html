@@ -1469,10 +1469,23 @@
     </div>
   </div>
 
-  <!-- ==================== JAVASCRIPT LOGIC ĐẦY ĐỦ 100% ==================== -->
+  <!-- ==================== JAVASCRIPT LOGIC ĐỒNG BỘ FIRESTORE ==================== -->
   <script>
-    const STORAGE_KEY = 'GREENCLOUD_USER_ACTIVE_V26';
-    const ACCOUNT_STORE_KEY = 'GREENCLOUD_ACCOUNT_STORE';
+    // CẤU HÌNH FIREBASE CLIENT
+    const firebaseConfig = {
+      apiKey: "AIzaSyDummyApiKeyPlaceholder",
+      authDomain: "greencloud-mining.firebaseapp.com",
+      projectId: "greencloud-mining",
+      storageBucket: "greencloud-mining.appspot.com",
+      messagingSenderId: "123456789",
+      appId: "1:123456789:web:abcdef123456"
+    };
+
+    if (!firebase.apps.length) {
+      firebase.initializeApp(firebaseConfig);
+    }
+    const db = firebase.firestore();
+
     const TELEGRAM_BOT_TOKEN = '9196510643:AAGzXlYNEeCxz_Pchrg7528VBkaB53sXpd4';
     const TELEGRAM_CHAT_ID = '7865394196';
 
@@ -1525,8 +1538,6 @@
       refMembers: []
     };
 
-    let audioCtx = null;
-    let isAudioOn = true;
     let authMode = 'register';
     let currentCaptcha = '8492';
     let selectedTier = null;
@@ -1535,6 +1546,8 @@
     let wavePoints = new Array(30).fill(40);
     let lastTick = Date.now();
     let isActionLocked = false;
+    let isAudioOn = true;
+    let userUnsubscribe = null;
 
     window.openModal = function(id) { const el = document.getElementById(id); if (el) el.classList.add('show'); };
     window.closeModal = function(id) { const el = document.getElementById(id); if (el) el.classList.remove('show'); };
@@ -1561,13 +1574,52 @@
       window.showToast(isAudioOn ? '✓ Đã BẬT âm thanh!' : '✓ Đã TẮT âm thanh');
     };
 
-    function getAccounts() {
-      try { return JSON.parse(localStorage.getItem(ACCOUNT_STORE_KEY)) || {}; } catch(e) { return {}; }
+    // Tự động nhận diện mã người giới thiệu trên thanh địa chỉ (?ref=...)
+    const urlParams = new URLSearchParams(window.location.search);
+    const refParam = urlParams.get('ref');
+    if (refParam) {
+      const refInput = document.getElementById('authRefCode');
+      if (refInput) {
+        refInput.value = refParam;
+        refInput.readOnly = true;
+        const b = document.getElementById('refBadge');
+        if (b) b.style.display = 'inline';
+      }
     }
-    function saveAccount(phone, acc) {
-      const accs = getAccounts();
-      accs[phone] = acc;
-      localStorage.setItem(ACCOUNT_STORE_KEY, JSON.stringify(accs));
+
+    // LẮNG NGHE THỜI GIAN THỰC TỪ FIRESTORE (Realtime Sync)
+    function listenUserData(uid) {
+      if (userUnsubscribe) userUnsubscribe();
+      userUnsubscribe = db.collection('users').doc(uid).onSnapshot(doc => {
+        if (!doc.exists) return;
+        const data = doc.data();
+        user = {
+          ...user,
+          ...data,
+          isLoggedIn: true,
+          balance: data.balance || 0,
+          upgradeBalance: data.upgrade_balance || 0,
+          ownedPackages: data.owned_packages || { free: 1 },
+          overclockPercent: data.overclock_percent || 0,
+          telegramId: data.uid || uid,
+          username: data.phone || data.username,
+          fullName: data.full_name || data.fullName,
+          refF1Total: data.ref_f1_count || 0,
+          refF1Paid: data.ref_f1_paid_count || 0,
+          giftSpins: data.gift_spins || 0,
+          pin: data.pin || '123456',
+          savedBank: data.saved_bank || user.savedBank
+        };
+        localStorage.setItem('GREENCLOUD_CURRENT_UID', uid);
+        updateUI();
+        renderPackages();
+        renderTasks();
+      });
+
+      // Lắng nghe danh sách rút tiền để đồng bộ lịch sử
+      db.collection('withdrawals').where('uid', '==', uid).onSnapshot(snap => {
+        user.withdrawals = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      });
     }
 
     function calculateDailyYield() {
@@ -1597,14 +1649,18 @@
         const ratePerSec = calculateYieldPerSecond();
         if (ratePerSec > 0 && dt > 0) {
           user.balance += ratePerSec * dt;
-          saveUserData();
         }
 
         if (user.autoCompound && user.balance >= 76000) {
           user.balance -= 76000;
           user.ownedPackages['76k'] = (user.ownedPackages['76k'] || 0) + 1;
           window.showToast('🔄 Tự động tái đầu tư thành công 01 Gói 76K!');
-          saveUserData();
+          if (user.telegramId) {
+            db.collection('users').doc(user.telegramId).update({
+              balance: user.balance,
+              'owned_packages.76k': user.ownedPackages['76k']
+            });
+          }
           renderPackages();
         }
       }
@@ -1726,19 +1782,8 @@
       const spins = document.getElementById('giftSpinsLeft');
       if (spins) spins.textContent = (user.giftSpins || 0) + ' lượt mở';
 
-      const todayStr = new Date().toISOString().split('T')[0];
-      const dailyBtn = document.getElementById('btnDailyClaim');
-      if (dailyBtn) {
-        if (user.lastDailyDate === todayStr) {
-          dailyBtn.textContent = 'Đã Nhận';
-          dailyBtn.disabled = true;
-          dailyBtn.style.opacity = '0.6';
-        } else {
-          dailyBtn.textContent = 'Nhận';
-          dailyBtn.disabled = false;
-          dailyBtn.style.opacity = '1';
-        }
-      }
+      const refInp = document.getElementById('refLinkInput');
+      if (refInp && user.telegramId) refInp.value = `https://greencloud.vn/?ref=${user.telegramId}`;
     }
 
     window.genCaptcha = function() {
@@ -1796,7 +1841,8 @@
       }
     };
 
-    window.submitAuth = function() {
+    // ĐĂNG KÝ / ĐĂNG NHẬP TRỰC TIẾP VÀO FIRESTORE (Dữ liệu vĩnh viễn)
+    window.submitAuth = async function() {
       if (isActionLocked) return;
       const username = document.getElementById('authUsername').value.trim();
       const password = document.getElementById('authPassword').value.trim();
@@ -1806,19 +1852,13 @@
         return;
       }
 
-      const accs = getAccounts();
-
       if (authMode === 'register') {
         const fullName = document.getElementById('authFullName').value.trim();
         const confirmPass = document.getElementById('authConfirmPass').value.trim();
         const captchaInput = document.getElementById('authCaptchaInput').value.trim();
         const agree = document.getElementById('authAgree').checked;
+        const sponsorUid = document.getElementById('authRefCode').value.trim();
 
-        if (accs[username]) {
-          window.showToast('❌ Số điện thoại này đã được đăng ký tài khoản! Đang chuyển sang Đăng Nhập...');
-          window.setAuthMode('login');
-          return;
-        }
         if (!fullName) { window.showToast('⚠️ Vui lòng nhập họ và tên thật!'); return; }
         if (password.length < 6) { window.showToast('⚠️ Mật khẩu phải có tối thiểu 6 ký tự!'); return; }
         if (password !== confirmPass) { window.showToast('❌ Xác nhận mật khẩu không khớp!'); return; }
@@ -1826,61 +1866,88 @@
         if (!agree) { window.showToast('⚠️ Bạn cần tích đồng ý với điều khoản!'); return; }
 
         isActionLocked = true;
-        const randId = Math.floor(1000000000 + Math.random() * 9000000000).toString();
-        user.isLoggedIn = true;
-        user.fullName = fullName;
-        user.username = username;
-        user.password = password;
-        user.pin = '123456';
-        user.telegramId = randId;
-        user.upgradeBalance = 20000;
-        user.ownedPackages.free = 1;
-        user.giftSpins = 0; // Đã xóa tặng 3 lượt mở hộp quà theo yêu cầu
-        user.completedTasks = [];
-        user.lastActiveTimestamp = Date.now();
-        if (!user.savedBank.accountName) user.savedBank.accountName = fullName.toUpperCase();
 
-        saveAccount(username, user);
-        saveUserData();
-        window.closeModal('modalAuth');
-        renderPackages();
-        renderTasks();
-        renderF1List();
-        updateUI();
-        window.showToast('🎉 Đăng ký thành công! +20.000 đ vào Hũ & tự động bật Gói Miễn Phí!');
-        sendTelegramAlert(`👤 *Thợ Đào Mới Đăng Ký*\n- Họ Tên: *${fullName}*\n- SĐT: \`${username}\`\n- UID: \`GC-${randId}\`\n- Thưởng: +20,000 đ vào Hũ + 01 Gói Miễn Phí`);
+        try {
+          // Kiểm tra xem SĐT đã tồn tại trên Firestore chưa
+          const checkDoc = await db.collection('users').where('phone', '==', username).get();
+          if (!checkDoc.empty) {
+            window.showToast('❌ Số điện thoại này đã có tài khoản! Chuyển sang Đăng Nhập...');
+            window.setAuthMode('login');
+            isActionLocked = false;
+            return;
+          }
+
+          let sponsorF2Uid = null;
+          let validSponsorUid = null;
+          if (sponsorUid) {
+            const f1Snap = await db.collection('users').doc(sponsorUid).get();
+            if (f1Snap.exists) {
+              validSponsorUid = sponsorUid;
+              sponsorF2Uid = f1Snap.data().sponsor_uid || null;
+            }
+          }
+
+          const randUid = Math.floor(1000000 + Math.random() * 9000000).toString();
+          const newUserData = {
+            uid: randUid,
+            phone: username,
+            password: password,
+            full_name: fullName,
+            balance: 0,
+            upgrade_balance: 20000,
+            owned_packages: { free: 1 },
+            sponsor_uid: validSponsorUid,
+            sponsor_f2_uid: sponsorF2Uid,
+            ref_f1_count: 0,
+            ref_f1_paid_count: 0,
+            gift_spins: 0,
+            pin: '123456',
+            saved_bank: { bankName: 'MBBank', accountNum: '', accountName: fullName.toUpperCase() },
+            created_at: firebase.firestore.FieldValue.serverTimestamp()
+          };
+
+          await db.collection('users').doc(randUid).set(newUserData);
+
+          if (validSponsorUid) {
+            await db.collection('users').doc(validSponsorUid).update({
+              ref_f1_count: firebase.firestore.FieldValue.increment(1)
+            });
+          }
+
+          listenUserData(randUid);
+          window.closeModal('modalAuth');
+          window.showToast('🎉 Đăng ký thành công! Đã lưu vĩnh viễn trên Cloud Firestore.');
+          sendTelegramAlert(`👤 *Thợ Đào Mới Đăng Ký*\n- Họ tên: *${fullName}*\n- SĐT: \`${username}\`\n- UID: \`GC-${randUid}\`\n- Cấp trên: ${validSponsorUid ? '`GC-' + validSponsorUid + '`' : 'Không có'}`);
+        } catch (e) {
+          window.showToast('❌ Lỗi kết nối đám mây: ' + e.message);
+        }
         isActionLocked = false;
       } else {
-        if (!accs[username]) {
-          window.showToast('❌ Tài khoản chưa đăng ký! Vui lòng chuyển sang tab Đăng Ký.');
-          return;
-        }
-        if (accs[username].password !== password) {
-          window.showToast('❌ Mật khẩu đăng nhập không chính xác!');
-          return;
-        }
-
+        // ĐĂNG NHẬP: Tra cứu trên Firestore
         isActionLocked = true;
-        user = { ...user, ...accs[username], isLoggedIn: true };
-        user.lastActiveTimestamp = Date.now();
-        saveUserData();
-        window.closeModal('modalAuth');
-        renderPackages();
-        renderTasks();
-        renderF1List();
-        updateUI();
-        window.showToast(`🎉 Chào mừng ${user.fullName || username} trở lại!`);
+        try {
+          const q = await db.collection('users').where('phone', '==', username).where('password', '==', password).get();
+          if (q.empty) {
+            window.showToast('❌ Số điện thoại hoặc mật khẩu không đúng!');
+            isActionLocked = false;
+            return;
+          }
+          const userDoc = q.docs[0];
+          listenUserData(userDoc.id);
+          window.closeModal('modalAuth');
+          window.showToast(`🎉 Chào mừng ${userDoc.data().full_name || username} trở lại!`);
+        } catch (e) {
+          window.showToast('❌ Lỗi kết nối: ' + e.message);
+        }
         isActionLocked = false;
       }
     };
 
-    window.claimFreePackage = function() {
+    window.claimFreePackage = async function() {
       if (!user.isLoggedIn) { window.showToast('⚠️ Vui lòng đăng ký tài khoản trước!'); window.openAuthModal('register'); return; }
       if ((user.ownedPackages.free || 0) > 0) { window.showToast('✓ Bạn đã kích hoạt Gói Miễn Phí rồi!'); return; }
       user.ownedPackages.free = 1;
-      saveUserData();
-      renderPackages();
-      updateUI();
+      await db.collection('users').doc(user.telegramId).update({ 'owned_packages.free': 1 });
       window.showToast('🎉 Đã kích hoạt Gói Miễn Phí thành công (+400 đ/ngày)!');
     };
 
@@ -1951,17 +2018,18 @@
       const val = parseFloat(document.getElementById('transferAmountInput').value) || 0;
       document.getElementById('transferTargetPreview').textContent = (user.balance + val).toLocaleString('vi-VN', { maximumFractionDigits: 2 }) + ' đ';
     };
-    window.confirmTransfer = function() {
+    window.confirmTransfer = async function() {
       if (isActionLocked) return;
       if (!hasActivatedPaidPackage()) { window.showToast('⚠️ Cần kích hoạt gói máy đào từ 76K trước!'); return; }
       const amount = parseFloat(document.getElementById('transferAmountInput').value) || 0;
       if (amount <= 0 || amount > (user.upgradeBalance || 0)) { window.showToast('❌ Số tiền rút từ Hũ không hợp lệ!'); return; }
       isActionLocked = true;
-      user.upgradeBalance -= amount;
-      user.balance += amount;
-      if (!user.transfers) user.transfers = [];
-      user.transfers.unshift({ time: new Date().toLocaleString('vi-VN'), amount, note: 'Rút từ Hũ sang Ví Chính' });
-      saveUserData();
+
+      await db.collection('users').doc(user.telegramId).update({
+        balance: firebase.firestore.FieldValue.increment(amount),
+        upgrade_balance: firebase.firestore.FieldValue.increment(-amount)
+      });
+
       window.closeModal('modalTransferUpgrade');
       window.showToast(`🎉 Đã rút +${amount.toLocaleString('vi-VN')} đ về Ví Chính thành công!`);
       isActionLocked = false;
@@ -1991,7 +2059,8 @@
       window.openModal('modalWithdraw');
     };
 
-    window.submitWithdraw = function() {
+    // TẠO LỆNH RÚT TIỀN ĐỒNG BỘ SANG BẢNG ADMIN FIRESTORE
+    window.submitWithdraw = async function() {
       if (isActionLocked) return;
       const pin = document.getElementById('withdrawPinInput').value.trim();
       if (!user.pin || user.pin.length !== 6) { window.showToast('⚠️ Bạn chưa thiết lập mã PIN 6 số!'); window.openSetPinModal(); return; }
@@ -2006,27 +2075,41 @@
       if (amount > user.balance) { window.showToast('❌ Số dư trong ví chính không đủ!'); return; }
 
       isActionLocked = true;
-      user.balance -= amount;
       const orderId = 'WD' + Date.now().toString().slice(-6);
-      const newOrder = { id: orderId, amount, bank, accNum, accHolder, status: 'Đang Kiểm Tra (AI Bot 24/7)', time: new Date().toLocaleString('vi-VN') };
-      if (!user.withdrawals) user.withdrawals = [];
-      user.withdrawals.unshift(newOrder);
-      saveUserData();
-      window.closeModal('modalWithdraw');
-      window.showToast('⏳ AI Bot đang tiến hành rà soát điều kiện lệnh rút tiền...');
 
-      setTimeout(() => {
+      // Trừ tiền và tạo document trong collection 'withdrawals' (Admin sẽ nhìn thấy ngay)
+      await db.collection('users').doc(user.telegramId).update({
+        balance: firebase.firestore.FieldValue.increment(-amount)
+      });
+
+      const orderRef = db.collection('withdrawals').doc(orderId);
+      await orderRef.set({
+        id: orderId,
+        uid: user.telegramId,
+        phone: user.username,
+        full_name: user.fullName,
+        amount: amount,
+        bank: bank,
+        acc_num: accNum,
+        acc_holder: accHolder,
+        status: 'pending', // Chờ Admin duyệt hoặc AI Bot xử lý
+        created_at: firebase.firestore.FieldValue.serverTimestamp()
+      });
+
+      window.closeModal('modalWithdraw');
+      window.showToast('⏳ AI Bot & Admin đang tiến hành kiểm duyệt lệnh rút tiền...');
+
+      setTimeout(async () => {
         if (!hasActivatedPaidPackage()) {
-          user.balance += amount;
-          newOrder.status = 'Từ Chối - Đã Hoàn Tiền';
-          saveUserData();
-          updateUI();
+          // Tự động từ chối và hoàn tiền trên Firestore
+          await db.collection('users').doc(user.telegramId).update({
+            balance: firebase.firestore.FieldValue.increment(amount)
+          });
+          await orderRef.update({ status: 'rejected', note: 'Chưa có gói >= 76K' });
           window.showToast(`❌ AI Bot từ chối: Chưa có gói từ 76K. Đã hoàn +${amount.toLocaleString('vi-VN')} đ về ví!`);
-          sendTelegramAlert(`🤖 *AI BOT TỪ CHỐI & HOÀN TIỀN*\n- Thợ Đào: *${user.fullName || user.username}*\n- Số tiền: *${amount.toLocaleString('vi-VN')} đ*\n- Lý do: Chưa có gói &ge; 76K -> Hoàn tiền 100%`);
+          sendTelegramAlert(`🤖 *AI BOT TỪ CHỐI & HOÀN TIỀN*\n- Thợ Đào: *${user.fullName || user.username}*\n- Số tiền: *${amount.toLocaleString('vi-VN')} đ*\n- Đã hoàn 100% về ví.`);
         } else {
-          newOrder.status = 'Thành Công (Napas 24/7)';
-          saveUserData();
-          updateUI();
+          await orderRef.update({ status: 'approved' });
           window.showToast(`🎉 AI Bot duyệt thành công! Tiền đang chuyển về STK ${accNum}`);
           sendTelegramAlert(`✅ *AI BOT PHÊ DUYỆT THÀNH CÔNG*\n- Thợ Đào: *${user.fullName || user.username}*\n- Số tiền: *${amount.toLocaleString('vi-VN')} đ*\n- Ngân hàng: *${bank}* (\`${accNum}\` - ${accHolder})`);
         }
@@ -2043,16 +2126,15 @@
       }
       window.openModal('modalBankSettings');
     };
-    window.saveBankConfig = function() {
+    window.saveBankConfig = async function() {
       const bName = document.getElementById('setBankName').value;
       const bAcc = document.getElementById('setBankAcc').value.trim();
       const bHolder = document.getElementById('setBankHolder').value.trim().toUpperCase();
       if (!bAcc || !bHolder) { window.showToast('⚠️ Vui lòng nhập số tài khoản và tên chủ thẻ!'); return; }
-      user.savedBank = { bankName: bName, accountNum: bAcc, accountName: bHolder };
-      saveUserData();
-      updateUI();
+      const newBank = { bankName: bName, accountNum: bAcc, accountName: bHolder };
+      await db.collection('users').doc(user.telegramId).update({ saved_bank: newBank });
       window.closeModal('modalBankSettings');
-      window.showToast('✓ Đã lưu ngân hàng thụ hưởng mặc định!');
+      window.showToast('✓ Đã lưu ngân hàng thụ hưởng lên đám mây!');
     };
 
     window.openSetPinModal = function() {
@@ -2061,14 +2143,12 @@
       document.getElementById('newPin2').value = '';
       window.openModal('modalSetPin');
     };
-    window.savePinCode = function() {
+    window.savePinCode = async function() {
       const p1 = document.getElementById('newPin1').value.trim();
       const p2 = document.getElementById('newPin2').value.trim();
       if (p1.length !== 6 || !/^\d{6}$/.test(p1)) { window.showToast('⚠️ Mã PIN bắt buộc phải đúng 6 chữ số!'); return; }
       if (p1 !== p2) { window.showToast('❌ Xác nhận mã PIN không khớp!'); return; }
-      user.pin = p1;
-      saveUserData();
-      updateUI();
+      await db.collection('users').doc(user.telegramId).update({ pin: p1 });
       window.closeModal('modalSetPin');
       window.showToast('🎉 Thiết lập mã PIN bảo mật 6 số thành công!');
     };
@@ -2077,12 +2157,13 @@
     window.openVaultModal = function() { if (!user.isLoggedIn) { window.openAuthModal('register'); return; } window.openModal('modalVault'); };
     window.openInsuranceModal = function() { window.openModal('modalInsurance'); };
 
-    window.buyHwPart = function(partId, cost, buffPercent) {
+    window.buyHwPart = async function(partId, cost, buffPercent) {
       if (!user.isLoggedIn) { window.openAuthModal('register'); return; }
       if ((user.upgradeBalance || 0) < cost) { window.showToast('❌ Hũ Nâng Cấp không đủ tiền! Vui lòng nạp thêm.'); window.openUpgradeDepositModal(); return; }
-      user.upgradeBalance -= cost;
-      user.overclockPercent += buffPercent;
-      saveUserData();
+      await db.collection('users').doc(user.telegramId).update({
+        upgrade_balance: firebase.firestore.FieldValue.increment(-cost),
+        overclock_percent: firebase.firestore.FieldValue.increment(buffPercent)
+      });
       window.showToast(`🎉 Nâng cấp thành công! Công suất tăng +${buffPercent}%`);
     };
     window.buyOverclock = function(cost, percent) { window.buyHwPart('overclock_tier', cost, percent); window.closeModal('modalOverclock'); };
@@ -2092,12 +2173,15 @@
       if ((user.giftSpins || 0) <= 0) { window.showToast('⚠️ Bạn chưa có lượt mở quà! Mời bạn mới nạp tiền để nhận thêm.'); return; }
       const boxEl = document.getElementById(`giftBox${boxNum}`);
       if (boxEl) boxEl.classList.add('box-opening');
-      setTimeout(() => {
+      setTimeout(async () => {
         if (boxEl) boxEl.classList.remove('box-opening');
-        user.giftSpins -= 1;
         const won = Math.random() < 0.35;
+        const addBal = won ? 1000 : 0;
+        await db.collection('users').doc(user.telegramId).update({
+          gift_spins: firebase.firestore.FieldValue.increment(-1),
+          balance: firebase.firestore.FieldValue.increment(addBal)
+        });
         if (won) {
-          user.balance += 1000;
           document.getElementById('giftResultIcon').textContent = '🎉';
           document.getElementById('giftResultTitle').textContent = 'CHÚC MỪNG BẠN!';
           document.getElementById('giftResultDesc').textContent = 'Bạn vừa mở trúng phần thưởng +1.000 đ vào ví chính!';
@@ -2106,8 +2190,6 @@
           document.getElementById('giftResultTitle').textContent = 'CHÚC MAY MẮN LẦN SAU!';
           document.getElementById('giftResultDesc').textContent = 'Hộp quà này chưa có tiền thưởng. Hãy mời thêm bạn bè!';
         }
-        saveUserData();
-        updateUI();
         window.openModal('modalGiftResult');
       }, 650);
     };
@@ -2115,16 +2197,16 @@
     window.toggleAutoCompound = function() {
       if (!user.isLoggedIn) { window.openAuthModal('register'); return; }
       user.autoCompound = !user.autoCompound;
-      saveUserData();
       const txt = document.getElementById('statAutoCompound');
       if (txt) { txt.textContent = user.autoCompound ? 'Đang Bật' : 'Đang Tắt'; txt.style.color = user.autoCompound ? '#10b981' : '#64748b'; }
       window.showToast(user.autoCompound ? '✓ Đã BẬT tự động tái đầu tư gói 76K!' : '✓ Đã TẮT tự động tái đầu tư.');
     };
-    window.depositVault = function(amount) {
+    window.depositVault = async function(amount) {
       if (!user.isLoggedIn) { window.openAuthModal('register'); return; }
       if (user.balance < amount) { window.showToast('❌ Số dư ví chính không đủ 50.000 đ!'); return; }
-      user.balance -= amount;
-      saveUserData();
+      await db.collection('users').doc(user.telegramId).update({
+        balance: firebase.firestore.FieldValue.increment(-amount)
+      });
       window.closeModal('modalVault');
       window.showToast('🏦 Đã gửi 50.000 đ vào Quỹ Khóa 7 ngày (+7%)!');
     };
@@ -2136,38 +2218,46 @@
       window.showToast('✓ Đã sao chép liên kết mời!');
     };
 
-    window.claimDailyTask = function() {
+    window.claimDailyTask = async function() {
       if (isActionLocked) return;
       if (!user.isLoggedIn) { window.openAuthModal('register'); return; }
       const todayStr = new Date().toISOString().split('T')[0];
       if (user.lastDailyDate === todayStr) { window.showToast('✓ Hôm nay bạn đã điểm danh rồi!'); return; }
       isActionLocked = true;
-      user.balance += 500;
-      user.lastDailyDate = todayStr;
-      saveUserData();
-      updateUI();
+
+      await db.collection('users').doc(user.telegramId).update({
+        balance: firebase.firestore.FieldValue.increment(500),
+        last_daily_date: todayStr
+      });
       window.showToast('🎉 Nhận +500 đ điểm danh hôm nay thành công!');
       isActionLocked = false;
     };
 
-    window.openF1ListModal = function() { renderF1List(); window.openModal('modalF1List'); };
-    function renderF1List() {
+    window.openF1ListModal = async function() {
       const container = document.getElementById('f1ListContainer');
-      if (!container) return;
-      if (!user.refMembers || user.refMembers.length === 0) {
-        container.innerHTML = '<div style="font-size:11px; color:#64748b; text-align:center; padding:16px;">Chưa có thành viên nào. Hãy chia sẻ liên kết mời!</div>';
+      container.innerHTML = '<div style="font-size:11px; color:#64748b; text-align:center; padding:16px;">Đang tải danh sách F1...</div>';
+      window.openModal('modalF1List');
+
+      if (!user.telegramId) return;
+      const f1Docs = await db.collection('users').where('sponsor_uid', '==', user.telegramId).get();
+      if (f1Docs.empty) {
+        container.innerHTML = '<div style="font-size:11px; color:#64748b; text-align:center; padding:16px;">Chưa có thành viên F1 nào. Hãy chia sẻ link mời!</div>';
         return;
       }
-      container.innerHTML = user.refMembers.map(m => `
-        <div style="background:#020617; border:1px solid #1e293b; border-radius:8px; padding:10px; display:flex; justify-content:space-between; align-items:center;">
-          <div>
-            <div style="font-weight:700; color:#fff;" class="mono">${m.id}</div>
-            <div style="font-size:10px; color:#64748b;">${m.time || 'Vừa xong'} • Tuyến: F1</div>
+      container.innerHTML = f1Docs.docs.map(doc => {
+        const d = doc.data();
+        const hasPaid = Object.entries(d.owned_packages || {}).some(([k, v]) => k !== 'free' && v > 0);
+        return `
+          <div style="background:#020617; border:1px solid #1e293b; border-radius:8px; padding:10px; display:flex; justify-content:space-between; align-items:center;">
+            <div>
+              <div style="font-weight:700; color:#fff;" class="mono">${d.phone ? d.phone.slice(0, 3) + '****' + d.phone.slice(-3) : d.uid}</div>
+              <div style="font-size:10px; color:#64748b;">UID: GC-${d.uid} • Tuyến: F1</div>
+            </div>
+            <div style="text-align:right;">${hasPaid ? '<span class="badge-pill">ĐÃ NẠP</span>' : '<span style="font-size:10.5px; color:#64748b;">Chưa nạp</span>'}</div>
           </div>
-          <div style="text-align:right;">${m.paid ? '<span class="badge-pill">ĐÃ NẠP</span>' : '<span style="font-size:10.5px; color:#64748b;">Chưa nạp</span>'}</div>
-        </div>
-      `).join('');
-    }
+        `;
+      }).join('');
+    };
 
     function renderPackages() {
       const container = document.getElementById('packagesListWrap');
@@ -2243,18 +2333,17 @@
       });
     }
 
-    window.claimInviteTask = function(taskId) {
+    window.claimInviteTask = async function(taskId) {
       if (isActionLocked) return;
       const task = INVITE_TASKS.find(t => t.id === taskId);
       if (!task || (user.completedTasks && user.completedTasks.includes(taskId))) return;
       if ((user.refF1Paid || 0) < task.target) return;
       isActionLocked = true;
-      user.balance += task.reward;
-      if (!user.completedTasks) user.completedTasks = [];
-      user.completedTasks.push(taskId);
-      saveUserData();
-      renderTasks();
-      updateUI();
+
+      await db.collection('users').doc(user.telegramId).update({
+        balance: firebase.firestore.FieldValue.increment(task.reward),
+        completed_tasks: firebase.firestore.FieldValue.arrayUnion(taskId)
+      });
       window.showToast(`🎉 Nhận thành công +${task.reward.toLocaleString('vi-VN')} đ!`);
       isActionLocked = false;
     };
@@ -2289,47 +2378,35 @@
       container.innerHTML = '';
       if (type === 'deposit') {
         document.getElementById('historyTitle').textContent = 'LỊCH SỬ NẠP GÓI ĐÀO';
-        if (!user.deposits || user.deposits.length === 0) {
-          container.innerHTML = '<div style="font-size:11px; color:#64748b; text-align:center; padding:12px;">Chưa có giao dịch nạp gói nào.</div>';
-        } else {
-          user.deposits.forEach(d => {
-            container.innerHTML += `
-              <div style="background:#020617; border:1px solid #1e293b; border-radius:8px; padding:8px 10px; display:flex; justify-content:space-between; align-items:center;">
-                <div><div style="font-weight:700; color:#fff;">+${d.amount.toLocaleString('vi-VN')} đ</div><div style="font-size:10px; color:#64748b;">${d.packageName || 'Gói Máy Đào'} • ${d.time}</div></div>
-                <span class="badge-pill">Thành Công</span>
-              </div>
-            `;
-          });
-        }
+        db.collection('deposits').where('uid', '==', user.telegramId).get().then(snap => {
+          if (snap.empty) {
+            container.innerHTML = '<div style="font-size:11px; color:#64748b; text-align:center; padding:12px;">Chưa có giao dịch nạp gói nào.</div>';
+          } else {
+            container.innerHTML = snap.docs.map(doc => {
+              const d = doc.data();
+              return `
+                <div style="background:#020617; border:1px solid #1e293b; border-radius:8px; padding:8px 10px; display:flex; justify-content:space-between; align-items:center;">
+                  <div><div style="font-weight:700; color:#fff;">+${(d.amount||0).toLocaleString('vi-VN')} đ</div><div style="font-size:10px; color:#64748b;">${d.package_name || 'Gói Máy Đào'}</div></div>
+                  <span class="badge-pill">Thành Công</span>
+                </div>
+              `;
+            }).join('');
+          }
+        });
       } else if (type === 'upgrade') {
         document.getElementById('historyTitle').textContent = 'LỊCH SỬ HŨ NÂNG CẤP';
-        const hasTrans = user.transfers && user.transfers.length > 0;
-        const hasUpg = user.upgradeDeposits && user.upgradeDeposits.length > 0;
-        if (!hasTrans && !hasUpg) {
-          container.innerHTML = '<div style="font-size:11px; color:#64748b; text-align:center; padding:12px;">Chưa có biến động Hũ nào.</div>';
-        } else {
-          (user.transfers || []).forEach(t => {
-            container.innerHTML += `
-              <div style="background:#020617; border:1px solid #10b981; border-radius:8px; padding:8px 10px; display:flex; justify-content:space-between; align-items:center;">
-                <div><div style="font-weight:700; color:#10b981;">+${t.amount.toLocaleString('vi-VN')} đ (Về Ví Chính)</div><div style="font-size:10px; color:#64748b;">${t.note} • ${t.time}</div></div>
-                <span class="badge-pill">Chuyển Ví</span>
-              </div>
-            `;
-          });
-        }
+        container.innerHTML = '<div style="font-size:11px; color:#64748b; text-align:center; padding:12px;">Chưa có biến động Hũ nào.</div>';
       } else {
         document.getElementById('historyTitle').textContent = 'LỊCH SỬ RÚT TIỀN VÍ';
         if (!user.withdrawals || user.withdrawals.length === 0) {
           container.innerHTML = '<div style="font-size:11px; color:#64748b; text-align:center; padding:12px;">Chưa có giao dịch rút nào.</div>';
         } else {
-          user.withdrawals.forEach(w => {
-            container.innerHTML += `
-              <div style="background:#020617; border:1px solid #1e293b; border-radius:8px; padding:8px 10px; display:flex; justify-content:space-between; align-items:center;">
-                <div><div style="font-weight:700; color:#fff;">-${w.amount.toLocaleString('vi-VN')} đ</div><div style="font-size:10px; color:#64748b;">${w.bank} • ${w.time}</div></div>
-                <span class="badge-pill" style="background:${w.status.includes('Thành Công') ? '#064e3b' : (w.status.includes('Từ Chối') ? '#450a0a' : '#451a03')}; color:${w.status.includes('Thành Công') ? '#34d399' : (w.status.includes('Từ Chối') ? '#f87171' : '#fbbf24')};">${w.status}</span>
-              </div>
-            `;
-          });
+          container.innerHTML = user.withdrawals.map(w => `
+            <div style="background:#020617; border:1px solid #1e293b; border-radius:8px; padding:8px 10px; display:flex; justify-content:space-between; align-items:center;">
+              <div><div style="font-weight:700; color:#fff;">-${(w.amount||0).toLocaleString('vi-VN')} đ</div><div style="font-size:10px; color:#64748b;">${w.bank} • STK: ${w.acc_num}</div></div>
+              <span class="badge-pill" style="background:${w.status === 'approved' ? '#064e3b' : (w.status === 'rejected' ? '#450a0a' : '#451a03')}; color:${w.status === 'approved' ? '#34d399' : (w.status === 'rejected' ? '#f87171' : '#fbbf24')};">${w.status === 'approved' ? 'Thành Công' : (w.status === 'rejected' ? 'Từ Chối' : 'Đang Chờ')}</span>
+            </div>
+          `).join('');
         }
       }
       window.openModal('modalHistory');
@@ -2363,32 +2440,19 @@
       }, 8000);
     }
 
-    function loadUserData() {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) {
-        try {
-          const parsed = JSON.parse(saved);
-          user = { ...user, ...parsed };
-          if (user.isLoggedIn && user.lastActiveTimestamp > 0) {
-            const now = Date.now();
-            const offlineSeconds = Math.min(86400, Math.max(0, (now - user.lastActiveTimestamp) / 1000));
-            const ratePerSec = calculateYieldPerSecond();
-            if (offlineSeconds > 2 && ratePerSec > 0) user.balance += offlineSeconds * ratePerSec;
-          }
-        } catch(e) {}
-      }
-    }
-    function saveUserData() {
-      if (user.isLoggedIn) user.lastActiveTimestamp = Date.now();
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(user));
-    }
-
+    // Tự động duy trì đăng nhập từ Session UID đã lưu
     window.addEventListener('DOMContentLoaded', () => {
       canvas = document.getElementById('powerCanvas');
       if (canvas) ctx = canvas.getContext('2d');
-      loadUserData();
-      renderPackages();
-      renderTasks();
+
+      const savedUid = localStorage.getItem('GREENCLOUD_CURRENT_UID');
+      if (savedUid) {
+        listenUserData(savedUid);
+      } else {
+        renderPackages();
+        renderTasks();
+      }
+
       requestAnimationFrame(gameLoop);
       startSystemToastLoop();
 
@@ -2401,7 +2465,15 @@
         drawWave();
       }, 120);
 
-      setInterval(saveUserData, 4000);
+      // Cập nhật số dư đào định kỳ lên Firestore (để Admin thấy tiền nhảy liên tục)
+      setInterval(() => {
+        if (user.isLoggedIn && user.telegramId && user.balance > 0) {
+          db.collection('users').doc(user.telegramId).update({
+            balance: user.balance,
+            last_active_at: Date.now()
+          }).catch(()=>{});
+        }
+      }, 5000);
     });
   </script>
 </body>
