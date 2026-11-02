@@ -43,7 +43,7 @@ async function sendTelegram(msg) {
   }
 }
 
-// 3. API Đăng Ký Tài Khoản & Gắn Cây Phả Hệ F1, F2
+// 3. API Đăng Ký Tài Khoản & Gắn Cây Phả Hệ F1, F2 (+1 lượt mở hộp cho cấp trên)
 app.post('/api/auth/register', async (req, res) => {
   try {
     const { phone, password, fullName, sponsorUid } = req.body;
@@ -68,27 +68,32 @@ app.post('/api/auth/register', async (req, res) => {
     }
 
     const newUid = Math.floor(1000000 + Math.random() * 9000000).toString();
+    const now = Date.now();
 
     const newUser = {
       uid: newUid,
       phone,
-      password, // Bạn nên hash password bằng bcrypt trong thực tế
+      password,
       full_name: fullName || phone,
       balance: 0,
       upgrade_balance: 20000, // Tặng sẵn 20k vào Hũ
       sponsor_uid: validSponsorUid,
       sponsor_f2_uid: sponsorF2Uid,
-      owned_packages: { free: 1 }, // Tặng sẵn gói Free
+      owned_packages: { free: 1 },
+      active_instances: [{ pkgId: 'free', activatedAt: now }],
       ref_f1_count: 0,
       ref_f1_paid_count: 0,
-      created_at: Date.now()
+      gift_spins: 0,
+      created_at: now
     };
 
     await db.collection('users').doc(newUid).set(newUser);
 
+    // Tự động tăng số lượng F1 và cộng ngay +1 lượt mở hộp cho cấp trên
     if (validSponsorUid) {
       await db.collection('users').doc(validSponsorUid).update({
-        ref_f1_count: admin.firestore.FieldValue.increment(1)
+        ref_f1_count: admin.firestore.FieldValue.increment(1),
+        gift_spins: admin.firestore.FieldValue.increment(1)
       });
     }
 
@@ -100,17 +105,19 @@ app.post('/api/auth/register', async (req, res) => {
   }
 });
 
-// 4. Webhook SePay (MB Bank: 0829594887 - DANG HIEU THANG) Tự Động Kích Hoạt & Chia Hoa Hồng
+// 4. Webhook SePay Tự Động Kích Hoạt Gói 12 Ngày & Chia Hoa Hồng (F1: 15% - F2: 5%)
 app.post('/api/webhook/sepay', async (req, res) => {
   try {
     const { transferAmount, content, referenceCode } = req.body;
     if (!transferAmount || !content) return res.status(400).send('Dữ liệu thiếu');
 
     const cleanContent = content.trim().toUpperCase();
+    const amountNum = Number(transferAmount);
 
-    // Xử lý nạp Gói Đào: Cú pháp GC<UID> (Ví dụ: GC1002345)
-    if (cleanContent.startsWith('GC')) {
-      const uid = cleanContent.replace('GC', '').replace(/[^0-9]/g, '');
+    // 1. Kiểm tra nạp Gói Đào: Quét mã GCxxxxxxx trong nội dung chuyển khoản
+    const matchGC = cleanContent.match(/GC(\d+)/i);
+    if (matchGC) {
+      const uid = matchGC[1];
       const userRef = db.collection('users').doc(uid);
       const userSnap = await userRef.get();
 
@@ -119,7 +126,7 @@ app.post('/api/webhook/sepay', async (req, res) => {
 
       let matchedPkgKey = null;
       for (const [k, p] of Object.entries(PACKAGES_CONFIG)) {
-        if (p.cost === Number(transferAmount)) {
+        if (p.cost === amountNum) {
           matchedPkgKey = k;
           break;
         }
@@ -128,80 +135,83 @@ app.post('/api/webhook/sepay', async (req, res) => {
       if (!matchedPkgKey) return res.status(200).send('Số tiền không khớp gói nào');
       const pkgInfo = PACKAGES_CONFIG[matchedPkgKey];
 
-      // Chạy Transaction Firestore đảm bảo an toàn tuyệt đối
       await db.runTransaction(async (transaction) => {
-        // 1. Kích hoạt gói cho người nạp
-        const currentOwned = userData.owned_packages || {};
-        const newQty = (currentOwned[matchedPkgKey] || 0) + 1;
+        // Cập nhật số lượng và thêm vào danh sách máy đào 12 ngày
+        const newInstance = { pkgId: matchedPkgKey, activatedAt: Date.now() };
         transaction.update(userRef, {
-          [`owned_packages.${matchedPkgKey}`]: newQty,
+          [`owned_packages.${matchedPkgKey}`]: admin.firestore.FieldValue.increment(1),
+          active_instances: admin.firestore.FieldValue.arrayUnion(newInstance),
+          has_paid_package: true,
           last_active_at: Date.now()
         });
 
-        // 2. Chia hoa hồng F1 (7%)
+        // Chia hoa hồng F1 (15%)
         if (userData.sponsor_uid) {
           const f1Ref = db.collection('users').doc(userData.sponsor_uid);
           const f1Snap = await transaction.get(f1Ref);
           if (f1Snap.exists) {
-            const f1Commission = Number(transferAmount) * 0.07;
+            const f1Commission = amountNum * 0.15;
             transaction.update(f1Ref, {
               balance: admin.firestore.FieldValue.increment(f1Commission),
               ref_f1_paid_count: admin.firestore.FieldValue.increment(1)
             });
 
-            sendTelegram(`💰 *Hoa Hồng F1 (+7%) Tự Động*\n- Nhận: \`GC-${userData.sponsor_uid}\`\n- Từ cấp dưới: \`GC-${uid}\`\n- Cộng: *+${f1Commission.toLocaleString('vi-VN')} đ*`);
+            sendTelegram(`💰 *Hoa Hồng F1 (+15%) Tự Động*\n- Nhận: \`GC-${userData.sponsor_uid}\`\n- Từ cấp dưới: \`GC-${uid}\`\n- Cộng: *+${f1Commission.toLocaleString('vi-VN')} đ*`);
           }
         }
 
-        // 3. Chia hoa hồng F2 (3%)
+        // Chia hoa hồng F2 (5%)
         if (userData.sponsor_f2_uid) {
           const f2Ref = db.collection('users').doc(userData.sponsor_f2_uid);
           const f2Snap = await transaction.get(f2Ref);
           if (f2Snap.exists) {
-            const f2Commission = Number(transferAmount) * 0.03;
+            const f2Commission = amountNum * 0.05;
             transaction.update(f2Ref, {
               balance: admin.firestore.FieldValue.increment(f2Commission)
             });
 
-            sendTelegram(`💎 *Hoa Hồng F2 (+3%) Tự Động*\n- Nhận: \`GC-${userData.sponsor_f2_uid}\`\n- Từ nhánh F2: \`GC-${uid}\`\n- Cộng: *+${f2Commission.toLocaleString('vi-VN')} đ*`);
+            sendTelegram(`💎 *Hoa Hồng F2 (+5%) Tự Động*\n- Nhận: \`GC-${userData.sponsor_f2_uid}\`\n- Từ nhánh F2: \`GC-${uid}\`\n- Cộng: *+${f2Commission.toLocaleString('vi-VN')} đ*`);
           }
         }
 
-        // 4. Lưu biên nhận nạp tiền
+        // Lưu bản ghi vào collection deposits
         const depRef = db.collection('deposits').doc();
         transaction.set(depRef, {
           uid,
-          amount: Number(transferAmount),
+          amount: amountNum,
+          package_id: matchedPkgKey,
           package_name: pkgInfo.name,
           code: cleanContent,
           created_at: admin.firestore.FieldValue.serverTimestamp()
         });
       });
 
-      sendTelegram(`🎉 *Kích Hoạt Gói Thành Công*\n- Thợ đào: \`GC-${uid}\`\n- Gói: *${pkgInfo.name}*\n- Số tiền: ${Number(transferAmount).toLocaleString('vi-VN')} đ`);
-      return res.json({ success: true, message: 'Đã kích hoạt và chia hoa hồng F1-F2 thành công' });
+      sendTelegram(`🎉 *Kích Hoạt Gói 12 Ngày Thành Công*\n- Thợ đào: \`GC-${uid}\`\n- Gói: *${pkgInfo.name}*\n- Số tiền: ${amountNum.toLocaleString('vi-VN')} đ`);
+      return res.json({ success: true, message: 'Đã kích hoạt gói 12 ngày và chia hoa hồng F1 (15%), F2 (5%)' });
     }
 
-    // Xử lý nạp Hũ Nâng Cấp: Cú pháp NC<UID> (Ví dụ: NC1002345)
-    else if (cleanContent.startsWith('NC')) {
-      const uid = cleanContent.replace('NC', '').replace(/[^0-9]/g, '');
+    // 2. Kiểm tra nạp Hũ Nâng Cấp: Quét mã NCxxxxxxx trong nội dung chuyển khoản
+    const matchNC = cleanContent.match(/NC(\d+)/i);
+    if (matchNC) {
+      const uid = matchNC[1];
       const userRef = db.collection('users').doc(uid);
 
       await userRef.update({
-        upgrade_balance: admin.firestore.FieldValue.increment(Number(transferAmount))
+        upgrade_balance: admin.firestore.FieldValue.increment(amountNum)
       });
 
-      sendTelegram(`💠 *Nạp Hũ Nâng Cấp Thành Công*\n- Thợ đào: \`GC-${uid}\`\n- Đã nạp: *+${Number(transferAmount).toLocaleString('vi-VN')} đ*`);
+      sendTelegram(`💠 *Nạp Hũ Nâng Cấp Thành Công*\n- Thợ đào: \`GC-${uid}\`\n- Đã nạp: *+${amountNum.toLocaleString('vi-VN')} đ*`);
       return res.json({ success: true, message: 'Đã nạp tiền Hũ thành công' });
     }
 
-    return res.status(200).send('Bỏ qua nội dung không thuộc cú pháp GC/NC');
+    return res.status(200).send('Bỏ qua nội dung không khớp cú pháp GC/NC');
   } catch (error) {
     console.error('Lỗi Webhook:', error);
     return res.status(500).json({ success: false, error: error.message });
   }
 });
 
+// Cổng chạy server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server GreenCloud Backend đang chạy tại port ${PORT}`);
