@@ -674,7 +674,7 @@
     <!-- News Marquee -->
     <div class="news-strip">
       <span class="news-badge">TIN TỨC</span>
-      <span class="news-marquee">Chu kỳ hoàn vốn 12 ngày cố định • Khung giờ rút tiền: 10:00 - 17:00 • Nhóm Telegram: t.me/greencloudvip • Nạp tiền chỉ cần ghi đúng ID Tài Khoản!</span>
+      <span class="news-marquee">Chu kỳ hoàn vốn 12 ngày cố định • Khung giờ rút tiền: 10:00 - 17:00 • Nhóm Telegram: t.me/greencloudvip • Nạp tiền tự động kích hoạt 24/7!</span>
     </div>
 
     <!-- Content Tabs -->
@@ -1056,7 +1056,7 @@
     </div>
   </div>
 
-  <!-- MODAL NẠP TIỀN (NỘI DUNG CHUYỂN KHOẢN CHỈ LÀ ID NICK THUẦN SỐ) -->
+  <!-- MODAL NẠP TIỀN (NỘI DUNG CHUYỂN KHOẢN: GC + ID NICK) -->
   <div class="modal-backdrop" id="modalDeposit">
     <div class="modal-sheet">
       <div class="modal-head">
@@ -1064,7 +1064,7 @@
         <button class="modal-close" onclick="window.closeModal('modalDeposit')">✕</button>
       </div>
       <p style="font-size:11px; color:#94a3b8; margin-bottom:10px;">
-        Chọn mốc gói cần nạp. Quét mã QR tự động điền đúng <b>ID Tài Khoản</b> của bạn:
+        Chọn mốc gói cần nạp. Quét mã QR tự động điền đúng <b>Cú Pháp Nhận Diện</b> của bạn:
       </p>
 
       <div style="display:flex; flex-direction:column; gap:6px; margin-bottom:12px;">
@@ -1102,7 +1102,7 @@
             <b>DANG HIEU THANG</b>
           </div>
           <div style="display:flex; justify-content:space-between; align-items:center; margin-top:2px;">
-            <span style="color:#94a3b8;">Nội dung CK (ID Nick):</span>
+            <span style="color:#94a3b8;">Nội dung CK:</span>
             <span style="display:flex; gap:6px; align-items:center;">
               <b class="mono" id="depositCodeText" style="color:#10b981; background:#0b1120; padding:2px 6px; border-radius:4px; font-size:14px; font-weight:900;">...</b>
               <button class="btn btn-secondary btn-sm" onclick="window.copyDepositCode()">Copy</button>
@@ -1465,7 +1465,7 @@
     };
 
     window.copyText = function(text) { navigator.clipboard.writeText(text); window.showToast('✓ Đã sao chép: ' + text); };
-    window.copyDepositCode = function() { window.copyText(user.telegramId); };
+    window.copyDepositCode = function() { window.copyText('GC' + user.telegramId); };
     window.toggleAudio = function() {
       isAudioOn = !isAudioOn;
       document.getElementById('audioToggleBtn').textContent = isAudioOn ? '🔊' : '🔇';
@@ -1905,12 +1905,17 @@
     window.pickDepositTier = function(tierId) {
       const pkg = PACKAGES_CONFIG[tierId];
       if (!pkg) return;
+      
+      // Thêm tiền tố GC vào trước ID nick chuẩn SePay
+      const depositCode = 'GC' + user.telegramId;
+
       document.getElementById('depositPreviewBox').style.display = 'block';
       document.getElementById('depositTierName').textContent = `Gói Chọn: ${pkg.name}`;
       document.getElementById('depositTierCost').textContent = pkg.cost.toLocaleString('vi-VN') + ' đ';
-      document.getElementById('depositCodeText').textContent = user.telegramId;
-      // VietQR với nội dung là ID NICK thuần số
-      document.getElementById('depositQrImg').src = `https://img.vietqr.io/image/MB-0829594887-compact2.png?amount=${pkg.cost}&addInfo=${user.telegramId}&accountName=DANG%20HIEU%20THANG`;
+      document.getElementById('depositCodeText').textContent = depositCode;
+      
+      // Tạo mã VietQR có nội dung là GC<ID>
+      document.getElementById('depositQrImg').src = `https://img.vietqr.io/image/MB-0829594887-compact2.png?amount=${pkg.cost}&addInfo=${depositCode}&accountName=DANG%20HIEU%20THANG`;
     };
 
     // RÚT HŨ NÂNG CẤP VỀ VÍ CHÍNH
