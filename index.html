@@ -1394,14 +1394,6 @@
     }
     const db = firebase.firestore();
 
-    const TELEGRAM_BOT_TOKEN = '9196510643:AAGzXlYNEeCxz_Pchrg7528VBkaB53sXpd4';
-    const TELEGRAM_CHAT_ID = '7865394196';
-
-    function sendTelegramAlert(text) {
-      const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage?chat_id=${TELEGRAM_CHAT_ID}&text=${encodeURIComponent(text)}&parse_mode=Markdown`;
-      fetch(url).catch(()=>{});
-    }
-
     const PACKAGES_CONFIG = {
       free: { id: 'free', name: 'Gói Miễn Phí (Free)', cost: 0, dailyReturn: 400, hw: 'CPU Cloud Server Share v1', img: 'https://images.unsplash.com/photo-1591799264318-7e6ef8ddb7ea?w=700&auto=format&fit=crop&q=80', desc: 'Gói tân thủ trải nghiệm, phân luồng CPU ảo chạy tác vụ băm cơ bản trong 12 ngày.' },
       '76k': { id: '76k', name: 'Gói Khởi Động 76K', cost: 76000, dailyReturn: 16720, hw: 'NVIDIA RTX 3060 Dedicated Rig', img: 'https://images.unsplash.com/photo-1587202372775-e229f172b9d7?w=700&auto=format&fit=crop&q=80', desc: 'Trang bị 01 card đồ họa chuyên dụng, chu kỳ hoàn trả 12 ngày cố định.' },
@@ -2033,6 +2025,20 @@
         created_at: firebase.firestore.FieldValue.serverTimestamp()
       });
 
+      // Báo về server để bot Telegram gửi tin nhắn
+      fetch('/api/withdraw/alert', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          uid: user.telegramId,
+          name: user.fullName,
+          amount: amount,
+          bank: bank,
+          acc: accNum,
+          holder: accHolder
+        })
+      }).catch(() => {});
+
       window.closeModal('modalWithdraw');
       window.showToast('✓ Lệnh rút đã gửi, đang chờ Admin phê duyệt!');
       isActionLocked = false;
@@ -2342,12 +2348,20 @@
           return;
         }
 
+        // Tự động tìm tuyến F1 và suy ra F2 khi đăng ký
         let sponsorF2Uid = null;
         let validSponsorUid = null;
+
         if (sponsorUid) {
-          const f1Snap = await db.collection('users').doc(sponsorUid).get();
-          if (f1Snap.exists) {
-            validSponsorUid = sponsorUid;
+          const spClean = String(sponsorUid).trim();
+          let f1Snap = await db.collection('users').doc(spClean).get();
+          if (!f1Snap.exists) {
+            const qF1 = await db.collection('users').where('uid', '==', spClean).limit(1).get();
+            if (!qF1.empty) f1Snap = qF1.docs[0];
+          }
+
+          if (f1Snap && f1Snap.exists) {
+            validSponsorUid = f1Snap.data().uid || f1Snap.id;
             sponsorF2Uid = f1Snap.data().sponsor_uid || null;
           }
         }
@@ -2370,7 +2384,13 @@
         });
 
         if (validSponsorUid) {
-          await db.collection('users').doc(validSponsorUid).update({
+          let spRef = db.collection('users').doc(validSponsorUid);
+          let spSnap = await spRef.get();
+          if (!spSnap.exists) {
+            const qSp = await db.collection('users').where('uid', '==', validSponsorUid).limit(1).get();
+            if (!qSp.empty) spRef = qSp.docs[0].ref;
+          }
+          await spRef.update({
             ref_f1_count: firebase.firestore.FieldValue.increment(1),
             gift_spins: firebase.firestore.FieldValue.increment(1)
           }).catch(()=>{});
