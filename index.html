@@ -890,7 +890,7 @@
           <div class="input-group">
             <label class="input-label">LIÊN KẾT MỜI CỦA BẠN</label>
             <div style="display:flex; gap:6px;">
-              <input type="text" class="input-control mono" id="refLinkInput" value="https://greencloud.vn/?ref=0" readonly>
+              <input type="text" class="input-control mono" id="refLinkInput" value="" readonly>
               <button class="btn btn-secondary btn-sm" onclick="window.copyRefLink()">Copy</button>
             </div>
           </div>
@@ -1574,16 +1574,22 @@
       window.showToast(isAudioOn ? '✓ Đã BẬT âm thanh!' : '✓ Đã TẮT âm thanh');
     };
 
+    // TỰ ĐỘNG BẮT MÃ REF TỪ LINK URL VÀ MỞ SẴN BẢNG ĐĂNG KÝ
     const urlParams = new URLSearchParams(window.location.search);
     const refParam = urlParams.get('ref');
     if (refParam) {
-      const refInput = document.getElementById('authRefCode');
-      if (refInput) {
-        refInput.value = refParam;
-        refInput.readOnly = true;
-        const b = document.getElementById('refBadge');
-        if (b) b.style.display = 'inline';
-      }
+      setTimeout(() => {
+        if (!user.isLoggedIn) {
+          window.openAuthModal('register');
+          const refInput = document.getElementById('authRefCode');
+          if (refInput) {
+            refInput.value = refParam;
+            refInput.readOnly = true;
+            const b = document.getElementById('refBadge');
+            if (b) b.style.display = 'inline';
+          }
+        }
+      }, 500);
     }
 
     // LẮNG NGHE THỜI GIAN THỰC TỪ FIRESTORE (Realtime Sync)
@@ -1615,7 +1621,6 @@
         renderTasks();
       });
 
-      // Lắng nghe danh sách rút tiền để cập nhật trạng thái đã duyệt
       db.collection('withdrawals').where('uid', '==', uid).onSnapshot(snap => {
         user.withdrawals = snap.docs.map(d => ({ id: d.id, ...d.data() }));
       });
@@ -1781,8 +1786,12 @@
       const spins = document.getElementById('giftSpinsLeft');
       if (spins) spins.textContent = (user.giftSpins || 0) + ' lượt mở';
 
+      // TỰ ĐỘNG TẠO ĐƯỜNG LINK REF THEO TÊN MIỀN RENDER THẬT
       const refInp = document.getElementById('refLinkInput');
-      if (refInp && user.telegramId) refInp.value = `https://greencloud.vn/?ref=${user.telegramId}`;
+      if (refInp && user.telegramId) {
+        const currentDomain = window.location.origin + window.location.pathname;
+        refInp.value = `${currentDomain}?ref=${user.telegramId}`;
+      }
     }
 
     window.genCaptcha = function() {
@@ -1840,7 +1849,6 @@
       }
     };
 
-    // ĐĂNG KÝ / ĐĂNG NHẬP LƯU TRỮ VĨNH VIỄN LÊN CLOUD FIRESTORE
     window.submitAuth = async function() {
       if (isActionLocked) return;
       const username = document.getElementById('authUsername').value.trim();
@@ -1909,7 +1917,7 @@
           if (validSponsorUid) {
             await db.collection('users').doc(validSponsorUid).update({
               ref_f1_count: firebase.firestore.FieldValue.increment(1)
-            });
+            }).catch(()=>{});
           }
 
           listenUserData(randUid);
@@ -2056,7 +2064,6 @@
       window.openModal('modalWithdraw');
     };
 
-    // TẠO LỆNH RÚT ĐỒNG BỘ VÀO BẢNG 'withdrawals' (Trang Admin nhận ngay lập tức)
     window.submitWithdraw = async function() {
       if (isActionLocked) return;
       const pin = document.getElementById('withdrawPinInput').value.trim();
@@ -2074,7 +2081,6 @@
       isActionLocked = true;
       const orderId = 'WD' + Date.now().toString().slice(-6);
 
-      // Trừ tiền tạm thời trên Firestore
       await db.collection('users').doc(user.telegramId).update({
         balance: firebase.firestore.FieldValue.increment(-amount)
       });
@@ -2098,7 +2104,6 @@
 
       setTimeout(async () => {
         if (!hasActivatedPaidPackage()) {
-          // AI Bot từ chối và hoàn tiền trên Firestore
           await db.collection('users').doc(user.telegramId).update({
             balance: firebase.firestore.FieldValue.increment(amount)
           });
