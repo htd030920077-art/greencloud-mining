@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>GreenCloud Admin - Quản Trị Hệ Thống</title>
+  <title>GreenCloud Admin - Quản Trị Hệ Thống Toàn Diện</title>
 
   <!-- Firebase App & Firestore SDK Compat -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -30,7 +30,7 @@
       font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
     }
 
-    /* Màn hình khóa đăng nhập Admin */
+    /* Màn hình khóa bảo mật mật khẩu td000 */
     #adminLockOverlay {
       position: fixed;
       inset: 0;
@@ -126,7 +126,7 @@
       margin: 0 auto;
     }
 
-    /* Cards & Containers */
+    /* Cards */
     .card {
       background: #0f172a;
       border: 1px solid #1e293b;
@@ -176,7 +176,7 @@
       margin-top: 2px;
     }
 
-    /* Responsive Mobile Cards */
+    /* Item Card */
     .item-card {
       background: #0b1120;
       border: 1px solid #1e293b;
@@ -553,7 +553,7 @@
           </div>
           <div class="item-row">
             <span>Cú Pháp Nhận Diện:</span>
-            <span class="mono" style="color:#10b981;">Nhập đúng ID Nick (VD: 5413894)</span>
+            <span class="mono" style="color:#10b981;">GC + ID Nick (VD: GC6138215)</span>
           </div>
         </div>
       </div>
@@ -580,12 +580,17 @@
       </div>
     </div>
 
-    <!-- TAB 3: QUẢN LÝ NẠP TIỀN -->
+    <!-- TAB 3: QUẢN LÝ NẠP TIỀN (HIỂN THỊ TẤT CẢ GIAO DỊCH NẠP THÀNH CÔNG) -->
     <div id="tabDeposits" class="tab-content">
       <div class="card">
         <div class="card-title">
-          <span>LỊCH SỬ NẠP TIỀN MB BANK (0829594887)</span>
-          <button class="btn btn-secondary btn-sm" onclick="showToast('✓ Đã đồng bộ dữ liệu SePay mới nhất!')">🔄 Làm Mới</button>
+          <span>LỊCH SỬ NẠP TIỀN THÀNH CÔNG (SEPAY & GÓI ĐÀO)</span>
+          <div style="display:flex; gap:6px;">
+            <button class="btn btn-secondary btn-sm" onclick="initRealtimeListeners(); showToast('✓ Đã tải lại dữ liệu!')">🔄 Làm Mới</button>
+          </div>
+        </div>
+        <div style="font-size:11px; color:#94a3b8; margin-bottom:10px;">
+          Hiển thị toàn bộ các giao dịch đã nạp tiền kích hoạt gói đào thành công từ SePay / MB Bank 0829594887:
         </div>
         <div id="depositListContainer"></div>
       </div>
@@ -883,13 +888,13 @@
        3. LẮNG NGHE DỮ LIỆU ĐÁM MÂY THỜI GIAN THỰC (REALTIME)
     ======================================================== */
     function initRealtimeListeners() {
-      // Lắng nghe Members (users) - LƯU CHÍNH XÁC DOC_ID
+      // 1. Lắng nghe Users (Thành viên)
       db.collection('users').onSnapshot(snap => {
         membersData = snap.docs.map(doc => {
           const d = doc.data();
           return {
-            docId: doc.id, // ID thật sự trên Firebase Firestore
-            uid: d.uid || doc.id,
+            docId: doc.id,
+            uid: String(d.uid || doc.id),
             name: d.full_name || d.name || 'Thợ Đào',
             phone: d.phone || '',
             pass: d.password || d.pass || '',
@@ -900,7 +905,7 @@
             upgradeBalance: (typeof d.upgrade_balance === 'number') ? d.upgrade_balance : (parseFloat(d.upgrade_balance) || 0),
             overclock: d.overclock_percent || d.overclock || 0,
             giftSpins: d.gift_spins || d.giftSpins || 0,
-            bank: d.saved_bank || d.bank || { name: 'MBBank', acc: '', holder: '' },
+            bank: d.saved_bank || d.bank || { bankName: 'MBBank', accountNum: '', accountName: '' },
             packages: d.owned_packages || d.packages || { free: 1 },
             activeInstances: d.active_instances || [],
             createdAt: d.created_at ? new Date(d.created_at.toDate ? d.created_at.toDate() : d.created_at).toLocaleDateString('vi-VN') : 'Mới tạo'
@@ -914,53 +919,116 @@
         renderMembers();
         populateDownlineUserSelect();
         renderDownlineTreeForSelected();
+        renderDeposits(); // Cập nhật lại tên thợ đào trong lịch sử nạp khi có thông tin thành viên
       });
 
-      // Lắng nghe Withdrawals (CHỈ DUYỆT BẰNG TAY, KHÔNG TỰ ĐỘNG)
-      db.collection('withdrawals').orderBy('created_at', 'desc').onSnapshot(snap => {
+      // 2. Lắng nghe Withdrawals (Duyệt rút tiền bằng tay)
+      db.collection('withdrawals').onSnapshot(snap => {
         withdrawalsData = snap.docs.map(doc => {
           const d = doc.data();
+          let rawTime = d.created_at ? (d.created_at.toDate ? d.created_at.toDate().getTime() : new Date(d.created_at).getTime()) : Date.now();
           return {
             id: d.id || doc.id,
-            uid: d.uid,
+            uid: String(d.uid),
             name: d.full_name || 'Khách',
             bank: d.bank,
             acc: d.acc_num || d.acc,
             holder: d.acc_holder || d.holder,
-            amount: d.amount || 0,
-            time: d.created_at ? new Date(d.created_at.toDate ? d.created_at.toDate() : d.created_at).toLocaleString('vi-VN') : 'Vừa xong',
+            amount: Number(d.amount) || 0,
+            rawTime: rawTime,
+            time: new Date(rawTime).toLocaleString('vi-VN'),
             status: d.status || 'pending'
           };
         });
+        // Sắp xếp đơn mới nhất lên đầu
+        withdrawalsData.sort((a, b) => b.rawTime - a.rawTime);
         renderWithdrawals();
       });
 
-      // Lắng nghe Deposits
-      db.collection('deposits').orderBy('created_at', 'desc').onSnapshot(snap => {
+      // 3. Lắng nghe Deposits (Lịch sử nạp tiền thành công từ SePay & Gói đào)
+      db.collection('deposits').onSnapshot(snap => {
         let total = 0;
         depositsData = snap.docs.map(doc => {
           const d = doc.data();
-          total += (d.amount || 0);
+          const amt = Number(d.amount) || 0;
+          total += amt;
+          let rawTime = d.created_at ? (d.created_at.toDate ? d.created_at.toDate().getTime() : new Date(d.created_at).getTime()) : Date.now();
+
           return {
             id: doc.id,
-            uid: d.uid || d.user_uid,
-            name: d.full_name || 'Khách GC',
-            type: d.package_name || 'Nạp Gói Máy Đào',
+            uid: String(d.uid || d.user_uid || ''),
+            type: d.package_name || (d.package_id ? `Gói ${d.package_id.toUpperCase()}` : 'Nạp Gói Máy Đào'),
             code: d.code || '',
-            amount: d.amount || 0,
-            time: d.created_at ? new Date(d.created_at.toDate ? d.created_at.toDate() : d.created_at).toLocaleString('vi-VN') : 'Vừa xong',
+            amount: amt,
+            rawTime: rawTime,
+            time: new Date(rawTime).toLocaleString('vi-VN'),
             status: 'success'
           };
         });
+
+        // Sắp xếp giao dịch nạp tiền mới nhất lên đầu
+        depositsData.sort((a, b) => b.rawTime - a.rawTime);
         document.getElementById('statTotalDeposits').textContent = total.toLocaleString('vi-VN') + ' đ';
+
         renderDeposits();
         renderDownlineTreeForSelected();
+      }, err => {
+        console.error('Lỗi lắng nghe nạp tiền:', err);
       });
     }
 
     /* ========================================================
-       4. CÁC HÀM XỬ LÝ GIAO DIỆN & DUYỆT ĐƠN (MANUAL)
+       4. HIỂN THỊ LỊCH SỬ NẠP TIỀN & XỬ LÝ LỆNH RÚT
     ======================================================== */
+    function renderDeposits() {
+      const container = document.getElementById('depositListContainer');
+      if (!container) return;
+
+      if (depositsData.length === 0) {
+        container.innerHTML = `
+          <div style="background:#0b1120; border:1px solid #1e293b; border-radius:10px; padding:20px; text-align:center; color:#64748b;">
+            Chưa có giao dịch nạp tiền nào được ghi nhận.
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = depositsData.map(d => {
+        // Tìm thông tin người dùng tương ứng từ danh sách membersData
+        const user = membersData.find(m => m.uid === d.uid || m.docId === d.uid);
+        const displayName = user ? user.name : (d.uid ? `Thợ đào ID: ${d.uid}` : 'Khách Vãng Lai');
+        const phone = user && user.phone ? ` • SĐT: ${user.phone}` : '';
+
+        return `
+          <div class="item-card" style="border-left: 3.5px solid #10b981;">
+            <div class="item-header">
+              <div>
+                <div class="item-title" style="color:#fff;">${displayName}</div>
+                <div class="mono" style="font-size:11px; color:#38bdf8;">UID: ${d.uid}${phone}</div>
+              </div>
+              <span class="badge badge-success">✓ Nạp Thành Công</span>
+            </div>
+            <div class="item-row">
+              <span>Gói Đã Kích Hoạt:</span>
+              <span style="color:#fcd34d; font-weight:700;">${d.type}</span>
+            </div>
+            <div class="item-row">
+              <span>Số Tiền Thực Nhận:</span>
+              <span class="mono" style="color:#10b981; font-weight:800; font-size:14px;">+${d.amount.toLocaleString('vi-VN')} đ</span>
+            </div>
+            <div class="item-row">
+              <span>Nội Dung / Mã SePay:</span>
+              <span class="mono" style="color:#cbd5e1; background:#020617; padding:2px 8px; border-radius:5px; border:1px solid #1e293b;">${d.code || 'SePay Auto'}</span>
+            </div>
+            <div class="item-row">
+              <span>Thời Gian Khớp Đơn:</span>
+              <span style="color:#94a3b8;">${d.time}</span>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
     function renderWithdrawals() {
       const container = document.getElementById('withdrawListContainer');
       const badge = document.getElementById('withdrawBadgeCount');
@@ -968,8 +1036,8 @@
       const pendingItems = withdrawalsData.filter(w => w.status === 'pending');
       const pendingSum = pendingItems.reduce((acc, cur) => acc + cur.amount, 0);
 
-      badge.textContent = `${pendingItems.length} Chờ Duyệt`;
-      statPend.textContent = `${pendingItems.length} Lệnh`;
+      if (badge) badge.textContent = `${pendingItems.length} Chờ Duyệt`;
+      if (statPend) statPend.textContent = `${pendingItems.length} Lệnh`;
       document.getElementById('statPendingAmount').textContent = `${pendingSum.toLocaleString('vi-VN')} đ cần chuyển`;
 
       if (withdrawalsData.length === 0) {
@@ -1036,43 +1104,21 @@
       if (!confirm(`Từ chối đơn ${wId} và HOÀN LẠI ${item.amount.toLocaleString('vi-VN')} đ vào ví cho khách?`)) return;
 
       await db.collection('withdrawals').doc(wId).update({ status: 'rejected', note: 'Admin từ chối duyệt' });
-      await db.collection('users').doc(item.uid).update({
+
+      // Hoàn lại tiền cho thợ đào
+      let uRef = db.collection('users').doc(String(item.uid));
+      let uSnap = await uRef.get();
+      if (!uSnap.exists) {
+        const qU = await db.collection('users').where('uid', '==', String(item.uid)).limit(1).get();
+        if (!qU.empty) uRef = qU.docs[0].ref;
+      }
+
+      await uRef.update({
         balance: firebase.firestore.FieldValue.increment(item.amount)
       });
 
       showToast('✕ Đã từ chối lệnh rút tiền và hoàn lại số dư cho khách!');
       sendTelegramAdmin(`❌ *Lệnh Rút Tiền Bị Từ Chối & Đã Hoàn Tiền*\n- Thợ đào: ${item.name} (ID: ${item.uid})\n- Số tiền hoàn trả: *${item.amount.toLocaleString('vi-VN')} đ*`);
-    }
-
-    function renderDeposits() {
-      const container = document.getElementById('depositListContainer');
-      if (depositsData.length === 0) {
-        container.innerHTML = '<div style="text-align:center; color:#64748b; padding:16px;">Chưa có giao dịch nạp nào.</div>';
-        return;
-      }
-      container.innerHTML = depositsData.map(d => `
-        <div class="item-card">
-          <div class="item-header">
-            <div>
-              <div class="item-title">${d.type}</div>
-              <div class="mono" style="font-size:10.5px; color:#38bdf8;">${d.name} (ID: ${d.uid})</div>
-            </div>
-            <span class="badge badge-success">Đã Khớp SePay</span>
-          </div>
-          <div class="item-row">
-            <span>Số Tiền Thực Nhận:</span>
-            <span class="mono" style="color:#10b981; font-weight:800; font-size:13.5px;">+${d.amount.toLocaleString('vi-VN')} đ</span>
-          </div>
-          <div class="item-row">
-            <span>Nội Dung / ID Nick:</span>
-            <span class="mono" style="color:#fff; background:#020617; padding:1px 6px; border-radius:4px;">${d.code}</span>
-          </div>
-          <div class="item-row">
-            <span>Thời Gian Nhận:</span>
-            <span>${d.time}</span>
-          </div>
-        </div>
-      `).join('');
     }
 
     function renderMembers(list = membersData) {
@@ -1257,7 +1303,7 @@
     }
 
     /* ========================================================
-       6. MODAL CHỈNH SỬA THÀNH VIÊN VÀ LƯU VÀO FIRESTORE (ĐÃ SỬA LỖI TRIỆT ĐỂ)
+       6. MODAL CHỈNH SỬA THÀNH VIÊN VÀ LƯU VÀO FIRESTORE
     ======================================================== */
     let currentEditingMember = null;
 
@@ -1338,12 +1384,11 @@
       }
     }
 
-    // LƯU CHỈNH SỬA THÀNH VIÊN VÀO FIRESTORE (ĐỒNG BỘ MÁY ĐÀO 12 NGÀY)
+    // LƯU CHỈNH SỬA THÀNH VIÊN VÀO FIRESTORE (ĐỒNG BỘ CẢ ACTIVE_INSTANCES 12 NGÀY)
     async function saveMemberEdits() {
       if (!currentEditingMember) return;
       const targetDocId = currentEditingMember.docId || currentEditingMember.uid;
 
-      // Đọc các gói máy đào
       const packagesObj = {};
       const newInstances = [];
       const now = Date.now();
@@ -1352,7 +1397,6 @@
         const key = inp.getAttribute('data-key');
         const count = parseInt(inp.value) || 0;
         packagesObj[key] = count;
-        // Bù dàn máy đào hoạt động tương ứng với số lượng gói
         for (let i = 0; i < count; i++) {
           newInstances.push({ pkgId: key, activatedAt: now });
         }
@@ -1367,7 +1411,7 @@
         balance: parseFloat(document.getElementById('editUserBalance').value) || 0,
         upgrade_balance: parseFloat(document.getElementById('editUserUpgradeBalance').value) || 0,
         owned_packages: packagesObj,
-        active_instances: newInstances, // Cập nhật mảng máy đào để bên khách chạy ngay lập tức
+        active_instances: newInstances,
         overclock_percent: parseInt(document.getElementById('editUserOverclock').value) || 0,
         saved_bank: {
           bankName: document.getElementById('editUserBankName').value,
