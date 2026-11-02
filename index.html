@@ -457,6 +457,19 @@
       width: auto;
     }
 
+    .btn-glow-claim {
+      background: linear-gradient(135deg, #10b981, #34d399) !important;
+      color: #020617 !important;
+      font-weight: 900 !important;
+      border: 1.5px solid #a7f3d0 !important;
+      box-shadow: 0 0 15px rgba(16, 185, 129, 0.8) !important;
+      animation: glowButton 1.5s infinite alternate !important;
+    }
+    @keyframes glowButton {
+      0% { transform: scale(1); box-shadow: 0 0 10px rgba(16, 185, 129, 0.6); }
+      100% { transform: scale(1.05); box-shadow: 0 0 20px rgba(52, 211, 153, 0.95); }
+    }
+
     .progress-bar-bg {
       height: 5px;
       background: #1e293b;
@@ -692,7 +705,7 @@
     <!-- News Marquee -->
     <div class="news-strip">
       <span class="news-badge">TIN TỨC</span>
-      <span class="news-marquee">Chu kỳ hoàn vốn 12 ngày cố định • Khung giờ rút tiền: 10:00 - 17:00 hàng ngày • Nhóm Telegram VIP: t.me/greencloudvip • Tặng ngay 20.000 đ vào Hũ Nâng Cấp khi tạo tài khoản!</span>
+      <span class="news-marquee">Chu kỳ hoàn vốn 12 ngày • Khung giờ rút tiền: 10:00 - 17:00 • Nhóm Telegram: t.me/greencloudvip • Hoa hồng F1 15%, F2 5% cộng ngay vào ví chính!</span>
     </div>
 
     <!-- Content Tabs -->
@@ -859,12 +872,14 @@
             <span>🎯 NHIỆM VỤ THỢ ĐÀO</span>
           </div>
 
-          <div class="card" style="background:#020617; border-radius:10px; padding:10px; display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+          <div class="card" style="background:#020617; border:1px solid #10b981; border-radius:10px; padding:12px; display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
             <div>
-              <div style="font-weight:700; color:#fff; font-size:12px;">Điểm danh mỗi ngày</div>
-              <div class="mono" style="font-size:11px; color:#10b981;">+500 đ vào ví chính</div>
+              <div style="font-weight:700; color:#fff; font-size:12.5px;">Điểm danh mỗi ngày</div>
+              <div class="mono" style="font-size:11.5px; color:#10b981; font-weight:700; margin-top:2px;">+500 đ vào ví chính</div>
             </div>
-            <button class="btn btn-secondary btn-sm" id="btnDailyClaim" onclick="window.claimDailyTask()">Nhận</button>
+            <button class="btn btn-glow-claim btn-sm" id="btnDailyClaim" onclick="window.claimDailyTask()">
+              ✨ NHẬN NGAY
+            </button>
           </div>
 
           <div id="inviteTasksList"></div>
@@ -876,10 +891,9 @@
         <div class="card">
           <div class="card-title">
             <span>CHƯƠNG TRÌNH HOA HỒNG ĐỐI TÁC</span>
-            <span style="color:#10b981; font-weight:800;">F1: 15% • F2: 5%</span>
+            <span style="color:#10b981; font-weight:800;">F1: 15% • F2: 5%</span>[span_3](start_span)[span_3](end_span)
           </div>
 
-          <!-- BANNER NHÓM TELEGRAM CHÍNH THỨC -->
           <a href="https://t.me/greencloudvip" target="_blank" class="btn btn-tele" style="margin-bottom:12px; font-size:12px; border-radius:10px;">
             ✈️ THAM GIA NHÓM TELEGRAM VIP (HỖ TRỢ & SỰ KIỆN)
           </a>
@@ -905,21 +919,20 @@
               <input type="text" class="input-control mono" id="refLinkInput" value="" readonly>
               <button class="btn btn-secondary btn-sm" onclick="window.copyRefLink()">Copy Link</button>
             </div>
-            <!-- NÚT SAO CHÉP LỜI MỜI KÈM LINK TELEGRAM -->
             <button class="btn btn-secondary btn-sm" style="width:100%; color:#38bdf8; border-color:#0284c7;" onclick="window.copyRefInviteMsg()">
               📋 Sao Chép Lời Mời Bạn Bè (Kèm Link Nhóm Telegram)
             </button>
           </div>
         </div>
 
-        <!-- Hộp quà 2 ô -->
+        <!-- Hộp quà 2 ô (ĐÃ XÓA TỶ LỆ TRÚNG 35%) -->
         <div class="card">
           <div class="card-title">
             <span>🎁 HỘP QUÀ GIỚI THIỆU (2 Ô)</span>
             <span class="mono" style="color:#f59e0b; font-weight:800;" id="giftSpinsLeft">0 lượt mở</span>
           </div>
           <p style="font-size:11px; color:#94a3b8; margin-bottom:10px;">
-            Mỗi khi giới thiệu 1 bạn mới đăng ký, bạn nhận ngay 1 lượt mở. Hãy chọn 1 trong 2 hộp (35% trúng 1.000 đ):
+            Mỗi khi giới thiệu 1 bạn mới đăng ký, bạn nhận ngay 1 lượt mở. Hãy chọn 1 trong 2 hộp để nhận quà may mắn:
           </p>
 
           <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
@@ -1064,7 +1077,7 @@
 
   <div id="sysToast">Thông báo</div>
 
-  <!-- ==================== POPUP CHÀO MỪNG TELEGRAM VIP KHI VÀO WEB ==================== -->
+  <!-- ==================== POPUP CHÀO MỪNG TELEGRAM VIP ==================== -->
   <div class="modal-backdrop" id="modalTeleWelcome">
     <div class="modal-sheet" style="text-align:center; padding:22px 18px; border:1.5px solid #229ED9;">
       <div style="font-size:52px; margin-bottom:10px; animation:pulseAnim 1.6s infinite;">✈️</div>
@@ -1082,8 +1095,6 @@
       </button>
     </div>
   </div>
-
-  <!-- Modals khác -->
 
   <!-- Modal Đăng Ký / Đăng Nhập -->
   <div class="modal-backdrop" id="modalAuth">
@@ -1287,7 +1298,7 @@
     </div>
   </div>
 
-  <!-- Modal 4: Rút Tiền Về Ngân Hàng (KÈM KHÓA KHUNG GIỜ 10H - 17H) -->
+  <!-- Modal 4: Rút Tiền Về Ngân Hàng (KHÓA KHUNG GIỜ 10H - 17H) -->
   <div class="modal-backdrop" id="modalWithdraw">
     <div class="modal-sheet">
       <div class="modal-head">
@@ -1296,7 +1307,6 @@
       </div>
 
       <div id="withdrawTimeBanner" style="padding:10px 12px; border-radius:10px; margin-bottom:10px; font-size:11px; line-height:1.4;"></div>
-
       <div id="withdrawNotice" style="padding:10px; border-radius:8px; margin-bottom:10px; font-size:11px;"></div>
 
       <div class="input-group">
@@ -1656,9 +1666,10 @@
       }, 500);
     }
 
+    // ĐỒNG BỘ REALTIME & TỰ ĐỘNG BÙ LƯỢT MỞ HỘP THEO F1
     function listenUserData(uid) {
       if (userUnsubscribe) userUnsubscribe();
-      userUnsubscribe = db.collection('users').doc(uid).onSnapshot(doc => {
+      userUnsubscribe = db.collection('users').doc(uid).onSnapshot(async doc => {
         if (!doc.exists) return;
         const data = doc.data();
 
@@ -1670,6 +1681,26 @@
               instances.push({ pkgId: pId, activatedAt: now });
             }
           }
+        }
+
+        let livePaidF1Count = 0;
+        let totalF1Count = data.ref_f1_count || 0;
+        try {
+          const f1Snap = await db.collection('users').where('sponsor_uid', '==', uid).get();
+          totalF1Count = Math.max(totalF1Count, f1Snap.size);
+          f1Snap.forEach(f1Doc => {
+            const f1Data = f1Doc.data();
+            const hasPaid = (f1Data.active_instances && f1Data.active_instances.some(i => i.pkgId !== 'free')) ||
+                            (f1Data.owned_packages && Object.entries(f1Data.owned_packages).some(([k, v]) => k !== 'free' && v > 0));
+            if (hasPaid) livePaidF1Count++;
+          });
+        } catch(e) {}
+
+        // Tự động bù lượt quay nếu có F1 mà lượt quay đang bằng 0
+        let currentSpins = data.gift_spins;
+        if (currentSpins === undefined || currentSpins === null || (currentSpins === 0 && totalF1Count > 0 && !data.spins_consumed)) {
+          currentSpins = totalF1Count;
+          db.collection('users').doc(uid).update({ gift_spins: currentSpins }).catch(()=>{});
         }
 
         user = {
@@ -1684,9 +1715,11 @@
           telegramId: data.uid || uid,
           username: data.phone || data.username,
           fullName: data.full_name || data.fullName,
-          refF1Total: data.ref_f1_count || 0,
-          refF1Paid: data.ref_f1_paid_count || 0,
-          giftSpins: data.gift_spins || 0,
+          refF1Total: totalF1Count,
+          refF1Paid: Math.max(data.ref_f1_paid_count || 0, livePaidF1Count),
+          completedTasks: data.completed_tasks || [],
+          lastDailyDate: data.last_daily_date || '',
+          giftSpins: currentSpins,
           pin: data.pin || '123456',
           savedBank: data.saved_bank || user.savedBank
         };
@@ -1881,6 +1914,20 @@
       const refInp = document.getElementById('refLinkInput');
       if (refInp && user.telegramId) {
         refInp.value = `https://greencloud-mining-liver.onrender.com/?ref=${user.telegramId}`;
+      }
+
+      const todayStr = new Date().toISOString().split('T')[0];
+      const dailyBtn = document.getElementById('btnDailyClaim');
+      if (dailyBtn) {
+        if (user.lastDailyDate === todayStr) {
+          dailyBtn.className = 'btn btn-secondary btn-sm';
+          dailyBtn.textContent = '✓ ĐÃ NHẬN';
+          dailyBtn.disabled = true;
+        } else {
+          dailyBtn.className = 'btn btn-glow-claim btn-sm';
+          dailyBtn.textContent = '✨ NHẬN NGAY';
+          dailyBtn.disabled = false;
+        }
       }
     }
 
@@ -2295,6 +2342,7 @@
     };
     window.buyOverclock = function(cost, percent) { window.buyHwPart('overclock_tier', cost, percent); window.closeModal('modalOverclock'); };
 
+    // HỘP QUÀ GIỚI THIỆU: KHÔNG HIỂN THỊ TỶ LỆ TRÚNG
     window.openGiftBox = function(boxNum) {
       if (!user.isLoggedIn) { window.openAuthModal('register'); return; }
       if ((user.giftSpins || 0) <= 0) { window.showToast('⚠️ Bạn chưa có lượt mở quà! Mời bạn mới nạp tiền để nhận thêm.'); return; }
@@ -2302,14 +2350,15 @@
       if (boxEl) boxEl.classList.add('box-opening');
       setTimeout(async () => {
         if (boxEl) boxEl.classList.remove('box-opening');
-        const won = Math.random() < 0.35;
+        const won = Math.random() < 0.50; // Tỷ lệ may mắn
         const addBal = won ? 1000 : 0;
         user.giftSpins = Math.max(0, user.giftSpins - 1);
         if (won) user.balance += addBal;
         updateUI();
         await db.collection('users').doc(user.telegramId).update({
           gift_spins: firebase.firestore.FieldValue.increment(-1),
-          balance: firebase.firestore.FieldValue.increment(addBal)
+          balance: firebase.firestore.FieldValue.increment(addBal),
+          spins_consumed: true
         });
         if (won) {
           document.getElementById('giftResultIcon').textContent = '🎉';
@@ -2350,7 +2399,6 @@
       window.showToast('✓ Đã sao chép liên kết mời!');
     };
 
-    // SAO CHÉP LỜI MỜI KÈM LINK REF VÀ LINK NHÓM TELEGRAM
     window.copyRefInviteMsg = function() {
       const refLink = document.getElementById('refLinkInput').value;
       const msg = `🚀 Tham gia GreenCloud Mining - Đào Bitcoin đám mây nhận tiền mỗi giây!\n🎁 Đăng ký nhận ngay 20.000đ vào quỹ:\n👉 Link đăng ký: ${refLink}\n✈️ Nhóm Telegram hỗ trợ & nhận quà: ${TELEGRAM_GROUP_URL}`;
@@ -2588,8 +2636,8 @@
               <div style="font-weight:700; color:#fff; font-size:12px;">${task.title}</div>
               <div class="mono" style="font-size:11px; color:#10b981; font-weight:700;">+${task.reward.toLocaleString('vi-VN')} đ</div>
             </div>
-            <button class="btn ${canClaim ? 'btn-primary' : 'btn-secondary'} btn-sm" ${!canClaim || isDone ? 'disabled' : ''} onclick="window.claimInviteTask('${task.id}')">
-              ${isDone ? 'Đã Nhận' : canClaim ? 'Nhận' : 'Chưa Đạt'}
+            <button class="btn ${canClaim ? 'btn-glow-claim' : 'btn-secondary'} btn-sm" ${!canClaim || isDone ? 'disabled' : ''} onclick="window.claimInviteTask('${task.id}')">
+              ${isDone ? '✓ ĐÃ NHẬN' : canClaim ? '✨ NHẬN THƯỞNG' : 'CHƯA ĐẠT'}
             </button>
           </div>
           <div class="progress-bar-bg"><div class="progress-bar-fill" style="width: ${percent}%;"></div></div>
@@ -2607,13 +2655,15 @@
       isActionLocked = true;
 
       user.balance += task.reward;
+      user.completedTasks.push(taskId);
       updateUI();
+      renderTasks();
 
       await db.collection('users').doc(user.telegramId).update({
         balance: firebase.firestore.FieldValue.increment(task.reward),
         completed_tasks: firebase.firestore.FieldValue.arrayUnion(taskId)
       });
-      window.showToast(`🎉 Nhận thành công +${task.reward.toLocaleString('vi-VN')} đ!`);
+      window.showToast(`🎉 Nhận thưởng thành công +${task.reward.toLocaleString('vi-VN')} đ vào ví!`);
       isActionLocked = false;
     };
 
@@ -2739,7 +2789,6 @@
       requestAnimationFrame(gameLoop);
       startSystemToastLoop();
 
-      // BẬT POPUP CHÀO MỪNG TELEGRAM VIP KHI TRUY CẬP
       setTimeout(() => {
         window.openModal('modalTeleWelcome');
       }, 1200);
