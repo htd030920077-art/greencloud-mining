@@ -339,22 +339,6 @@
       font-size: 18px;
     }
 
-    .hw-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      margin-top: 8px;
-    }
-    .hw-item {
-      background: #020617;
-      border: 1px solid #1e293b;
-      border-radius: 10px;
-      padding: 10px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-    }
-
     .package-card {
       background: #0f172a;
       border: 1px solid #1e293b;
@@ -443,7 +427,6 @@
     .btn-blue {
       background: linear-gradient(135deg, #0284c7, #0369a1);
       color: #fff;
-      box-shadow: 0 4px 12px rgba(2, 132, 199, 0.3);
     }
     .btn-tele {
       background: linear-gradient(135deg, #229ED9, #0088cc);
@@ -668,20 +651,6 @@
       opacity: 1;
       transform: translateX(-50%) translateY(0);
     }
-
-    @keyframes boxShake {
-      0% { transform: scale(1) rotate(0deg); }
-      20% { transform: scale(1.1) rotate(-8deg); }
-      40% { transform: scale(1.1) rotate(8deg); }
-      60% { transform: scale(1.1) rotate(-8deg); }
-      80% { transform: scale(1.1) rotate(8deg); }
-      100% { transform: scale(1) rotate(0deg); }
-    }
-    .box-opening {
-      animation: boxShake 0.6s ease-in-out !important;
-      border-color: #f59e0b !important;
-      box-shadow: 0 0 20px rgba(245, 158, 11, 0.6) !important;
-    }
   </style>
 </head>
 <body>
@@ -705,7 +674,7 @@
     <!-- News Marquee -->
     <div class="news-strip">
       <span class="news-badge">TIN TỨC</span>
-      <span class="news-marquee">Chu kỳ hoàn vốn 12 ngày • Khung giờ rút tiền: 10:00 - 17:00 • Nhóm Telegram: t.me/greencloudvip • Hoa hồng F1 15%, F2 5% cộng ngay vào ví chính!</span>
+      <span class="news-marquee">Chu kỳ hoàn vốn 12 ngày cố định • Khung giờ rút tiền: 10:00 - 17:00 • Nhóm Telegram: t.me/greencloudvip • Nạp tiền chỉ cần ghi đúng ID Tài Khoản!</span>
     </div>
 
     <!-- Content Tabs -->
@@ -766,25 +735,24 @@
           </div>
         </div>
 
-        <!-- Hũ tiền nâng cấp -->
+        <!-- HŨ TIỀN QUỸ NÂNG CẤP (GIỮ NGUYÊN SỐ TIỀN TẶNG & RÚT RA ĐƯỢC) -->
         <div class="card" style="background:linear-gradient(135deg, #091e3a, #0b1728); border:1.5px solid #0284c7;">
           <div class="card-title">
-            <span style="color:#38bdf8; display:flex; align-items:center; gap:5px;">💠 MỤC RIÊNG: HŨ TIỀN NÂNG CẤP</span>
+            <span style="color:#38bdf8; display:flex; align-items:center; gap:5px;">💠 HŨ TIỀN QUỸ NÂNG CẤP</span>
             <span class="badge-pill" id="upgradeWalletBadge" style="background:#451a03; color:#fcd34d; border-color:#d97706; font-size:9px;">CẦN GÓI ĐỂ RÚT VỀ VÍ</span>
           </div>
           <div style="display:flex; justify-content:space-between; align-items:baseline; margin:4px 0;">
             <div>
               <div style="font-size:10.5px; color:#94a3b8;">Số Dư Quỹ Nâng Cấp:</div>
-              <div class="mono" style="font-size:23px; font-weight:800; color:#fff;" id="upgradeBalanceHomeText">0 đ</div>
+              <div class="mono" style="font-size:23px; font-weight:800; color:#fff;" id="upgradeBalanceHomeText">20.000 đ</div>
             </div>
-            <div style="display:flex; gap:6px;">
-              <button class="btn btn-primary btn-sm" onclick="window.openTransferUpgradeModal()">Rút Về Ví Chính</button>
-              <button class="btn btn-blue btn-sm" onclick="window.openUpgradeDepositModal()">+ Nạp Hũ</button>
+            <div>
+              <button class="btn btn-primary btn-sm" onclick="window.openTransferUpgradeModal()">🔄 Rút Về Ví Chính</button>
             </div>
           </div>
           <div style="background:rgba(2, 132, 199, 0.12); border:1px dashed rgba(56, 189, 248, 0.4); border-radius:8px; padding:8px 10px; margin-top:8px; font-size:11px; color:#bae6fd; line-height:1.4;">
-            🎁 <b>Tặng sẵn:</b> <b>20.000 đ</b> vào Hũ ngay sau khi đăng ký tài khoản!<br>
-            🔓 <b>Rút về ví:</b> Rút toàn bộ tiền từ Hũ về Ví Chính bất kỳ lúc nào <u>ngay khi tài khoản đã kích hoạt ít nhất 1 gói trả phí (từ 76.000 đ trở lên)</u>.
+            🎁 <b>Tặng sẵn:</b> <b>20.000 đ</b> vào Hũ ngay sau khi tạo tài khoản!<br>
+            🔓 <b>Rút về ví:</b> Rút toàn bộ tiền từ Hũ về Ví Chính bất kỳ lúc nào <u>khi tài khoản đã kích hoạt ít nhất 1 gói trả phí (từ 76.000 đ trở lên)</u>.
           </div>
         </div>
 
@@ -808,46 +776,9 @@
           </div>
         </div>
 
-        <!-- Chợ Phụ Kiện Tăng Tốc -->
-        <div class="card" style="margin-top:14px;">
-          <div class="card-title">
-            <span>🛠️ CHỢ PHỤ KIỆN TĂNG TỐC TRẠM ĐÀO</span>
-            <span style="font-size:10px; color:#38bdf8;">Trừ Hũ Nâng Cấp</span>
-          </div>
-          <p style="font-size:11px; color:#94a3b8; margin-bottom:8px;">
-            Nâng cấp linh kiện phụ trợ máy đào để tăng vĩnh viễn công suất khai thác. Thanh toán bằng số dư Hũ Nâng Cấp:
-          </p>
-
-          <div class="hw-grid">
-            <div class="hw-item">
-              <div>
-                <div style="font-weight:700; color:#fff; font-size:11.5px;">Quạt RGB Led Pro</div>
-                <div style="font-size:10px; color:#38bdf8; margin:2px 0 6px 0;">+3% Tốc độ đào</div>
-              </div>
-              <button class="btn btn-blue btn-sm" onclick="window.buyHwPart('fan_rgb', 15000, 3)">15.000 đ</button>
-            </div>
-            <div class="hw-item">
-              <div>
-                <div style="font-weight:700; color:#fff; font-size:11.5px;">Nguồn 1600W Titanium</div>
-                <div style="font-size:10px; color:#38bdf8; margin:2px 0 6px 0;">+6% Ổn định áp</div>
-              </div>
-              <button class="btn btn-blue btn-sm" onclick="window.buyHwPart('psu_1600', 35000, 6)">35.000 đ</button>
-            </div>
-            <div class="hw-item">
-              <div>
-                <div style="font-weight:700; color:#fff; font-size:11.5px;">Cáp Riser Mạ Vàng</div>
-                <div style="font-size:10px; color:#38bdf8; margin:2px 0 6px 0;">+8% Băng thông Bus</div>
-              </div>
-              <button class="btn btn-blue btn-sm" onclick="window.buyHwPart('gold_riser', 60000, 8)">60.000 đ</button>
-            </div>
-            <div class="hw-item">
-              <div>
-                <div style="font-weight:700; color:#fff; font-size:11.5px;">Buồng Khí Ni-tơ Lỏng</div>
-                <div style="font-size:10px; color:#38bdf8; margin:2px 0 6px 0;">+15% Siêu xung nhịp</div>
-              </div>
-              <button class="btn btn-blue btn-sm" onclick="window.buyHwPart('nitro_cool', 120000, 15)">120.000 đ</button>
-            </div>
-          </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:14px;">
+          <button class="btn btn-primary" onclick="window.openDepositModal()">💳 Nạp Gói Đào</button>
+          <button class="btn btn-secondary" onclick="window.openWithdrawModal()">🏧 Rút Tiền Ví</button>
         </div>
       </div>
 
@@ -882,6 +813,7 @@
             </button>
           </div>
 
+          <!-- Danh sách nhiệm vụ mời bạn bè nạp tiền -->
           <div id="inviteTasksList"></div>
         </div>
       </div>
@@ -891,7 +823,7 @@
         <div class="card">
           <div class="card-title">
             <span>CHƯƠNG TRÌNH HOA HỒNG ĐỐI TÁC</span>
-            <span style="color:#10b981; font-weight:800;">F1: 15% • F2: 5%</span>[span_3](start_span)[span_3](end_span)
+            <span style="color:#10b981; font-weight:800;">F1: 15% • F2: 5%</span>
           </div>
 
           <a href="https://t.me/greencloudvip" target="_blank" class="btn btn-tele" style="margin-bottom:12px; font-size:12px; border-radius:10px;">
@@ -925,7 +857,6 @@
           </div>
         </div>
 
-        <!-- Hộp quà 2 ô (ĐÃ XÓA TỶ LỆ TRÚNG 35%) -->
         <div class="card">
           <div class="card-title">
             <span>🎁 HỘP QUÀ GIỚI THIỆU (2 Ô)</span>
@@ -965,13 +896,9 @@
             <button class="btn btn-primary" onclick="window.openDepositModal()">💳 Nạp Gói Đào</button>
             <button class="btn btn-secondary" onclick="window.openWithdrawModal()">🏧 Rút Tiền Ví</button>
           </div>
-          <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
-            <button class="btn btn-blue" onclick="window.openUpgradeDepositModal()">💠 Nạp Hũ Nâng Cấp</button>
-            <button class="btn btn-primary" onclick="window.openTransferUpgradeModal()">🔄 Rút Hũ Về Ví</button>
-          </div>
+          <button class="btn btn-blue" style="width:100%;" onclick="window.openTransferUpgradeModal()">🔄 Rút Hũ Nâng Cấp Về Ví</button>
         </div>
 
-        <!-- Thẻ Ngân Hàng Mặc Định -->
         <div class="card">
           <div class="card-title">
             <span>🏦 TÀI KHOẢN NGÂN HÀNG THỤ HƯỞNG</span>
@@ -993,7 +920,6 @@
           </div>
         </div>
 
-        <!-- Thẻ Bảo Mật PIN -->
         <div class="card">
           <div class="card-title">
             <span>🔒 BẢO MẬT GIAO DỊCH (MÃ PIN 6 SỐ)</span>
@@ -1004,19 +930,16 @@
           </div>
         </div>
 
-        <!-- Lịch Sử -->
         <div class="card">
           <div class="card-title">
             <span>LỊCH SỬ GIAO DỊCH</span>
           </div>
-          <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:6px;">
-            <button class="btn btn-secondary btn-sm" onclick="window.openHistoryModal('deposit')">📥 Nạp Gói</button>
-            <button class="btn btn-secondary btn-sm" onclick="window.openHistoryModal('upgrade')">💠 Nạp Hũ</button>
-            <button class="btn btn-secondary btn-sm" onclick="window.openHistoryModal('withdraw')">📤 Rút Tiền</button>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px;">
+            <button class="btn btn-secondary btn-sm" onclick="window.openHistoryModal('deposit')">📥 Lịch Sử Nạp Gói</button>
+            <button class="btn btn-secondary btn-sm" onclick="window.openHistoryModal('withdraw')">📤 Lịch Sử Rút Tiền</button>
           </div>
         </div>
 
-        <!-- Hỗ trợ & Telegram -->
         <div class="card">
           <div class="card-title">
             <span>THÔNG TIN & HỖ TRỢ</span>
@@ -1024,7 +947,6 @@
           <div style="display:flex; flex-direction:column; gap:6px;">
             <a href="https://t.me/greencloudvip" target="_blank" class="btn btn-tele btn-sm" style="text-align:center;">✈️ Kênh / Nhóm Telegram VIP (t.me/greencloudvip)</a>
             <button class="btn btn-secondary btn-sm" onclick="window.openModal('modalIntro')">📖 Giới Thiệu Nền Tảng GreenCloud</button>
-            <button class="btn btn-secondary btn-sm" onclick="window.showToast('Tổng đài CSKH 24/7: support@greencloud.vn')">🎧 Trung Tâm CSKH 24/7</button>
           </div>
         </div>
       </div>
@@ -1077,7 +999,7 @@
 
   <div id="sysToast">Thông báo</div>
 
-  <!-- ==================== POPUP CHÀO MỪNG TELEGRAM VIP ==================== -->
+  <!-- Popup Chào Mừng Telegram VIP -->
   <div class="modal-backdrop" id="modalTeleWelcome">
     <div class="modal-sheet" style="text-align:center; padding:22px 18px; border:1.5px solid #229ED9;">
       <div style="font-size:52px; margin-bottom:10px; animation:pulseAnim 1.6s infinite;">✈️</div>
@@ -1126,30 +1048,15 @@
         <input type="password" class="input-control" id="authConfirmPass" placeholder="Nhập lại mật khẩu">
       </div>
       <div class="input-group" id="groupRefCode">
-        <div style="display:flex; justify-content:space-between;">
-          <label class="input-label">MÃ GIỚI THIỆU (NẾU CÓ)</label>
-          <span id="refBadge" style="display:none; color:#38bdf8; font-size:10px; font-weight:700;">🔒 Khóa theo liên kết</span>
-        </div>
-        <input type="text" class="input-control mono" id="authRefCode" placeholder="Mã người giới thiệu">
-      </div>
-      <div class="input-group" id="groupCaptcha">
-        <label class="input-label">MÃ CAPTCHA BẢO MẬT</label>
-        <div style="display:flex; gap:6px; align-items:center;">
-          <input type="text" class="input-control mono" id="authCaptchaInput" maxlength="4" placeholder="Nhập 4 số">
-          <div class="mono" id="captchaBox" style="background:#020617; border:1px solid #10b981; color:#34d399; font-weight:900; font-size:15px; letter-spacing:3px; padding:7px 12px; border-radius:8px;">8492</div>
-          <button type="button" class="btn btn-secondary btn-sm" onclick="window.genCaptcha()">🔄</button>
-        </div>
-      </div>
-      <div id="groupTerms" style="display:flex; align-items:center; gap:6px; margin-bottom:12px; font-size:11px; color:#cbd5e1;">
-        <input type="checkbox" id="authAgree" checked style="accent-color:#10b981;">
-        <label for="authAgree">Tôi đồng ý với Quy định khai thác GreenCloud</label>
+        <label class="input-label">ID NGƯỜI GIỚI THIỆU (NẾU CÓ)</label>
+        <input type="text" class="input-control mono" id="authRefCode" placeholder="Nhập ID người mời">
       </div>
 
       <button class="btn btn-primary" id="btnAuthSubmit" onclick="window.submitAuth()">Kích Hoạt Tài Khoản & Nhận 20K</button>
     </div>
   </div>
 
-  <!-- Modal 1: Nạp Gói Đào MB Bank -->
+  <!-- MODAL NẠP TIỀN (NỘI DUNG CHUYỂN KHOẢN CHỈ LÀ ID NICK THUẦN SỐ) -->
   <div class="modal-backdrop" id="modalDeposit">
     <div class="modal-sheet">
       <div class="modal-head">
@@ -1157,16 +1064,16 @@
         <button class="modal-close" onclick="window.closeModal('modalDeposit')">✕</button>
       </div>
       <p style="font-size:11px; color:#94a3b8; margin-bottom:10px;">
-        Chọn mốc gói cần nạp. Hệ thống sẽ quét tự động biến động số dư MB Bank 24/7 để kích hoạt ngay:
+        Chọn mốc gói cần nạp. Quét mã QR tự động điền đúng <b>ID Tài Khoản</b> của bạn:
       </p>
 
       <div style="display:flex; flex-direction:column; gap:6px; margin-bottom:12px;">
-        <button class="btn btn-secondary" onclick="window.pickDepositTier('76k')">Gói Khởi Động - 76.000 đ (Hoàn trả 16.720 đ/ngày &bull; 12 ngày)</button>
-        <button class="btn btn-secondary" onclick="window.pickDepositTier('104k')">Gói Tiêu Chuẩn - 104.000 đ (Hoàn trả 22.880 đ/ngày &bull; 12 ngày)</button>
-        <button class="btn btn-secondary" onclick="window.pickDepositTier('208k')">Gói Nâng Cao - 208.000 đ (Hoàn trả 45.760 đ/ngày &bull; 12 ngày)</button>
-        <button class="btn btn-secondary" onclick="window.pickDepositTier('416k')">Gói Chuyên Nghiệp - 416.000 đ (Hoàn trả 91.520 đ/ngày &bull; 12 ngày)</button>
-        <button class="btn btn-secondary" onclick="window.pickDepositTier('832k')">Gói Trang Trại - 832.000 đ (Hoàn trả 183.040 đ/ngày &bull; 12 ngày)</button>
-        <button class="btn btn-secondary" onclick="window.pickDepositTier('1500k')">Gói Cá Voi VIP - 1.500.000 đ (Hoàn trả 330.000 đ/ngày &bull; 12 ngày)</button>
+        <button class="btn btn-secondary" onclick="window.pickDepositTier('76k')">Gói Khởi Động - 76.000 đ (Hoàn 16.720 đ/ngày • 12 ngày)</button>
+        <button class="btn btn-secondary" onclick="window.pickDepositTier('104k')">Gói Tiêu Chuẩn - 104.000 đ (Hoàn 22.880 đ/ngày • 12 ngày)</button>
+        <button class="btn btn-secondary" onclick="window.pickDepositTier('208k')">Gói Nâng Cao - 208.000 đ (Hoàn 45.760 đ/ngày • 12 ngày)</button>
+        <button class="btn btn-secondary" onclick="window.pickDepositTier('416k')">Gói Chuyên Nghiệp - 416.000 đ (Hoàn 91.520 đ/ngày • 12 ngày)</button>
+        <button class="btn btn-secondary" onclick="window.pickDepositTier('832k')">Gói Trang Trại - 832.000 đ (Hoàn 183.040 đ/ngày • 12 ngày)</button>
+        <button class="btn btn-secondary" onclick="window.pickDepositTier('1500k')">Gói Cá Voi VIP - 1.500.000 đ (Hoàn 330.000 đ/ngày • 12 ngày)</button>
       </div>
 
       <div id="depositPreviewBox" style="display:none; background:#020617; border:1px solid #10b981; border-radius:12px; padding:12px;">
@@ -1195,9 +1102,9 @@
             <b>DANG HIEU THANG</b>
           </div>
           <div style="display:flex; justify-content:space-between; align-items:center; margin-top:2px;">
-            <span style="color:#94a3b8;">Nội dung CK:</span>
+            <span style="color:#94a3b8;">Nội dung CK (ID Nick):</span>
             <span style="display:flex; gap:6px; align-items:center;">
-              <b class="mono" id="depositCodeText" style="color:#10b981; background:#0b1120; padding:2px 6px; border-radius:4px;">GC...</b>
+              <b class="mono" id="depositCodeText" style="color:#10b981; background:#0b1120; padding:2px 6px; border-radius:4px; font-size:14px; font-weight:900;">...</b>
               <button class="btn btn-secondary btn-sm" onclick="window.copyDepositCode()">Copy</button>
             </span>
           </div>
@@ -1206,66 +1113,7 @@
     </div>
   </div>
 
-  <!-- Modal 2: Nạp Hũ Nâng Cấp -->
-  <div class="modal-backdrop" id="modalUpgradeDeposit">
-    <div class="modal-sheet">
-      <div class="modal-head">
-        <div class="modal-title">💠 NẠP TIỀN VÀO HŨ NÂNG CẤP</div>
-        <button class="modal-close" onclick="window.closeModal('modalUpgradeDeposit')">✕</button>
-      </div>
-      <p style="font-size:11px; color:#94a3b8; margin-bottom:8px;">
-        Hũ tiền này dành riêng để mua phụ kiện và ép xung. Nhập số tiền tùy ý:
-      </p>
-
-      <div class="input-group">
-        <label class="input-label">SỐ TIỀN MUỐN NẠP (VNĐ)</label>
-        <input type="number" class="input-control mono" id="upgradeAmountInput" placeholder="Ví dụ: 50000" oninput="window.updateUpgradeQr()">
-      </div>
-
-      <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:6px; margin-bottom:12px;">
-        <button class="btn btn-secondary btn-sm" onclick="window.setUpgradeVal(10000)">10.000 đ</button>
-        <button class="btn btn-secondary btn-sm" onclick="window.setUpgradeVal(25000)">25.000 đ</button>
-        <button class="btn btn-secondary btn-sm" onclick="window.setUpgradeVal(50000)">50.000 đ</button>
-        <button class="btn btn-secondary btn-sm" onclick="window.setUpgradeVal(100000)">100.000 đ</button>
-        <button class="btn btn-secondary btn-sm" onclick="window.setUpgradeVal(200000)">200.000 đ</button>
-        <button class="btn btn-secondary btn-sm" onclick="window.setUpgradeVal(500000)">500.000 đ</button>
-      </div>
-
-      <div style="background:#020617; border:1px solid #0284c7; border-radius:12px; padding:12px;">
-        <div style="text-align:center; background:#fff; padding:10px; border-radius:10px; margin-bottom:10px;">
-          <img id="upgradeQrImg" src="" alt="VietQR Hũ" style="width:150px; height:150px; display:block; margin:0 auto;">
-          <div style="font-size:10px; color:#334155; font-weight:700; margin-top:4px;">Quét mã để nạp thẳng vào Hũ Nâng Cấp</div>
-        </div>
-
-        <div style="font-size:11.5px; display:flex; flex-direction:column; gap:4px;">
-          <div style="display:flex; justify-content:space-between;">
-            <span style="color:#94a3b8;">Ngân hàng:</span>
-            <b>MB Bank (Quân Đội)</b>
-          </div>
-          <div style="display:flex; justify-content:space-between; align-items:center;">
-            <span style="color:#94a3b8;">Số tài khoản:</span>
-            <span style="display:flex; gap:6px; align-items:center;">
-              <b class="mono" style="color:#38bdf8;">0829594887</b>
-              <button class="btn btn-secondary btn-sm" onclick="window.copyText('0829594887')">Copy</button>
-            </span>
-          </div>
-          <div style="display:flex; justify-content:space-between;">
-            <span style="color:#94a3b8;">Chủ tài khoản:</span>
-            <b>DANG HIEU THANG</b>
-          </div>
-          <div style="display:flex; justify-content:space-between; align-items:center;">
-            <span style="color:#94a3b8;">Nội dung CK riêng:</span>
-            <span style="display:flex; gap:6px; align-items:center;">
-              <b class="mono" id="upgradeCodeText" style="color:#38bdf8; background:#0b1120; padding:2px 6px; border-radius:4px;">NC...</b>
-              <button class="btn btn-secondary btn-sm" onclick="window.copyUpgradeCode()">Copy</button>
-            </span>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Modal 3: Rút Hũ Nâng Cấp Về Ví Chính -->
+  <!-- Modal Rút Hũ Nâng Cấp Về Ví Chính -->
   <div class="modal-backdrop" id="modalTransferUpgrade">
     <div class="modal-sheet">
       <div class="modal-head">
@@ -1278,7 +1126,7 @@
       <div style="background:#020617; border:1px solid #1e293b; border-radius:10px; padding:10px; margin-bottom:10px; font-size:11.5px;">
         <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
           <span style="color:#94a3b8;">Số dư Hũ hiện tại:</span>
-          <b class="mono" style="color:#38bdf8;" id="transferMaxBalance">0 đ</b>
+          <b class="mono" style="color:#38bdf8;" id="transferMaxBalance">20.000 đ</b>
         </div>
         <div style="display:flex; justify-content:space-between;">
           <span style="color:#94a3b8;">Ví Chính sau khi chuyển:</span>
@@ -1298,7 +1146,7 @@
     </div>
   </div>
 
-  <!-- Modal 4: Rút Tiền Về Ngân Hàng (KHÓA KHUNG GIỜ 10H - 17H) -->
+  <!-- Modal Rút Tiền Về Ngân Hàng -->
   <div class="modal-backdrop" id="modalWithdraw">
     <div class="modal-sheet">
       <div class="modal-head">
@@ -1345,7 +1193,7 @@
     </div>
   </div>
 
-  <!-- Modal Chi Tiết F1 (Phân loại Đã Nạp / Chưa Nạp) -->
+  <!-- Modal Chi Tiết F1 -->
   <div class="modal-backdrop" id="modalF1List">
     <div class="modal-sheet">
       <div class="modal-head">
@@ -1431,22 +1279,8 @@
         <div class="modal-title">🚀 ÉP XUNG PHẦN CỨNG (OVERCLOCK)</div>
         <button class="modal-close" onclick="window.closeModal('modalOverclock')">✕</button>
       </div>
-      <div style="display:flex; flex-direction:column; gap:8px;">
-        <div style="background:#020617; border:1px solid #1e293b; border-radius:8px; padding:10px; display:flex; justify-content:space-between; align-items:center;">
-          <div>
-            <div style="font-weight:700; color:#fff;">Quạt Ly Tâm (+2%)</div>
-            <div style="font-size:10.5px; color:#38bdf8;">Giá: 15.000 đ (Trừ Hũ)</div>
-          </div>
-          <button class="btn btn-blue btn-sm" onclick="window.buyOverclock(15000, 2)">Nâng Cấp</button>
-        </div>
-        <div style="background:#020617; border:1px solid #1e293b; border-radius:8px; padding:10px; display:flex; justify-content:space-between; align-items:center;">
-          <div>
-            <div style="font-weight:700; color:#fff;">Keo Kim Cương (+5%)</div>
-            <div style="font-size:10.5px; color:#38bdf8;">Giá: 35.000 đ (Trừ Hũ)</div>
-          </div>
-          <button class="btn btn-blue btn-sm" onclick="window.buyOverclock(35000, 5)">Nâng Cấp</button>
-        </div>
-      </div>
+      <p style="font-size:11.5px; color:#cbd5e1; line-height:1.5;">Hệ thống ép xung vi xử lý GPU tự động tối ưu hóa hiệu năng đào Bitcoin cho toàn bộ các dàn máy đang chạy.</p>
+      <button class="btn btn-primary" style="margin-top:12px;" onclick="window.closeModal('modalOverclock'); window.showToast('✓ Trạng thái ép xung đã tối ưu 100%!');">Xác Nhận</button>
     </div>
   </div>
 
@@ -1533,7 +1367,7 @@
     </div>
   </div>
 
-  <!-- ==================== JAVASCRIPT ==================== -->
+  <!-- ==================== JAVASCRIPT LOGIC ==================== -->
   <script>
     const DURATION_DAYS = 12;
     const DURATION_MS = DURATION_DAYS * 24 * 60 * 60 * 1000;
@@ -1570,8 +1404,8 @@
 
     const PACKAGES_CONFIG = {
       free: { id: 'free', name: 'Gói Miễn Phí (Free)', cost: 0, dailyReturn: 400, hw: 'CPU Cloud Server Share v1', img: 'https://images.unsplash.com/photo-1591799264318-7e6ef8ddb7ea?w=700&auto=format&fit=crop&q=80', desc: 'Gói tân thủ trải nghiệm, phân luồng CPU ảo chạy tác vụ băm cơ bản trong 12 ngày.' },
-      '76k': { id: '76k', name: 'Gói Khởi Động 76K', cost: 76000, dailyReturn: 16720, hw: 'NVIDIA RTX 3060 Dedicated Rig', img: 'https://images.unsplash.com/photo-1587202372775-e229f172b9d7?w=700&auto=format&fit=crop&q=80', desc: 'Trang bị 01 card đồ họa NVIDIA RTX chuyên dụng, chu kỳ hoàn trả 12 ngày cố định.' },
-      '104k': { id: '104k', name: 'Gói Tiêu Chuẩn 104K', cost: 104000, dailyReturn: 22880, hw: 'NVIDIA RTX 3080 Cloud Cluster', img: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=700&auto=format&fit=crop&q=80', desc: 'Cụm GPU hiệu năng cao với tản nhiệt buồng hơi và đèn LED RGB (Hoàn trả trong 12 ngày).' },
+      '76k': { id: '76k', name: 'Gói Khởi Động 76K', cost: 76000, dailyReturn: 16720, hw: 'NVIDIA RTX 3060 Dedicated Rig', img: 'https://images.unsplash.com/photo-1587202372775-e229f172b9d7?w=700&auto=format&fit=crop&q=80', desc: 'Trang bị 01 card đồ họa chuyên dụng, chu kỳ hoàn trả 12 ngày cố định.' },
+      '104k': { id: '104k', name: 'Gói Tiêu Chuẩn 104K', cost: 104000, dailyReturn: 22880, hw: 'NVIDIA RTX 3080 Cloud Cluster', img: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=700&auto=format&fit=crop&q=80', desc: 'Cụm GPU hiệu năng cao với tản nhiệt buồng hơi (Hoàn trả trong 12 ngày).' },
       '208k': { id: '208k', name: 'Gói Nâng Cao 208K', cost: 208000, dailyReturn: 45760, hw: 'Dual RTX 4080 Mining Unit', img: 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=700&auto=format&fit=crop&q=80', desc: 'Bộ đôi vi xử lý thế hệ mới gắn trên khung mở đa tầng (Hoàn trả trong 12 ngày).' },
       '416k': { id: '416k', name: 'Gói Chuyên Nghiệp 416K', cost: 416000, dailyReturn: 91520, hw: 'Antminer S19 Pro 110TH/s Rack', img: 'https://images.unsplash.com/photo-1544197150-b99a580bb7a8?w=700&auto=format&fit=crop&q=80', desc: 'Tủ Rack máy đào ASIC chuyên dụng Antminer tại Datacenter (Hoàn trả trong 12 ngày).' },
       '832k': { id: '832k', name: 'Gói Trang Trại 832K', cost: 832000, dailyReturn: 183040, hw: 'Hydro ASIC Farm Container (4 Units)', img: 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=700&auto=format&fit=crop&q=80', desc: 'Container làm mát bằng chất lỏng Hydro khép kín (Hoàn trả trong 12 ngày).' },
@@ -1595,8 +1429,8 @@
       pin: '',
       savedBank: { bankName: '', accountNum: '', accountName: '' },
       balance: 0,
-      upgradeBalance: 0,
-      ownedPackages: { free: 0, '76k': 0, '104k': 0, '208k': 0, '416k': 0, '832k': 0, '1500k': 0 },
+      upgradeBalance: 20000,
+      ownedPackages: { free: 1 },
       activeInstances: [],
       overclockPercent: 0,
       autoCompound: false,
@@ -1607,21 +1441,17 @@
       refF1Paid: 0,
       completedTasks: [],
       deposits: [],
-      upgradeDeposits: [],
-      withdrawals: [],
-      transfers: [],
-      refMembers: []
+      withdrawals: []
     };
 
     let authMode = 'register';
-    let currentCaptcha = '8492';
-    let selectedTier = null;
-    let canvas = null;
-    let ctx = null;
-    let wavePoints = new Array(30).fill(40);
     let lastTick = Date.now();
     let isActionLocked = false;
     let isAudioOn = true;
+    let earnedAccumulator = 0;
+    let canvas = null;
+    let ctx = null;
+    let wavePoints = new Array(30).fill(40);
     let userUnsubscribe = null;
 
     window.openModal = function(id) { const el = document.getElementById(id); if (el) el.classList.add('show'); };
@@ -1643,6 +1473,7 @@
     };
 
     window.copyText = function(text) { navigator.clipboard.writeText(text); window.showToast('✓ Đã sao chép: ' + text); };
+    window.copyDepositCode = function() { window.copyText(user.telegramId); };
     window.toggleAudio = function() {
       isAudioOn = !isAudioOn;
       document.getElementById('audioToggleBtn').textContent = isAudioOn ? '🔊' : '🔇';
@@ -1659,30 +1490,36 @@
           if (refInput) {
             refInput.value = refParam;
             refInput.readOnly = true;
-            const b = document.getElementById('refBadge');
-            if (b) b.style.display = 'inline';
           }
         }
       }, 500);
     }
 
-    // ĐỒNG BỘ REALTIME & TỰ ĐỘNG BÙ LƯỢT MỞ HỘP THEO F1
+    // ĐỒNG BỘ REALTIME & TỰ ĐỘNG BÙ LƯỢT MỞ HỘP, TỰ KHÔI PHỤC CÁC GÓI ĐÀO ĐÃ NẠP
     function listenUserData(uid) {
       if (userUnsubscribe) userUnsubscribe();
       userUnsubscribe = db.collection('users').doc(uid).onSnapshot(async doc => {
         if (!doc.exists) return;
         const data = doc.data();
 
+        // 1. Đồng bộ danh sách máy đào đang hoạt động
         let instances = data.active_instances || [];
-        if (instances.length === 0 && data.owned_packages) {
-          const now = Date.now();
-          for (const [pId, qty] of Object.entries(data.owned_packages)) {
-            for (let i = 0; i < qty; i++) {
-              instances.push({ pkgId: pId, activatedAt: now });
+        const owned = data.owned_packages || { free: 1 };
+        
+        // Tự động kiểm tra và bù active_instances nếu owned_packages có gói nạp mà chưa lưu mảng
+        for (const [pId, qty] of Object.entries(owned)) {
+          if (qty > 0) {
+            const currentCount = instances.filter(i => i.pkgId === pId).length;
+            if (currentCount < qty) {
+              const diff = qty - currentCount;
+              for (let d = 0; d < diff; d++) {
+                instances.push({ pkgId: pId, activatedAt: Date.now() });
+              }
             }
           }
         }
 
+        // 2. Tính số lượng F1 đã nạp thực tế
         let livePaidF1Count = 0;
         let totalF1Count = data.ref_f1_count || 0;
         try {
@@ -1696,7 +1533,7 @@
           });
         } catch(e) {}
 
-        // Tự động bù lượt quay nếu có F1 mà lượt quay đang bằng 0
+        // 3. Tự bù lượt mở hộp
         let currentSpins = data.gift_spins;
         if (currentSpins === undefined || currentSpins === null || (currentSpins === 0 && totalF1Count > 0 && !data.spins_consumed)) {
           currentSpins = totalF1Count;
@@ -1708,8 +1545,8 @@
           ...data,
           isLoggedIn: true,
           balance: (typeof data.balance === 'number') ? data.balance : (parseFloat(data.balance) || 0),
-          upgradeBalance: (typeof data.upgrade_balance === 'number') ? data.upgrade_balance : (parseFloat(data.upgrade_balance) || 0),
-          ownedPackages: data.owned_packages || { free: 1 },
+          upgradeBalance: (data.upgrade_balance !== undefined) ? data.upgrade_balance : 20000,
+          ownedPackages: owned,
           activeInstances: instances,
           overclockPercent: data.overclock_percent || 0,
           telegramId: data.uid || uid,
@@ -1734,33 +1571,23 @@
       });
     }
 
-    function getValidActiveInstances() {
-      if (!user.isLoggedIn || !user.activeInstances) return [];
-      const now = Date.now();
-      return user.activeInstances.filter(ins => (now - ins.activatedAt) < DURATION_MS);
-    }
-
     function calculateDailyYield() {
-      if (!user.isLoggedIn) return 0;
-      const validInstances = getValidActiveInstances();
-      let sumDaily = 0;
-      validInstances.forEach(ins => {
-        if (PACKAGES_CONFIG[ins.pkgId]) {
-          sumDaily += PACKAGES_CONFIG[ins.pkgId].dailyReturn;
-        }
+      if (!user.isLoggedIn || !user.activeInstances) return 0;
+      const now = Date.now();
+      let sum = 0;
+      user.activeInstances.filter(i => (now - i.activatedAt) < DURATION_MS).forEach(ins => {
+        if (PACKAGES_CONFIG[ins.pkgId]) sum += PACKAGES_CONFIG[ins.pkgId].dailyReturn;
       });
-      sumDaily *= (1 + user.overclockPercent / 100);
-      return sumDaily;
+      return sum * (1 + (user.overclockPercent || 0) / 100);
     }
 
     function calculateYieldPerSecond() { return calculateDailyYield() / 86400; }
 
     function hasActivatedPaidPackage() {
       if (!user.isLoggedIn) return false;
-      return user.activeInstances && user.activeInstances.some(ins => ins.pkgId !== 'free');
+      return (user.activeInstances && user.activeInstances.some(ins => ins.pkgId !== 'free')) ||
+             (user.ownedPackages && Object.entries(user.ownedPackages).some(([k, v]) => k !== 'free' && v > 0));
     }
-
-    let earnedAccumulator = 0;
 
     function gameLoop() {
       const now = Date.now();
@@ -1836,39 +1663,21 @@
       if (est12) est12.textContent = (daily * 12).toLocaleString('vi-VN', { maximumFractionDigits: 0 }) + ' đ';
 
       const buffEl = document.getElementById('statOverclockBuff');
-      if (buffEl) buffEl.textContent = '+' + user.overclockPercent + '%';
+      if (buffEl) buffEl.textContent = '+' + (user.overclockPercent || 0) + '%';
 
-      const validRigs = getValidActiveInstances().length;
-      const serverEl = document.getElementById('serverCoreSub');
-      if (serverEl) serverEl.textContent = user.isLoggedIn ? `Đang vận hành ${validRigs} cụm máy còn hạn đào 12 ngày` : 'Chờ tạo tài khoản để kích hoạt';
-
-      const floatEl = document.getElementById('floatAmount');
-      if (floatEl) floatEl.textContent = '+' + (rateSec * 1.5).toFixed(4) + ' đ';
-
-      const headerStatus = document.getElementById('headerMiningStatus');
       const topAuth = document.getElementById('topAuthBtn');
       const profileName = document.getElementById('profileName');
       const profileId = document.getElementById('profileId');
+      const headerStatus = document.getElementById('headerMiningStatus');
       const canvasLiveTag = document.getElementById('canvasLiveTag');
 
       if (user.isLoggedIn) {
         headerStatus.innerHTML = '<span class="status-dot"></span> ĐANG ĐÀO 24/7 (12 NGÀY)';
-        topAuth.textContent = user.username || user.fullName || 'Thợ Đào';
-        topAuth.style.borderColor = '#10b981';
-        topAuth.style.color = '#34d399';
+        topAuth.textContent = user.fullName || user.username;
         profileName.textContent = user.fullName || user.username;
-        profileId.textContent = 'Mã Thợ Đào: GC-' + user.telegramId;
+        profileId.textContent = 'ID Tài Khoản: ' + user.telegramId;
         canvasLiveTag.textContent = 'LIVE (12 NGÀY)';
         canvasLiveTag.style.color = '#10b981';
-      } else {
-        headerStatus.innerHTML = '<span class="status-dot" style="background:#64748b; box-shadow:none;"></span> CHỜ ĐĂNG KÝ';
-        topAuth.textContent = 'Đăng Nhập / Đăng Ký';
-        topAuth.style.borderColor = '#38bdf8';
-        topAuth.style.color = '#38bdf8';
-        profileName.textContent = 'Chưa Đăng Nhập';
-        profileId.textContent = 'Tài khoản vãng lai';
-        canvasLiveTag.textContent = 'TẠM DỪNG';
-        canvasLiveTag.style.color = '#64748b';
       }
 
       if (user.savedBank && user.savedBank.accountNum) {
@@ -1913,7 +1722,7 @@
 
       const refInp = document.getElementById('refLinkInput');
       if (refInp && user.telegramId) {
-        refInp.value = `https://greencloud-mining-liver.onrender.com/?ref=${user.telegramId}`;
+        refInp.value = 'https://greencloud-mining-liver.onrender.com/?ref=' + user.telegramId;
       }
 
       const todayStr = new Date().toISOString().split('T')[0];
@@ -1931,615 +1740,7 @@
       }
     }
 
-    window.genCaptcha = function() {
-      currentCaptcha = Math.floor(1000 + Math.random() * 9000).toString();
-      const box = document.getElementById('captchaBox');
-      if (box) box.textContent = currentCaptcha;
-    };
-
-    window.openAuthModal = function(mode = 'register') {
-      if (user.isLoggedIn) {
-        window.showToast(`Đang đăng nhập: ${user.fullName || user.username} (GC-${user.telegramId})`);
-        return;
-      }
-      window.setAuthMode(mode);
-      window.openModal('modalAuth');
-    };
-
-    window.setAuthMode = function(mode) {
-      authMode = mode;
-      const title = document.getElementById('authTitle');
-      const submitBtn = document.getElementById('btnAuthSubmit');
-      const tabReg = document.getElementById('authTabReg');
-      const tabLog = document.getElementById('authTabLog');
-      const gName = document.getElementById('groupFullName');
-      const gConfirm = document.getElementById('groupConfirmPass');
-      const gRef = document.getElementById('groupRefCode');
-      const gCap = document.getElementById('groupCaptcha');
-      const gTerms = document.getElementById('groupTerms');
-
-      if (mode === 'register') {
-        title.textContent = 'ĐĂNG KÝ TÀI KHOẢN MỚI';
-        submitBtn.textContent = 'Kích Hoạt Tài Khoản & Nhận 20K';
-        tabReg.style.borderColor = '#10b981';
-        tabReg.style.color = '#34d399';
-        tabLog.style.borderColor = '#334155';
-        tabLog.style.color = '#94a3b8';
-        if (gName) gName.style.display = 'block';
-        if (gConfirm) gConfirm.style.display = 'block';
-        if (gRef) gRef.style.display = 'block';
-        if (gCap) gCap.style.display = 'block';
-        if (gTerms) gTerms.style.display = 'flex';
-        window.genCaptcha();
-      } else {
-        title.textContent = 'ĐĂNG NHẬP HỆ THỐNG';
-        submitBtn.textContent = 'Đăng Nhập Ngay';
-        tabLog.style.borderColor = '#10b981';
-        tabLog.style.color = '#34d399';
-        tabReg.style.borderColor = '#334155';
-        tabReg.style.color = '#94a3b8';
-        if (gName) gName.style.display = 'none';
-        if (gConfirm) gConfirm.style.display = 'none';
-        if (gRef) gRef.style.display = 'none';
-        if (gCap) gCap.style.display = 'none';
-        if (gTerms) gTerms.style.display = 'none';
-      }
-    };
-
-    window.submitAuth = async function() {
-      if (isActionLocked) return;
-      const username = document.getElementById('authUsername').value.trim();
-      const password = document.getElementById('authPassword').value.trim();
-
-      if (!username || !password) {
-        window.showToast('⚠️ Vui lòng điền số điện thoại và mật khẩu!');
-        return;
-      }
-
-      if (authMode === 'register') {
-        const fullName = document.getElementById('authFullName').value.trim();
-        const confirmPass = document.getElementById('authConfirmPass').value.trim();
-        const captchaInput = document.getElementById('authCaptchaInput').value.trim();
-        const agree = document.getElementById('authAgree').checked;
-        const sponsorUid = document.getElementById('authRefCode').value.trim();
-
-        if (!fullName) { window.showToast('⚠️ Vui lòng nhập họ và tên thật!'); return; }
-        if (password.length < 6) { window.showToast('⚠️ Mật khẩu phải có tối thiểu 6 ký tự!'); return; }
-        if (password !== confirmPass) { window.showToast('❌ Xác nhận mật khẩu không khớp!'); return; }
-        if (captchaInput !== currentCaptcha) { window.showToast('❌ Mã Captcha không chính xác!'); window.genCaptcha(); return; }
-        if (!agree) { window.showToast('⚠️ Bạn cần tích đồng ý với điều khoản!'); return; }
-
-        isActionLocked = true;
-
-        try {
-          const checkDoc = await db.collection('users').where('phone', '==', username).get();
-          if (!checkDoc.empty) {
-            window.showToast('❌ Số điện thoại này đã có tài khoản! Chuyển sang Đăng Nhập...');
-            window.setAuthMode('login');
-            isActionLocked = false;
-            return;
-          }
-
-          let sponsorF2Uid = null;
-          let validSponsorUid = null;
-          if (sponsorUid) {
-            const f1Snap = await db.collection('users').doc(sponsorUid).get();
-            if (f1Snap.exists) {
-              validSponsorUid = sponsorUid;
-              sponsorF2Uid = f1Snap.data().sponsor_uid || null;
-            }
-          }
-
-          const nowTime = Date.now();
-          const randUid = Math.floor(1000000 + Math.random() * 9000000).toString();
-          const newUserData = {
-            uid: randUid,
-            phone: username,
-            password: password,
-            full_name: fullName,
-            balance: 0,
-            upgrade_balance: 20000,
-            owned_packages: { free: 1 },
-            active_instances: [{ pkgId: 'free', activatedAt: nowTime }],
-            sponsor_uid: validSponsorUid,
-            sponsor_f2_uid: sponsorF2Uid,
-            ref_f1_count: 0,
-            ref_f1_paid_count: 0,
-            gift_spins: 0,
-            pin: '123456',
-            saved_bank: { bankName: 'MBBank', accountNum: '', accountName: fullName.toUpperCase() },
-            created_at: firebase.firestore.FieldValue.serverTimestamp()
-          };
-
-          await db.collection('users').doc(randUid).set(newUserData);
-
-          if (validSponsorUid) {
-            await db.collection('users').doc(validSponsorUid).update({
-              ref_f1_count: firebase.firestore.FieldValue.increment(1),
-              gift_spins: firebase.firestore.FieldValue.increment(1)
-            }).catch(()=>{});
-          }
-
-          listenUserData(randUid);
-          window.closeModal('modalAuth');
-          window.showToast('🎉 Đăng ký thành công! Gói Free kích hoạt thời hạn 12 ngày.');
-          sendTelegramAlert(`👤 *Thợ Đào Mới Đăng Ký*\n- Họ tên: *${fullName}*\n- SĐT: \`${username}\`\n- UID: \`GC-${randUid}\`\n- Cấp trên: ${validSponsorUid ? '`GC-' + validSponsorUid + '`' : 'Không có'}`);
-        } catch (e) {
-          window.showToast('❌ Lỗi kết nối đám mây: ' + e.message);
-        }
-        isActionLocked = false;
-      } else {
-        isActionLocked = true;
-        try {
-          const q = await db.collection('users').where('phone', '==', username).where('password', '==', password).get();
-          if (q.empty) {
-            window.showToast('❌ Số điện thoại hoặc mật khẩu không đúng!');
-            isActionLocked = false;
-            return;
-          }
-          const userDoc = q.docs[0];
-          listenUserData(userDoc.id);
-          window.closeModal('modalAuth');
-          window.showToast(`🎉 Chào mừng ${userDoc.data().full_name || username} trở lại!`);
-        } catch (e) {
-          window.showToast('❌ Lỗi kết nối: ' + e.message);
-        }
-        isActionLocked = false;
-      }
-    };
-
-    window.claimFreePackage = async function() {
-      if (!user.isLoggedIn) { window.showToast('⚠️ Vui lòng đăng ký tài khoản trước!'); window.openAuthModal('register'); return; }
-      const hasFree = user.activeInstances && user.activeInstances.some(ins => ins.pkgId === 'free');
-      if (hasFree) { window.showToast('✓ Bạn đã kích hoạt Gói Miễn Phí rồi!'); return; }
-      
-      const newInst = { pkgId: 'free', activatedAt: Date.now() };
-      user.activeInstances.push(newInst);
-      user.ownedPackages.free = 1;
-
-      await db.collection('users').doc(user.telegramId).update({
-        'owned_packages.free': 1,
-        active_instances: user.activeInstances
-      });
-      window.showToast('🎉 Đã kích hoạt Gói Miễn Phí (Thời hạn 12 ngày)!');
-    };
-
-    window.openDepositModal = function() {
-      if (!user.isLoggedIn) { window.openAuthModal('register'); return; }
-      selectedTier = null;
-      document.getElementById('depositPreviewBox').style.display = 'none';
-      window.openModal('modalDeposit');
-    };
-
-    window.pickDepositTier = function(tierId) {
-      selectedTier = tierId;
-      const pkg = PACKAGES_CONFIG[tierId];
-      if (!pkg) return;
-      const code = 'GC' + (user.telegramId || '5829104821');
-      document.getElementById('depositPreviewBox').style.display = 'block';
-      document.getElementById('depositTierName').textContent = `Gói Chọn Nạp (Chu kỳ 12 ngày): ${pkg.name}`;
-      document.getElementById('depositTierCost').textContent = pkg.cost.toLocaleString('vi-VN') + ' đ';
-      document.getElementById('depositCodeText').textContent = code;
-      document.getElementById('depositQrImg').src = `https://img.vietqr.io/image/MB-0829594887-compact2.png?amount=${pkg.cost}&addInfo=${code}&accountName=DANG%20HIEU%20THANG`;
-      sendTelegramAlert(`📥 *Thợ Đào Mở QR Nạp Gói (12 Ngày)*\n- Thợ đào: *${user.fullName || user.username}* (\`GC-${user.telegramId}\`)\n- Gói: *${pkg.name}*\n- Số tiền: *${pkg.cost.toLocaleString('vi-VN')} đ*`);
-    };
-
-    window.copyDepositCode = function() { window.copyText('GC' + (user.telegramId || '5829104821')); };
-    window.openUpgradeDepositModal = function() {
-      if (!user.isLoggedIn) { window.openAuthModal('register'); return; }
-      document.getElementById('upgradeAmountInput').value = '';
-      window.updateUpgradeQr();
-      window.openModal('modalUpgradeDeposit');
-    };
-    window.setUpgradeVal = function(val) { document.getElementById('upgradeAmountInput').value = val; window.updateUpgradeQr(); };
-    window.updateUpgradeQr = function() {
-      const val = parseFloat(document.getElementById('upgradeAmountInput').value) || 0;
-      const code = 'NC' + (user.telegramId || '5829104821');
-      document.getElementById('upgradeCodeText').textContent = code;
-      document.getElementById('upgradeQrImg').src = `https://img.vietqr.io/image/MB-0829594887-compact2.png?amount=${val}&addInfo=${code}&accountName=DANG%20HIEU%20THANG`;
-    };
-    window.copyUpgradeCode = function() { window.copyText('NC' + (user.telegramId || '5829104821')); };
-
-    window.openTransferUpgradeModal = function() {
-      if (!user.isLoggedIn) { window.openAuthModal('register'); return; }
-      const isEligible = hasActivatedPaidPackage();
-      const notice = document.getElementById('transferNotice');
-      const btn = document.getElementById('btnConfirmTransfer');
-      document.getElementById('transferMaxBalance').textContent = (user.upgradeBalance || 0).toLocaleString('vi-VN') + ' đ';
-      document.getElementById('transferAmountInput').value = '';
-      window.calcTransferTarget();
-
-      if (isEligible) {
-        notice.style.background = 'rgba(16, 185, 129, 0.15)';
-        notice.style.border = '1px solid #10b981';
-        notice.style.color = '#34d399';
-        notice.innerHTML = '✓ Tài khoản <b>ĐỦ ĐIỀU KIỆN</b> rút từ Hũ về Ví Chính (Đang sở hữu gói &ge; 76K).';
-        btn.disabled = false;
-        btn.className = 'btn btn-primary';
-      } else {
-        notice.style.background = 'rgba(239, 68, 68, 0.15)';
-        notice.style.border = '1px solid #ef4444';
-        notice.style.color = '#fca5a5';
-        notice.innerHTML = '⚠️ <b>CHƯA ĐỦ ĐIỀU KIỆN:</b> Cần kích hoạt ít nhất 1 gói từ <b>76.000 đ</b> trở lên để mở khóa rút Hũ.';
-        btn.disabled = true;
-        btn.className = 'btn btn-secondary';
-      }
-      window.openModal('modalTransferUpgrade');
-    };
-    window.setTransferMax = function() { document.getElementById('transferAmountInput').value = user.upgradeBalance || 0; window.calcTransferTarget(); };
-    window.calcTransferTarget = function() {
-      const val = parseFloat(document.getElementById('transferAmountInput').value) || 0;
-      document.getElementById('transferTargetPreview').textContent = (user.balance + val).toLocaleString('vi-VN', { maximumFractionDigits: 2 }) + ' đ';
-    };
-    window.confirmTransfer = async function() {
-      if (isActionLocked) return;
-      if (!hasActivatedPaidPackage()) { window.showToast('⚠️ Cần kích hoạt gói máy đào từ 76K trước!'); return; }
-      const amount = parseFloat(document.getElementById('transferAmountInput').value) || 0;
-      if (amount <= 0 || amount > (user.upgradeBalance || 0)) { window.showToast('❌ Số tiền rút từ Hũ không hợp lệ!'); return; }
-      isActionLocked = true;
-
-      user.balance += amount;
-      user.upgradeBalance -= amount;
-
-      await db.collection('users').doc(user.telegramId).update({
-        balance: firebase.firestore.FieldValue.increment(amount),
-        upgrade_balance: firebase.firestore.FieldValue.increment(-amount)
-      });
-
-      window.closeModal('modalTransferUpgrade');
-      window.showToast(`🎉 Đã rút +${amount.toLocaleString('vi-VN')} đ về Ví Chính thành công!`);
-      isActionLocked = false;
-    };
-
-    window.openWithdrawModal = function() {
-      if (!user.isLoggedIn) { window.openAuthModal('register'); return; }
-      const notice = document.getElementById('withdrawNotice');
-      const timeBanner = document.getElementById('withdrawTimeBanner');
-      const submitBtn = document.getElementById('btnSubmitWithdraw');
-      const isOpen = isWithdrawWindowOpen();
-      const isEligible = hasActivatedPaidPackage();
-
-      if (isOpen) {
-        timeBanner.style.background = 'rgba(16, 185, 129, 0.12)';
-        timeBanner.style.border = '1px solid #10b981';
-        timeBanner.style.color = '#34d399';
-        timeBanner.innerHTML = '🟢 <b>ĐANG TRONG KHUNG GIỜ RÚT TIỀN:</b> Cổng giao dịch mở từ <b>10:00 sáng đến 17:00 chiều</b> mỗi ngày.';
-        submitBtn.disabled = false;
-        submitBtn.className = 'btn btn-primary';
-      } else {
-        timeBanner.style.background = 'rgba(239, 68, 68, 0.12)';
-        timeBanner.style.border = '1px solid #ef4444';
-        timeBanner.style.color = '#f87171';
-        timeBanner.innerHTML = '🔴 <b>TẠM KHÓA RÚT TIỀN NGOÀI GIỜ:</b> Hệ thống chỉ mở cổng rút từ <b>10:00 sáng đến 17:00 chiều</b> hàng ngày. Vui lòng quay lại trong khung giờ trên!';
-        submitBtn.disabled = true;
-        submitBtn.className = 'btn btn-secondary';
-      }
-
-      if (user.savedBank && user.savedBank.accountNum) {
-        document.getElementById('withdrawBankSelect').value = user.savedBank.bankName;
-        document.getElementById('withdrawAccNum').value = user.savedBank.accountNum;
-        document.getElementById('withdrawAccHolder').value = user.savedBank.accountName;
-      }
-      document.getElementById('withdrawPinInput').value = '';
-
-      if (isEligible) {
-        notice.style.background = 'rgba(16, 185, 129, 0.15)';
-        notice.style.border = '1px solid #10b981';
-        notice.style.color = '#34d399';
-        notice.innerHTML = '✓ Tài khoản ĐỦ ĐIỀU KIỆN rút tiền về ngân hàng.';
-      } else {
-        notice.style.background = 'rgba(239, 68, 68, 0.15)';
-        notice.style.border = '1px solid #ef4444';
-        notice.style.color = '#f87171';
-        notice.innerHTML = '⚠️ CHƯA ĐỦ ĐIỀU KIỆN: Cần kích hoạt ít nhất 1 gói trả phí (&ge; 76.000 đ) trước khi rút.';
-      }
-      window.openModal('modalWithdraw');
-    };
-
-    window.submitWithdraw = async function() {
-      if (isActionLocked) return;
-
-      if (!isWithdrawWindowOpen()) {
-        window.showToast('⛔ Cổng rút tiền đã khóa! Chỉ mở từ 10:00 sáng đến 17:00 chiều hàng ngày.');
-        return;
-      }
-
-      const pin = document.getElementById('withdrawPinInput').value.trim();
-      if (!user.pin || user.pin.length !== 6) { window.showToast('⚠️ Bạn chưa thiết lập mã PIN 6 số!'); window.openSetPinModal(); return; }
-      if (pin !== user.pin) { window.showToast('❌ Mã PIN rút tiền không chính xác!'); return; }
-      const amount = parseFloat(document.getElementById('withdrawAmountVal').value);
-      const bank = document.getElementById('withdrawBankSelect').value;
-      const accNum = document.getElementById('withdrawAccNum').value.trim();
-      const accHolder = document.getElementById('withdrawAccHolder').value.trim().toUpperCase();
-
-      if (!accNum || !accHolder) { window.showToast('⚠️ Vui lòng điền đủ STK và tên thụ hưởng!'); return; }
-      if (isNaN(amount) || amount < 10000) { window.showToast('⚠️ Số tiền rút tối thiểu là 10.000 đ!'); return; }
-      if (amount > user.balance) { window.showToast('❌ Số dư trong ví chính không đủ!'); return; }
-
-      isActionLocked = true;
-      const orderId = 'WD' + Date.now().toString().slice(-6);
-
-      user.balance = Math.max(0, user.balance - amount);
-      updateUI();
-
-      await db.collection('users').doc(user.telegramId).update({
-        balance: firebase.firestore.FieldValue.increment(-amount)
-      });
-
-      const orderRef = db.collection('withdrawals').doc(orderId);
-      await orderRef.set({
-        id: orderId,
-        uid: user.telegramId,
-        phone: user.username,
-        full_name: user.fullName,
-        amount: amount,
-        bank: bank,
-        acc_num: accNum,
-        acc_holder: accHolder,
-        status: 'pending',
-        created_at: firebase.firestore.FieldValue.serverTimestamp()
-      });
-
-      window.closeModal('modalWithdraw');
-      window.showToast(`🎉 Đã trừ ${amount.toLocaleString('vi-VN')} đ! Lệnh rút đang chờ Admin duyệt.`);
-
-      sendTelegramAlert(`📤 *YÊU CẦU RÚT TIỀN MỚI (ĐÃ TRỪ TIỀN)*\n- Thợ Đào: *${user.fullName || user.username}* (\`GC-${user.telegramId}\`)\n- Số tiền: *${amount.toLocaleString('vi-VN')} đ*\n- Ngân hàng: *${bank}* - STK: \`${accNum}\`\n- Chủ thẻ: *${accHolder}*\n- Trạng thái: *Chờ Admin duyệt trên admin.html*`);
-      
-      isActionLocked = false;
-    };
-
-    window.openBankSettingsModal = function() {
-      if (!user.isLoggedIn) { window.openAuthModal('register'); return; }
-      if (user.savedBank && user.savedBank.accountNum) {
-        document.getElementById('setBankName').value = user.savedBank.bankName;
-        document.getElementById('setBankAcc').value = user.savedBank.accountNum;
-        document.getElementById('setBankHolder').value = user.savedBank.accountName;
-      }
-      window.openModal('modalBankSettings');
-    };
-    window.saveBankConfig = async function() {
-      const bName = document.getElementById('setBankName').value;
-      const bAcc = document.getElementById('setBankAcc').value.trim();
-      const bHolder = document.getElementById('setBankHolder').value.trim().toUpperCase();
-      if (!bAcc || !bHolder) { window.showToast('⚠️ Vui lòng nhập số tài khoản và tên chủ thẻ!'); return; }
-      const newBank = { bankName: bName, accountNum: bAcc, accountName: bHolder };
-      await db.collection('users').doc(user.telegramId).update({ saved_bank: newBank });
-      window.closeModal('modalBankSettings');
-      window.showToast('✓ Đã lưu ngân hàng thụ hưởng lên đám mây!');
-    };
-
-    window.openSetPinModal = function() {
-      if (!user.isLoggedIn) { window.openAuthModal('register'); return; }
-      document.getElementById('newPin1').value = '';
-      document.getElementById('newPin2').value = '';
-      window.openModal('modalSetPin');
-    };
-    window.savePinCode = async function() {
-      const p1 = document.getElementById('newPin1').value.trim();
-      const p2 = document.getElementById('newPin2').value.trim();
-      if (p1.length !== 6 || !/^\d{6}$/.test(p1)) { window.showToast('⚠️ Mã PIN bắt buộc phải đúng 6 chữ số!'); return; }
-      if (p1 !== p2) { window.showToast('❌ Xác nhận mã PIN không khớp!'); return; }
-      await db.collection('users').doc(user.telegramId).update({ pin: p1 });
-      window.closeModal('modalSetPin');
-      window.showToast('🎉 Thiết lập mã PIN bảo mật 6 số thành công!');
-    };
-
-    window.openOverclockModal = function() { if (!user.isLoggedIn) { window.openAuthModal('register'); return; } window.openModal('modalOverclock'); };
-    window.openVaultModal = function() { if (!user.isLoggedIn) { window.openAuthModal('register'); return; } window.openModal('modalVault'); };
-    window.openInsuranceModal = function() { window.openModal('modalInsurance'); };
-
-    window.buyHwPart = async function(partId, cost, buffPercent) {
-      if (!user.isLoggedIn) { window.openAuthModal('register'); return; }
-      if ((user.upgradeBalance || 0) < cost) { window.showToast('❌ Hũ Nâng Cấp không đủ tiền! Vui lòng nạp thêm.'); window.openUpgradeDepositModal(); return; }
-      user.upgradeBalance -= cost;
-      user.overclockPercent += buffPercent;
-      updateUI();
-      await db.collection('users').doc(user.telegramId).update({
-        upgrade_balance: firebase.firestore.FieldValue.increment(-cost),
-        overclock_percent: firebase.firestore.FieldValue.increment(buffPercent)
-      });
-      window.showToast(`🎉 Nâng cấp thành công! Công suất tăng +${buffPercent}%`);
-    };
-    window.buyOverclock = function(cost, percent) { window.buyHwPart('overclock_tier', cost, percent); window.closeModal('modalOverclock'); };
-
-    // HỘP QUÀ GIỚI THIỆU: KHÔNG HIỂN THỊ TỶ LỆ TRÚNG
-    window.openGiftBox = function(boxNum) {
-      if (!user.isLoggedIn) { window.openAuthModal('register'); return; }
-      if ((user.giftSpins || 0) <= 0) { window.showToast('⚠️ Bạn chưa có lượt mở quà! Mời bạn mới nạp tiền để nhận thêm.'); return; }
-      const boxEl = document.getElementById(`giftBox${boxNum}`);
-      if (boxEl) boxEl.classList.add('box-opening');
-      setTimeout(async () => {
-        if (boxEl) boxEl.classList.remove('box-opening');
-        const won = Math.random() < 0.50; // Tỷ lệ may mắn
-        const addBal = won ? 1000 : 0;
-        user.giftSpins = Math.max(0, user.giftSpins - 1);
-        if (won) user.balance += addBal;
-        updateUI();
-        await db.collection('users').doc(user.telegramId).update({
-          gift_spins: firebase.firestore.FieldValue.increment(-1),
-          balance: firebase.firestore.FieldValue.increment(addBal),
-          spins_consumed: true
-        });
-        if (won) {
-          document.getElementById('giftResultIcon').textContent = '🎉';
-          document.getElementById('giftResultTitle').textContent = 'CHÚC MỪNG BẠN!';
-          document.getElementById('giftResultDesc').textContent = 'Bạn vừa mở trúng phần thưởng +1.000 đ vào ví chính!';
-        } else {
-          document.getElementById('giftResultIcon').textContent = '🍀';
-          document.getElementById('giftResultTitle').textContent = 'CHÚC MAY MẮN LẦN SAU!';
-          document.getElementById('giftResultDesc').textContent = 'Hộp quà này chưa có tiền thưởng. Hãy mời thêm bạn bè!';
-        }
-        window.openModal('modalGiftResult');
-      }, 650);
-    };
-
-    window.toggleAutoCompound = function() {
-      if (!user.isLoggedIn) { window.openAuthModal('register'); return; }
-      user.autoCompound = !user.autoCompound;
-      const txt = document.getElementById('statAutoCompound');
-      if (txt) { txt.textContent = user.autoCompound ? 'Đang Bật' : 'Đang Tắt'; txt.style.color = user.autoCompound ? '#10b981' : '#64748b'; }
-      window.showToast(user.autoCompound ? '✓ Đã BẬT tự động tái đầu tư gói 76K!' : '✓ Đã TẮT tự động tái đầu tư.');
-    };
-    window.depositVault = async function(amount) {
-      if (!user.isLoggedIn) { window.openAuthModal('register'); return; }
-      if (user.balance < amount) { window.showToast('❌ Số dư ví chính không đủ 50.000 đ!'); return; }
-      user.balance -= amount;
-      updateUI();
-      await db.collection('users').doc(user.telegramId).update({
-        balance: firebase.firestore.FieldValue.increment(-amount)
-      });
-      window.closeModal('modalVault');
-      window.showToast('🏦 Đã gửi 50.000 đ vào Quỹ Khóa 7 ngày (+7%)!');
-    };
-
-    window.copyRefLink = function() {
-      const inp = document.getElementById('refLinkInput');
-      inp.select();
-      navigator.clipboard.writeText(inp.value);
-      window.showToast('✓ Đã sao chép liên kết mời!');
-    };
-
-    window.copyRefInviteMsg = function() {
-      const refLink = document.getElementById('refLinkInput').value;
-      const msg = `🚀 Tham gia GreenCloud Mining - Đào Bitcoin đám mây nhận tiền mỗi giây!\n🎁 Đăng ký nhận ngay 20.000đ vào quỹ:\n👉 Link đăng ký: ${refLink}\n✈️ Nhóm Telegram hỗ trợ & nhận quà: ${TELEGRAM_GROUP_URL}`;
-      navigator.clipboard.writeText(msg);
-      window.showToast('✓ Đã sao chép tin nhắn mời kèm link Telegram!');
-    };
-
-    window.claimDailyTask = async function() {
-      if (isActionLocked) return;
-      if (!user.isLoggedIn) { window.openAuthModal('register'); return; }
-      const todayStr = new Date().toISOString().split('T')[0];
-      if (user.lastDailyDate === todayStr) { window.showToast('✓ Hôm nay bạn đã điểm danh rồi!'); return; }
-      isActionLocked = true;
-
-      user.balance += 500;
-      user.lastDailyDate = todayStr;
-      updateUI();
-
-      await db.collection('users').doc(user.telegramId).update({
-        balance: firebase.firestore.FieldValue.increment(500),
-        last_daily_date: todayStr
-      });
-      window.showToast('🎉 Nhận +500 đ điểm danh hôm nay thành công!');
-      isActionLocked = false;
-    };
-
-    window.switchF1SubTab = function(tab) {
-      const bPaid = document.getElementById('btnTabF1Paid');
-      const bUnpaid = document.getElementById('btnTabF1Unpaid');
-      const cPaid = document.getElementById('f1PaidContainer');
-      const cUnpaid = document.getElementById('f1UnpaidContainer');
-
-      if (tab === 'paid') {
-        bPaid.style.borderColor = '#10b981';
-        bPaid.style.color = '#34d399';
-        bUnpaid.style.borderColor = '#334155';
-        bUnpaid.style.color = '#94a3b8';
-        cPaid.style.display = 'flex';
-        cUnpaid.style.display = 'none';
-      } else {
-        bUnpaid.style.borderColor = '#38bdf8';
-        bUnpaid.style.color = '#38bdf8';
-        bPaid.style.borderColor = '#334155';
-        bPaid.style.color = '#94a3b8';
-        cPaid.style.display = 'none';
-        cUnpaid.style.display = 'flex';
-      }
-    };
-
-    window.openF1ListModal = async function() {
-      const cPaid = document.getElementById('f1PaidContainer');
-      const cUnpaid = document.getElementById('f1UnpaidContainer');
-      cPaid.innerHTML = '<div style="font-size:11px; color:#64748b; text-align:center; padding:16px;">Đang tính toán hoa hồng...</div>';
-      cUnpaid.innerHTML = '';
-      window.switchF1SubTab('paid');
-      window.openModal('modalF1List');
-
-      if (!user.telegramId) return;
-
-      const f1Docs = await db.collection('users').where('sponsor_uid', '==', user.telegramId).get();
-      if (f1Docs.empty) {
-        cPaid.innerHTML = '<div style="font-size:11px; color:#64748b; text-align:center; padding:16px;">Chưa có thành viên F1 nào.</div>';
-        cUnpaid.innerHTML = '<div style="font-size:11px; color:#64748b; text-align:center; padding:16px;">Chưa có thành viên F1 nào.</div>';
-        document.getElementById('countF1PaidBadge').textContent = '0';
-        document.getElementById('countF1UnpaidBadge').textContent = '0';
-        return;
-      }
-
-      let paidHtml = '';
-      let unpaidHtml = '';
-      let countPaid = 0;
-      let countUnpaid = 0;
-
-      for (const doc of f1Docs.docs) {
-        const d = doc.data();
-        const f1Uid = d.uid || doc.id;
-
-        const depSnap = await db.collection('deposits').where('uid', '==', f1Uid).get();
-        let totalDeposit = 0;
-        depSnap.forEach(dp => {
-          totalDeposit += (dp.data().amount || 0);
-        });
-
-        if (totalDeposit === 0 && d.owned_packages) {
-          for (const [pId, qty] of Object.entries(d.owned_packages)) {
-            if (pId !== 'free' && PACKAGES_CONFIG[pId] && qty > 0) {
-              totalDeposit += PACKAGES_CONFIG[pId].cost * qty;
-            }
-          }
-        }
-
-        const commission15 = totalDeposit * 0.15;
-        const phoneFormatted = d.phone ? (d.phone.slice(0, 3) + '****' + d.phone.slice(-3)) : f1Uid;
-        const joinDate = d.created_at ? new Date(d.created_at.toDate ? d.created_at.toDate() : d.created_at).toLocaleDateString('vi-VN') : 'Mới';
-
-        if (totalDeposit > 0) {
-          countPaid++;
-          paidHtml += `
-            <div style="background:#020617; border:1px solid #059669; border-radius:10px; padding:10px 12px; display:flex; justify-content:space-between; align-items:center;">
-              <div>
-                <div style="font-weight:700; color:#fff; font-size:12.5px;" class="mono">${phoneFormatted}</div>
-                <div style="font-size:10px; color:#64748b; margin-top:2px;">UID: GC-${f1Uid} &bull; Ngày: ${joinDate}</div>
-                <div style="font-size:11px; color:#94a3b8; margin-top:3px;">
-                  Đã nạp: <b class="mono" style="color:#e2e8f0;">${totalDeposit.toLocaleString('vi-VN')} đ</b>
-                </div>
-              </div>
-              <div style="text-align:right;">
-                <div style="font-size:9.5px; color:#94a3b8; margin-bottom:2px;">HOA HỒNG NHẬN (15%)</div>
-                <div class="mono" style="font-size:14px; font-weight:800; color:#10b981;">
-                  +${commission15.toLocaleString('vi-VN')} đ
-                </div>
-                <span class="badge-pill" style="font-size:9px; padding:1px 6px; margin-top:3px; display:inline-block;">ĐÃ KÍCH HOẠT</span>
-              </div>
-            </div>
-          `;
-        } else {
-          countUnpaid++;
-          unpaidHtml += `
-            <div style="background:#020617; border:1px solid #1e293b; border-radius:10px; padding:10px 12px; display:flex; justify-content:space-between; align-items:center;">
-              <div>
-                <div style="font-weight:700; color:#94a3b8; font-size:12.5px;" class="mono">${phoneFormatted}</div>
-                <div style="font-size:10px; color:#64748b; margin-top:2px;">UID: GC-${f1Uid} &bull; Ngày: ${joinDate}</div>
-                <div style="font-size:11px; color:#64748b; margin-top:3px;">
-                  Đã nạp: <b class="mono" style="color:#64748b;">0 đ</b> &bull; Hoa hồng: <b class="mono" style="color:#64748b;">0 đ</b>
-                </div>
-              </div>
-              <div style="text-align:right;">
-                <span style="font-size:10px; color:#fbbf24; background:#451a03; border:1px solid #d97706; padding:2px 7px; border-radius:6px; font-weight:700;">Chưa Nạp Gói</span>
-              </div>
-            </div>
-          `;
-        }
-      }
-
-      document.getElementById('countF1PaidBadge').textContent = countPaid;
-      document.getElementById('countF1UnpaidBadge').textContent = countUnpaid;
-
-      cPaid.innerHTML = paidHtml || '<div style="font-size:11px; color:#64748b; text-align:center; padding:16px;">Chưa có thành viên F1 nào nạp tiền.</div>';
-      cUnpaid.innerHTML = unpaidHtml || '<div style="font-size:11px; color:#64748b; text-align:center; padding:16px;">Tất cả F1 đều đã nạp tiền.</div>';
-    };
-
+    // HIỂN THỊ CHÍNH XÁC CÁC GÓI ĐÀO ĐÃ NẠP & CÒN HẠN 12 NGÀY
     function renderPackages() {
       const container = document.getElementById('packagesListWrap');
       if (!container) return;
@@ -2547,12 +1748,12 @@
       const now = Date.now();
 
       for (const [key, pkg] of Object.entries(PACKAGES_CONFIG)) {
-        const myActiveInstances = (user.activeInstances || []).filter(ins => ins.pkgId === key && (now - ins.activatedAt) < DURATION_MS);
-        const owned = myActiveInstances.length;
+        const activeList = (user.activeInstances || []).filter(ins => ins.pkgId === key && (now - ins.activatedAt) < DURATION_MS);
+        const ownedCount = activeList.length > 0 ? activeList.length : ((user.ownedPackages && user.ownedPackages[key]) ? user.ownedPackages[key] : 0);
 
         let countdownHtml = '';
-        if (owned > 0) {
-          const newest = myActiveInstances[myActiveInstances.length - 1];
+        if (ownedCount > 0 && activeList.length > 0) {
+          const newest = activeList[activeList.length - 1];
           const passedMs = now - newest.activatedAt;
           const leftMs = Math.max(0, DURATION_MS - passedMs);
           const leftDays = Math.floor(leftMs / (24 * 3600 * 1000));
@@ -2571,7 +1772,7 @@
         }
 
         const div = document.createElement('div');
-        div.className = `package-card ${owned > 0 ? 'owned' : ''}`;
+        div.className = `package-card ${ownedCount > 0 ? 'owned' : ''}`;
         div.innerHTML = `
           <div class="package-img-box">
             <img class="package-img" src="${pkg.img}" alt="${pkg.name}" onerror="this.onerror=null;this.src='https://placehold.co/700x300/0f172a/10b981?text=GreenCloud+Mining';">
@@ -2598,14 +1799,14 @@
             `}
 
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; font-size:11px;">
-              <span style="color:#94a3b8;">Đang chạy:</span>
-              <span class="badge-pill mono" style="background:#0284c7; border-color:#38bdf8; color:#fff;">${owned} dàn máy</span>
+              <span style="color:#94a3b8;">Đang khai thác:</span>
+              <span class="badge-pill mono" style="background:#0284c7; border-color:#38bdf8; color:#fff;">${ownedCount} dàn máy</span>
             </div>
 
             <div style="display:flex; gap:6px;">
               <button class="btn btn-secondary btn-sm" onclick="window.showPackageDetail('${key}')">Chi tiết →</button>
               ${key === 'free' ? (
-                owned === 0
+                ownedCount === 0
                   ? `<button class="btn btn-primary btn-sm" onclick="window.claimFreePackage()">🎁 Kích Hoạt Miễn Phí (12 ngày)</button>`
                   : `<button class="btn btn-secondary btn-sm" style="color:#34d399; border-color:#059669;" disabled>✓ Đang Đào (12 ngày)</button>`
               ) : (
@@ -2618,6 +1819,7 @@
       }
     }
 
+    // RENDER NHIỆM VỤ MỜI BẠN BÈ TỰ ĐỘNG
     function renderTasks() {
       const container = document.getElementById('inviteTasksList');
       if (!container) return;
@@ -2663,37 +1865,361 @@
         balance: firebase.firestore.FieldValue.increment(task.reward),
         completed_tasks: firebase.firestore.FieldValue.arrayUnion(taskId)
       });
-      window.showToast(`🎉 Nhận thưởng thành công +${task.reward.toLocaleString('vi-VN')} đ vào ví!`);
+      window.showToast(`🎉 Nhận thưởng thành công +${task.reward.toLocaleString('vi-VN')} đ!`);
       isActionLocked = false;
     };
 
-    window.showPackageDetail = function(pkgKey) {
-      const pkg = PACKAGES_CONFIG[pkgKey];
+    window.claimDailyTask = async function() {
+      if (isActionLocked) return;
+      if (!user.isLoggedIn) { window.openAuthModal('register'); return; }
+      const todayStr = new Date().toISOString().split('T')[0];
+      if (user.lastDailyDate === todayStr) { window.showToast('✓ Hôm nay bạn đã điểm danh rồi!'); return; }
+      isActionLocked = true;
+
+      user.balance += 500;
+      user.lastDailyDate = todayStr;
+      updateUI();
+
+      await db.collection('users').doc(user.telegramId).update({
+        balance: firebase.firestore.FieldValue.increment(500),
+        last_daily_date: todayStr
+      });
+      window.showToast('🎉 Nhận +500 đ điểm danh hôm nay thành công!');
+      isActionLocked = false;
+    };
+
+    window.claimFreePackage = async function() {
+      if (!user.isLoggedIn) { window.openAuthModal('register'); return; }
+      const hasFree = user.activeInstances && user.activeInstances.some(ins => ins.pkgId === 'free');
+      if (hasFree) { window.showToast('✓ Bạn đã kích hoạt Gói Miễn Phí rồi!'); return; }
+      
+      const newInst = { pkgId: 'free', activatedAt: Date.now() };
+      user.activeInstances.push(newInst);
+      user.ownedPackages.free = 1;
+
+      await db.collection('users').doc(user.telegramId).update({
+        'owned_packages.free': 1,
+        active_instances: user.activeInstances
+      });
+      window.showToast('🎉 Đã kích hoạt Gói Miễn Phí (Thời hạn 12 ngày)!');
+    };
+
+    window.openDepositModal = function() {
+      if (!user.isLoggedIn) { window.openAuthModal('register'); return; }
+      document.getElementById('depositPreviewBox').style.display = 'none';
+      window.openModal('modalDeposit');
+    };
+
+    window.pickDepositTier = function(tierId) {
+      const pkg = PACKAGES_CONFIG[tierId];
       if (!pkg) return;
-      document.getElementById('pkgModalTitle').textContent = pkg.name;
-      document.getElementById('pkgModalContent').innerHTML = `
-        <img style="width:100%; height:130px; object-fit:cover; border-radius:8px; margin-bottom:10px; border:1px solid #1e293b;" src="${pkg.img}" alt="${pkg.name}">
-        <div style="background:#020617; border-radius:8px; padding:10px; margin-bottom:10px; border:1px solid #1e293b;">
-          <div style="color:#10b981; font-weight:700; margin-bottom:3px;">Phần Cứng Khai Thác:</div>
-          <div>${pkg.hw}</div>
-        </div>
-        <p style="margin-bottom:10px;">${pkg.desc}</p>
-        <div style="background:#020617; border-radius:8px; padding:10px; border:1px solid #1e293b;">
-          <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
-            <span>Chi Phí Kích Hoạt:</span>
-            <b class="mono" style="color:#10b981;">${pkg.cost === 0 ? 'MIỄN PHÍ' : pkg.cost.toLocaleString('vi-VN') + ' đ'}</b>
-          </div>
-          <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
-            <span>Lợi Nhuận 24h:</span>
-            <b class="mono" style="color:#38bdf8;">+${pkg.dailyReturn.toLocaleString('vi-VN')} đ/ngày</b>
-          </div>
-          <div style="display:flex; justify-content:space-between;">
-            <span>Tổng Hoàn Trả (12 ngày):</span>
-            <b class="mono" style="color:#10b981;">${(pkg.dailyReturn * 12).toLocaleString('vi-VN')} đ</b>
-          </div>
-        </div>
-      `;
-      window.openModal('modalPackageDetail');
+      document.getElementById('depositPreviewBox').style.display = 'block';
+      document.getElementById('depositTierName').textContent = `Gói Chọn: ${pkg.name}`;
+      document.getElementById('depositTierCost').textContent = pkg.cost.toLocaleString('vi-VN') + ' đ';
+      document.getElementById('depositCodeText').textContent = user.telegramId;
+      // VietQR với nội dung là ID NICK thuần số
+      document.getElementById('depositQrImg').src = `https://img.vietqr.io/image/MB-0829594887-compact2.png?amount=${pkg.cost}&addInfo=${user.telegramId}&accountName=DANG%20HIEU%20THANG`;
+    };
+
+    // RÚT HŨ NÂNG CẤP VỀ VÍ CHÍNH
+    window.openTransferUpgradeModal = function() {
+      if (!user.isLoggedIn) { window.openAuthModal('register'); return; }
+      const isEligible = hasActivatedPaidPackage();
+      const notice = document.getElementById('transferNotice');
+      const btn = document.getElementById('btnConfirmTransfer');
+      document.getElementById('transferMaxBalance').textContent = (user.upgradeBalance || 0).toLocaleString('vi-VN') + ' đ';
+      document.getElementById('transferAmountInput').value = '';
+      window.calcTransferTarget();
+
+      if (isEligible) {
+        notice.style.background = 'rgba(16, 185, 129, 0.15)';
+        notice.style.border = '1px solid #10b981';
+        notice.style.color = '#34d399';
+        notice.innerHTML = '✓ Tài khoản <b>ĐỦ ĐIỀU KIỆN</b> rút từ Hũ về Ví Chính (Đang sở hữu gói &ge; 76K).';
+        btn.disabled = false;
+        btn.className = 'btn btn-primary';
+      } else {
+        notice.style.background = 'rgba(239, 68, 68, 0.15)';
+        notice.style.border = '1px solid #ef4444';
+        notice.style.color = '#fca5a5';
+        notice.innerHTML = '⚠️ <b>CHƯA ĐỦ ĐIỀU KIỆN:</b> Cần kích hoạt ít nhất 1 gói từ <b>76.000 đ</b> trở lên để mở khóa rút Hũ.';
+        btn.disabled = true;
+        btn.className = 'btn btn-secondary';
+      }
+      window.openModal('modalTransferUpgrade');
+    };
+    window.setTransferMax = function() { document.getElementById('transferAmountInput').value = user.upgradeBalance || 0; window.calcTransferTarget(); };
+    window.calcTransferTarget = function() {
+      const val = parseFloat(document.getElementById('transferAmountInput').value) || 0;
+      document.getElementById('transferTargetPreview').textContent = (user.balance + val).toLocaleString('vi-VN', { maximumFractionDigits: 2 }) + ' đ';
+    };
+    window.confirmTransfer = async function() {
+      if (isActionLocked) return;
+      if (!hasActivatedPaidPackage()) { window.showToast('⚠️ Cần kích hoạt gói máy đào từ 76K trước!'); return; }
+      const amount = parseFloat(document.getElementById('transferAmountInput').value) || 0;
+      if (amount <= 0 || amount > (user.upgradeBalance || 0)) { window.showToast('❌ Số tiền rút từ Hũ không hợp lệ!'); return; }
+      isActionLocked = true;
+
+      user.balance += amount;
+      user.upgradeBalance -= amount;
+      updateUI();
+
+      await db.collection('users').doc(user.telegramId).update({
+        balance: firebase.firestore.FieldValue.increment(amount),
+        upgrade_balance: firebase.firestore.FieldValue.increment(-amount)
+      });
+
+      window.closeModal('modalTransferUpgrade');
+      window.showToast(`🎉 Đã rút +${amount.toLocaleString('vi-VN')} đ về Ví Chính thành công!`);
+      isActionLocked = false;
+    };
+
+    window.openWithdrawModal = function() {
+      if (!user.isLoggedIn) { window.openAuthModal('register'); return; }
+      const isOpen = isWithdrawWindowOpen();
+      const banner = document.getElementById('withdrawTimeBanner');
+      const btn = document.getElementById('btnSubmitWithdraw');
+      if (isOpen) {
+        banner.style.background = 'rgba(16, 185, 129, 0.12)';
+        banner.style.color = '#34d399';
+        banner.innerHTML = '🟢 <b>ĐANG MỞ CỔNG RÚT TIỀN:</b> 10:00 - 17:00 hàng ngày.';
+        btn.disabled = false;
+      } else {
+        banner.style.background = 'rgba(239, 68, 68, 0.12)';
+        banner.style.color = '#f87171';
+        banner.innerHTML = '🔴 <b>CỔNG RÚT TIỀN TẠM KHÓA:</b> Chỉ mở từ 10:00 đến 17:00 hàng ngày.';
+        btn.disabled = true;
+      }
+      if (user.savedBank && user.savedBank.accountNum) {
+        document.getElementById('withdrawBankSelect').value = user.savedBank.bankName;
+        document.getElementById('withdrawAccNum').value = user.savedBank.accountNum;
+        document.getElementById('withdrawAccHolder').value = user.savedBank.accountName;
+      }
+      window.openModal('modalWithdraw');
+    };
+
+    window.submitWithdraw = async function() {
+      if (!isWithdrawWindowOpen()) { window.showToast('⛔ Chỉ mở rút tiền từ 10:00 đến 17:00!'); return; }
+      const amount = parseFloat(document.getElementById('withdrawAmountVal').value);
+      const bank = document.getElementById('withdrawBankSelect').value;
+      const accNum = document.getElementById('withdrawAccNum').value.trim();
+      const accHolder = document.getElementById('withdrawAccHolder').value.trim().toUpperCase();
+      const pin = document.getElementById('withdrawPinInput').value.trim();
+
+      if (!user.pin || pin !== user.pin) { window.showToast('❌ Mã PIN giao dịch không đúng!'); return; }
+      if (!accNum || !accHolder || isNaN(amount) || amount < 10000 || amount > user.balance) {
+        window.showToast('⚠️ Thông tin rút tiền hoặc số dư không đủ!');
+        return;
+      }
+
+      isActionLocked = true;
+      const orderId = 'WD' + Date.now().toString().slice(-6);
+      user.balance -= amount;
+      updateUI();
+
+      await db.collection('users').doc(user.telegramId).update({
+        balance: firebase.firestore.FieldValue.increment(-amount)
+      });
+
+      await db.collection('withdrawals').doc(orderId).set({
+        id: orderId,
+        uid: user.telegramId,
+        full_name: user.fullName,
+        amount: amount,
+        bank: bank,
+        acc_num: accNum,
+        acc_holder: accHolder,
+        status: 'pending',
+        created_at: firebase.firestore.FieldValue.serverTimestamp()
+      });
+
+      window.closeModal('modalWithdraw');
+      window.showToast('✓ Lệnh rút đã gửi, đang chờ Admin phê duyệt!');
+      isActionLocked = false;
+    };
+
+    window.openBankSettingsModal = function() {
+      if (!user.isLoggedIn) { window.openAuthModal('register'); return; }
+      if (user.savedBank && user.savedBank.accountNum) {
+        document.getElementById('setBankName').value = user.savedBank.bankName;
+        document.getElementById('setBankAcc').value = user.savedBank.accountNum;
+        document.getElementById('setBankHolder').value = user.savedBank.accountName;
+      }
+      window.openModal('modalBankSettings');
+    };
+    window.saveBankConfig = async function() {
+      const bName = document.getElementById('setBankName').value;
+      const bAcc = document.getElementById('setBankAcc').value.trim();
+      const bHolder = document.getElementById('setBankHolder').value.trim().toUpperCase();
+      if (!bAcc || !bHolder) { window.showToast('⚠️ Vui lòng điền đủ STK và tên!'); return; }
+      const newBank = { bankName: bName, accountNum: bAcc, accountName: bHolder };
+      await db.collection('users').doc(user.telegramId).update({ saved_bank: newBank });
+      window.closeModal('modalBankSettings');
+      window.showToast('✓ Đã lưu ngân hàng thụ hưởng!');
+    };
+
+    window.openSetPinModal = function() {
+      if (!user.isLoggedIn) { window.openAuthModal('register'); return; }
+      document.getElementById('newPin1').value = '';
+      document.getElementById('newPin2').value = '';
+      window.openModal('modalSetPin');
+    };
+    window.savePinCode = async function() {
+      const p1 = document.getElementById('newPin1').value.trim();
+      const p2 = document.getElementById('newPin2').value.trim();
+      if (p1.length !== 6 || !/^\d{6}$/.test(p1)) { window.showToast('⚠️ PIN phải gồm 6 chữ số!'); return; }
+      if (p1 !== p2) { window.showToast('❌ Xác nhận PIN không khớp!'); return; }
+      await db.collection('users').doc(user.telegramId).update({ pin: p1 });
+      window.closeModal('modalSetPin');
+      window.showToast('🎉 Thiết lập mã PIN thành công!');
+    };
+
+    window.openOverclockModal = function() { window.openModal('modalOverclock'); };
+    window.openVaultModal = function() { window.openModal('modalVault'); };
+    window.openInsuranceModal = function() { window.openModal('modalInsurance'); };
+
+    window.depositVault = async function(amount) {
+      if (!user.isLoggedIn) { window.openAuthModal('register'); return; }
+      if (user.balance < amount) { window.showToast('❌ Số dư ví chính không đủ 50.000 đ!'); return; }
+      user.balance -= amount;
+      updateUI();
+      await db.collection('users').doc(user.telegramId).update({
+        balance: firebase.firestore.FieldValue.increment(-amount)
+      });
+      window.closeModal('modalVault');
+      window.showToast('🏦 Đã gửi 50.000 đ vào Quỹ Khóa 7 ngày (+7%)!');
+    };
+
+    window.toggleAutoCompound = function() {
+      if (!user.isLoggedIn) { window.openAuthModal('register'); return; }
+      user.autoCompound = !user.autoCompound;
+      const txt = document.getElementById('statAutoCompound');
+      if (txt) { txt.textContent = user.autoCompound ? 'Đang Bật' : 'Đang Tắt'; txt.style.color = user.autoCompound ? '#10b981' : '#64748b'; }
+      window.showToast(user.autoCompound ? '✓ Đã BẬT tự động tái đầu tư gói 76K!' : '✓ Đã TẮT tự động tái đầu tư.');
+    };
+
+    window.openGiftBox = function(boxNum) {
+      if (!user.isLoggedIn) { window.openAuthModal('register'); return; }
+      if ((user.giftSpins || 0) <= 0) { window.showToast('⚠️ Bạn chưa có lượt mở quà! Mời bạn mới để nhận thêm.'); return; }
+      const won = Math.random() < 0.5;
+      const addBal = won ? 1000 : 0;
+      user.giftSpins = Math.max(0, user.giftSpins - 1);
+      if (won) user.balance += addBal;
+      updateUI();
+      db.collection('users').doc(user.telegramId).update({
+        gift_spins: firebase.firestore.FieldValue.increment(-1),
+        balance: firebase.firestore.FieldValue.increment(addBal),
+        spins_consumed: true
+      });
+      document.getElementById('giftResultIcon').textContent = won ? '🎉' : '🍀';
+      document.getElementById('giftResultTitle').textContent = won ? 'CHÚC MỪNG BẠN!' : 'CHÚC MAY MẮN!';
+      document.getElementById('giftResultDesc').textContent = won ? 'Bạn vừa mở trúng +1.000 đ vào ví chính!' : 'Hộp quà này chưa có phần thưởng!';
+      window.openModal('modalGiftResult');
+    };
+
+    window.copyRefLink = function() {
+      const inp = document.getElementById('refLinkInput');
+      inp.select();
+      navigator.clipboard.writeText(inp.value);
+      window.showToast('✓ Đã sao chép liên kết mời!');
+    };
+
+    window.copyRefInviteMsg = function() {
+      const refLink = document.getElementById('refLinkInput').value;
+      const msg = `🚀 Tham gia GreenCloud Mining - Khai thác Bitcoin nhận tiền liên tục!\n👉 Link đăng ký: ${refLink}\n✈️ Nhóm Telegram hỗ trợ: ${TELEGRAM_GROUP_URL}`;
+      navigator.clipboard.writeText(msg);
+      window.showToast('✓ Đã sao chép tin nhắn mời!');
+    };
+
+    window.switchF1SubTab = function(tab) {
+      const bPaid = document.getElementById('btnTabF1Paid');
+      const bUnpaid = document.getElementById('btnTabF1Unpaid');
+      const cPaid = document.getElementById('f1PaidContainer');
+      const cUnpaid = document.getElementById('f1UnpaidContainer');
+      if (tab === 'paid') {
+        bPaid.style.borderColor = '#10b981';
+        bPaid.style.color = '#34d399';
+        bUnpaid.style.borderColor = '#334155';
+        bUnpaid.style.color = '#94a3b8';
+        cPaid.style.display = 'flex';
+        cUnpaid.style.display = 'none';
+      } else {
+        bUnpaid.style.borderColor = '#38bdf8';
+        bUnpaid.style.color = '#38bdf8';
+        bPaid.style.borderColor = '#334155';
+        bPaid.style.color = '#94a3b8';
+        cPaid.style.display = 'none';
+        cUnpaid.style.display = 'flex';
+      }
+    };
+
+    window.openF1ListModal = async function() {
+      const cPaid = document.getElementById('f1PaidContainer');
+      const cUnpaid = document.getElementById('f1UnpaidContainer');
+      cPaid.innerHTML = '<div style="font-size:11px; color:#64748b; text-align:center; padding:16px;">Đang tải danh sách...</div>';
+      cUnpaid.innerHTML = '';
+      window.switchF1SubTab('paid');
+      window.openModal('modalF1List');
+
+      if (!user.telegramId) return;
+      const f1Docs = await db.collection('users').where('sponsor_uid', '==', user.telegramId).get();
+      if (f1Docs.empty) {
+        cPaid.innerHTML = '<div style="font-size:11px; color:#64748b; text-align:center; padding:16px;">Chưa có thành viên F1 nào.</div>';
+        cUnpaid.innerHTML = '<div style="font-size:11px; color:#64748b; text-align:center; padding:16px;">Chưa có thành viên F1 nào.</div>';
+        document.getElementById('countF1PaidBadge').textContent = '0';
+        document.getElementById('countF1UnpaidBadge').textContent = '0';
+        return;
+      }
+
+      let paidHtml = '', unpaidHtml = '', countPaid = 0, countUnpaid = 0;
+      for (const doc of f1Docs.docs) {
+        const d = doc.data();
+        const f1Uid = d.uid || doc.id;
+        let totalDeposit = 0;
+        const depSnap = await db.collection('deposits').where('uid', '==', f1Uid).get();
+        depSnap.forEach(dp => { totalDeposit += (dp.data().amount || 0); });
+
+        if (totalDeposit === 0 && d.owned_packages) {
+          for (const [pId, qty] of Object.entries(d.owned_packages)) {
+            if (pId !== 'free' && PACKAGES_CONFIG[pId] && qty > 0) totalDeposit += PACKAGES_CONFIG[pId].cost * qty;
+          }
+        }
+
+        const phoneFormatted = d.phone ? (d.phone.slice(0, 3) + '****' + d.phone.slice(-3)) : f1Uid;
+        const joinDate = d.created_at ? new Date(d.created_at.toDate ? d.created_at.toDate() : d.created_at).toLocaleDateString('vi-VN') : 'Mới';
+
+        if (totalDeposit > 0) {
+          countPaid++;
+          paidHtml += `
+            <div style="background:#020617; border:1px solid #059669; border-radius:10px; padding:10px 12px; display:flex; justify-content:space-between; align-items:center;">
+              <div>
+                <div style="font-weight:700; color:#fff;" class="mono">${phoneFormatted}</div>
+                <div style="font-size:10px; color:#64748b;">ID: ${f1Uid} • Ngày: ${joinDate}</div>
+                <div style="font-size:11px; color:#94a3b8; margin-top:3px;">Đã nạp: <b class="mono" style="color:#e2e8f0;">${totalDeposit.toLocaleString('vi-VN')} đ</b></div>
+              </div>
+              <div style="text-align:right;">
+                <div style="font-size:9.5px; color:#94a3b8;">HOA HỒNG (15%)</div>
+                <div class="mono" style="font-size:14px; font-weight:800; color:#10b981;">+${(totalDeposit * 0.15).toLocaleString('vi-VN')} đ</div>
+              </div>
+            </div>
+          `;
+        } else {
+          countUnpaid++;
+          unpaidHtml += `
+            <div style="background:#020617; border:1px solid #1e293b; border-radius:10px; padding:10px 12px; display:flex; justify-content:space-between; align-items:center;">
+              <div>
+                <div style="font-weight:700; color:#94a3b8;" class="mono">${phoneFormatted}</div>
+                <div style="font-size:10px; color:#64748b;">ID: ${f1Uid} • Ngày: ${joinDate}</div>
+              </div>
+              <span style="font-size:10px; color:#fbbf24; background:#451a03; border:1px solid #d97706; padding:2px 7px; border-radius:6px;">Chưa Nạp</span>
+            </div>
+          `;
+        }
+      }
+      document.getElementById('countF1PaidBadge').textContent = countPaid;
+      document.getElementById('countF1UnpaidBadge').textContent = countUnpaid;
+      cPaid.innerHTML = paidHtml || '<div style="font-size:11px; color:#64748b; text-align:center; padding:16px;">Chưa có thành viên F1 nào nạp.</div>';
+      cUnpaid.innerHTML = unpaidHtml || '<div style="font-size:11px; color:#64748b; text-align:center; padding:16px;">Tất cả F1 đều đã nạp tiền.</div>';
     };
 
     window.openHistoryModal = function(type) {
@@ -2716,9 +2242,6 @@
             }).join('');
           }
         });
-      } else if (type === 'upgrade') {
-        document.getElementById('historyTitle').textContent = 'LỊCH SỬ HŨ NÂNG CẤP';
-        container.innerHTML = '<div style="font-size:11px; color:#64748b; text-align:center; padding:12px;">Chưa có biến động Hũ nào.</div>';
       } else {
         document.getElementById('historyTitle').textContent = 'LỊCH SỬ RÚT TIỀN VÍ';
         if (!user.withdrawals || user.withdrawals.length === 0) {
@@ -2730,7 +2253,6 @@
             const statusLabel = isApproved ? 'Thành Công' : (isRejected ? 'Từ Chối' : 'Chờ Duyệt');
             const statusColor = isApproved ? '#34d399' : (isRejected ? '#f87171' : '#fbbf24');
             const statusBg = isApproved ? '#064e3b' : (isRejected ? '#450a0a' : '#451a03');
-
             return `
               <div style="background:#020617; border:1px solid #1e293b; border-radius:8px; padding:8px 10px; display:flex; justify-content:space-between; align-items:center;">
                 <div>
@@ -2746,41 +2268,140 @@
       window.openModal('modalHistory');
     };
 
-    const DEPOSIT_NOTICES = ["Thợ đào 098****213 vừa nạp gói Khởi Động 76.000 đ (12 ngày)!", "Thợ đào 034****899 vừa nạp gói Tiêu Chuẩn 104.000 đ (12 ngày)!", "Thợ đào 096****553 vừa nạp 250.000 đ vào Hũ Nâng Cấp!", "Thợ đào 091****882 vừa nạp gói Chuyên Nghiệp 416.000 đ (12 ngày)!"];
-    const WITHDRAW_NOTICES = ["Thợ đào 097****641 vừa rút 330.000 đ về Vietcombank!", "Thợ đào 088****912 vừa rút 150.000 đ về MB Bank!", "Thợ đào 038****774 vừa rút 850.000 đ về Techcombank!"];
+    window.showPackageDetail = function(pkgKey) {
+      const pkg = PACKAGES_CONFIG[pkgKey];
+      if (!pkg) return;
+      document.getElementById('pkgModalTitle').textContent = pkg.name;
+      document.getElementById('pkgModalContent').innerHTML = `
+        <img style="width:100%; height:130px; object-fit:cover; border-radius:8px; margin-bottom:10px;" src="${pkg.img}" alt="${pkg.name}">
+        <p style="margin-bottom:10px;">${pkg.desc}</p>
+        <div style="background:#020617; border-radius:8px; padding:10px; border:1px solid #1e293b;">
+          <div style="display:flex; justify-content:space-between; margin-bottom:4px;"><span>Giá Kích Hoạt:</span><b class="mono" style="color:#10b981;">${pkg.cost === 0 ? 'MIỄN PHÍ' : pkg.cost.toLocaleString('vi-VN') + ' đ'}</b></div>
+          <div style="display:flex; justify-content:space-between;"><span>Lợi Nhuận:</span><b class="mono" style="color:#38bdf8;">+${pkg.dailyReturn.toLocaleString('vi-VN')} đ/ngày (12 ngày)</b></div>
+        </div>
+      `;
+      window.openModal('modalPackageDetail');
+    };
 
-    function startSystemToastLoop() {
-      const tDep = document.getElementById('toastDeposit');
-      const tWd = document.getElementById('toastWithdraw');
-      const msgDep = document.getElementById('toastDepositMsg');
-      const msgWd = document.getElementById('toastWithdrawMsg');
+    window.openAuthModal = function(mode = 'register') {
+      window.setAuthMode(mode);
+      window.openModal('modalAuth');
+    };
 
-      setInterval(() => {
-        if (msgDep && tDep) {
-          msgDep.textContent = DEPOSIT_NOTICES[Math.floor(Math.random() * DEPOSIT_NOTICES.length)];
-          tDep.classList.add('active');
-          setTimeout(() => tDep.classList.remove('active'), 4500);
+    window.setAuthMode = function(mode) {
+      authMode = mode;
+      const title = document.getElementById('authTitle');
+      const submitBtn = document.getElementById('btnAuthSubmit');
+      const tabReg = document.getElementById('authTabReg');
+      const tabLog = document.getElementById('authTabLog');
+      const gName = document.getElementById('groupFullName');
+      const gConfirm = document.getElementById('groupConfirmPass');
+      const gRef = document.getElementById('groupRefCode');
+
+      if (mode === 'register') {
+        title.textContent = 'ĐĂNG KÝ TÀI KHOẢN MỚI';
+        submitBtn.textContent = 'Kích Hoạt Tài Khoản & Nhận 20K';
+        tabReg.style.borderColor = '#10b981';
+        tabReg.style.color = '#34d399';
+        tabLog.style.borderColor = '#334155';
+        tabLog.style.color = '#94a3b8';
+        if (gName) gName.style.display = 'block';
+        if (gConfirm) gConfirm.style.display = 'block';
+        if (gRef) gRef.style.display = 'block';
+      } else {
+        title.textContent = 'ĐĂNG NHẬP HỆ THỐNG';
+        submitBtn.textContent = 'Đăng Nhập';
+        tabLog.style.borderColor = '#10b981';
+        tabLog.style.color = '#34d399';
+        tabReg.style.borderColor = '#334155';
+        tabReg.style.color = '#94a3b8';
+        if (gName) gName.style.display = 'none';
+        if (gConfirm) gConfirm.style.display = 'none';
+        if (gRef) gRef.style.display = 'none';
+      }
+    };
+
+    window.submitAuth = async function() {
+      if (isActionLocked) return;
+      const username = document.getElementById('authUsername').value.trim();
+      const password = document.getElementById('authPassword').value.trim();
+      if (!username || !password) { window.showToast('⚠️ Vui lòng điền đủ thông tin!'); return; }
+
+      if (authMode === 'register') {
+        const fullName = document.getElementById('authFullName').value.trim();
+        const confirmPass = document.getElementById('authConfirmPass').value.trim();
+        const sponsorUid = document.getElementById('authRefCode').value.trim();
+        if (!fullName || password !== confirmPass) { window.showToast('⚠️ Kiểm tra họ tên hoặc xác nhận mật khẩu!'); return; }
+
+        isActionLocked = true;
+        const checkDoc = await db.collection('users').where('phone', '==', username).get();
+        if (!checkDoc.empty) {
+          window.showToast('❌ Số điện thoại này đã có tài khoản!');
+          window.setAuthMode('login');
+          isActionLocked = false;
+          return;
         }
-      }, 16000);
 
-      setTimeout(() => {
-        setInterval(() => {
-          if (msgWd && tWd) {
-            msgWd.textContent = WITHDRAW_NOTICES[Math.floor(Math.random() * WITHDRAW_NOTICES.length)];
-            tWd.classList.add('active');
-            setTimeout(() => tWd.classList.remove('active'), 4500);
+        let sponsorF2Uid = null;
+        let validSponsorUid = null;
+        if (sponsorUid) {
+          const f1Snap = await db.collection('users').doc(sponsorUid).get();
+          if (f1Snap.exists) {
+            validSponsorUid = sponsorUid;
+            sponsorF2Uid = f1Snap.data().sponsor_uid || null;
           }
-        }, 16000);
-      }, 8000);
-    }
+        }
+
+        const randUid = Math.floor(1000000 + Math.random() * 9000000).toString();
+        await db.collection('users').doc(randUid).set({
+          uid: randUid,
+          phone: username,
+          password: password,
+          full_name: fullName,
+          balance: 0,
+          upgrade_balance: 20000,
+          sponsor_uid: validSponsorUid,
+          sponsor_f2_uid: sponsorF2Uid,
+          owned_packages: { free: 1 },
+          active_instances: [{ pkgId: 'free', activatedAt: Date.now() }],
+          gift_spins: 0,
+          pin: '123456',
+          created_at: firebase.firestore.FieldValue.serverTimestamp()
+        });
+
+        if (validSponsorUid) {
+          await db.collection('users').doc(validSponsorUid).update({
+            ref_f1_count: firebase.firestore.FieldValue.increment(1),
+            gift_spins: firebase.firestore.FieldValue.increment(1)
+          }).catch(()=>{});
+        }
+
+        listenUserData(randUid);
+        window.closeModal('modalAuth');
+        window.showToast('🎉 Đăng ký thành công! Nhận sẵn 20K vào quỹ.');
+        isActionLocked = false;
+      } else {
+        isActionLocked = true;
+        const q = await db.collection('users').where('phone', '==', username).where('password', '==', password).get();
+        if (q.empty) {
+          window.showToast('❌ Sai số điện thoại hoặc mật khẩu!');
+          isActionLocked = false;
+          return;
+        }
+        listenUserData(q.docs[0].id);
+        window.closeModal('modalAuth');
+        window.showToast('🎉 Đăng nhập thành công!');
+        isActionLocked = false;
+      }
+    };
 
     window.addEventListener('DOMContentLoaded', () => {
       canvas = document.getElementById('powerCanvas');
       if (canvas) ctx = canvas.getContext('2d');
 
-      const savedUid = localStorage.getItem('GREENCLOUD_CURRENT_UID');
-      if (savedUid) {
-        listenUserData(savedUid);
+      const saved = localStorage.getItem('GREENCLOUD_CURRENT_UID');
+      if (saved) {
+        listenUserData(saved);
       } else {
         renderPackages();
         renderTasks();
@@ -2809,12 +2430,38 @@
           db.collection('users').doc(user.telegramId).update({
             balance: firebase.firestore.FieldValue.increment(delta),
             last_active_at: Date.now()
-          }).catch(()=>{
-            earnedAccumulator += delta;
-          });
+          }).catch(()=>{ earnedAccumulator += delta; });
         }
       }, 5000);
     });
+
+    const DEPOSIT_NOTICES = ["Thợ đào 098****213 vừa nạp gói Khởi Động 76.000 đ (12 ngày)!", "Thợ đào 034****899 vừa nạp gói Tiêu Chuẩn 104.000 đ (12 ngày)!", "Thợ đào 091****882 vừa nạp gói Chuyên Nghiệp 416.000 đ (12 ngày)!"];
+    const WITHDRAW_NOTICES = ["Thợ đào 097****641 vừa rút 330.000 đ về Vietcombank!", "Thợ đào 088****912 vừa rút 150.000 đ về MB Bank!", "Thợ đào 038****774 vừa rút 850.000 đ về Techcombank!"];
+
+    function startSystemToastLoop() {
+      const tDep = document.getElementById('toastDeposit');
+      const tWd = document.getElementById('toastWithdraw');
+      const msgDep = document.getElementById('toastDepositMsg');
+      const msgWd = document.getElementById('toastWithdrawMsg');
+
+      setInterval(() => {
+        if (msgDep && tDep) {
+          msgDep.textContent = DEPOSIT_NOTICES[Math.floor(Math.random() * DEPOSIT_NOTICES.length)];
+          tDep.classList.add('active');
+          setTimeout(() => tDep.classList.remove('active'), 4500);
+        }
+      }, 16000);
+
+      setTimeout(() => {
+        setInterval(() => {
+          if (msgWd && tWd) {
+            msgWd.textContent = WITHDRAW_NOTICES[Math.floor(Math.random() * WITHDRAW_NOTICES.length)];
+            tWd.classList.add('active');
+            setTimeout(() => tWd.classList.remove('active'), 4500);
+          }
+        }, 16000);
+      }, 8000);
+    }
   </script>
 </body>
 </html>
