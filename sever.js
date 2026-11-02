@@ -1,6 +1,5 @@
 // ==========================================
-// FILE: server.js - GREENCLOUD MINING FULL BACKEND
-// Cài đặt thư viện: npm install express firebase-admin cors
+// FILE: server.js - GREENCLOUD FULL BACKEND
 // ==========================================
 const express = require('express');
 const admin = require('firebase-admin');
@@ -25,7 +24,7 @@ if (!admin.apps.length) {
 }
 const db = admin.firestore();
 
-// 2. Cấu hình Telegram Bot (Chuẩn HTTPS Node.js, an toàn tuyệt đối)
+// 2. Cấu hình Telegram Bot (Chuẩn HTTPS Node.js gốc)
 const TELEGRAM_BOT_TOKEN = '9196510643:AAGzXlYNEeCxz_Pchrg7528VBkaB53sXpd4';
 const TELEGRAM_CHAT_ID = '7865394196';
 
@@ -63,7 +62,7 @@ function sendTelegram(msg) {
   }
 }
 
-// Danh mục Gói Đào (12 Ngày Hoàn Vốn)
+// Cấu hình danh mục gói đào 12 ngày
 const PACKAGES_CONFIG = {
   '76k': { name: 'Gói Khởi Động 76K', cost: 76000, daily: 16720 },
   '104k': { name: 'Gói Tiêu Chuẩn 104K', cost: 104000, daily: 22880 },
@@ -92,12 +91,11 @@ app.post('/api/auth/register', async (req, res) => {
     let validSponsorUid = null;
 
     if (sponsorUid) {
-      let f1Snap = await db.collection('users').doc(String(sponsorUid).trim()).get();
+      const spClean = String(sponsorUid).trim();
+      let f1Snap = await db.collection('users').doc(spClean).get();
       if (!f1Snap.exists) {
-        const qF1 = await db.collection('users').where('uid', '==', String(sponsorUid).trim()).limit(1).get();
-        if (!qF1.empty) {
-          f1Snap = qF1.docs[0];
-        }
+        const qF1 = await db.collection('users').where('uid', 'in', [spClean, Number(spClean)]).limit(1).get();
+        if (!qF1.empty) f1Snap = qF1.docs[0];
       }
 
       if (f1Snap && f1Snap.exists) {
@@ -115,7 +113,7 @@ app.post('/api/auth/register', async (req, res) => {
       password,
       full_name: fullName || phone,
       balance: 0,
-      upgrade_balance: 20000, // Tặng sẵn 20k vào quỹ hũ
+      upgrade_balance: 20000, // Tặng sẵn 20k vào hũ
       sponsor_uid: validSponsorUid,
       sponsor_f2_uid: sponsorF2Uid,
       owned_packages: { free: 1 },
@@ -130,10 +128,10 @@ app.post('/api/auth/register', async (req, res) => {
     await db.collection('users').doc(newUid).set(newUser);
 
     if (validSponsorUid) {
-      let spRef = db.collection('users').doc(validSponsorUid);
+      let spRef = db.collection('users').doc(String(validSponsorUid));
       let spSnap = await spRef.get();
       if (!spSnap.exists) {
-        const qSp = await db.collection('users').where('uid', '==', validSponsorUid).limit(1).get();
+        const qSp = await db.collection('users').where('uid', 'in', [String(validSponsorUid), Number(validSponsorUid)]).limit(1).get();
         if (!qSp.empty) spRef = qSp.docs[0].ref;
       }
       await spRef.update({
@@ -151,7 +149,7 @@ app.post('/api/auth/register', async (req, res) => {
 });
 
 // ==========================================
-// 4. API BÁO ĐƠN RÚT TIỀN VỀ TELEGRAM
+// 4. API THÔNG BÁO LỆNH RÚT TIỀN VỀ TELEGRAM
 // ==========================================
 app.post('/api/withdraw/alert', (req, res) => {
   const { uid, name, amount, bank, acc, holder } = req.body;
@@ -160,7 +158,7 @@ app.post('/api/withdraw/alert', (req, res) => {
 });
 
 // ==========================================
-// 5. WEBHOOK SEPAY (TỰ ĐỘNG KÍCH HOẠT & CHIA HOA HỒNG F1: 15% • F2: 5%)
+// 5. WEBHOOK SEPAY (TỰ BÓC TÁCH ID NICK, KÍCH HOẠT GÓI 12 NGÀY & CHIA HOA HỒNG)
 // ==========================================
 app.post('/api/webhook/sepay', async (req, res) => {
   console.log('--- [SEPAY WEBHOOK RECEIVED] ---', JSON.stringify(req.body));
@@ -171,7 +169,7 @@ app.post('/api/webhook/sepay', async (req, res) => {
     const rawAmount = body.transferAmount || body.amountIn || body.amount || 0;
     const amountNum = Math.round(Number(String(rawAmount).replace(/[^0-9]/g, '')) || 0);
 
-    // 2. Chuẩn hóa nội dung
+    // 2. Chuẩn hóa nội dung chuyển khoản
     const rawContent = body.content || body.description || body.code || '';
     const cleanContent = rawContent.toString().trim().toUpperCase();
 
@@ -180,7 +178,8 @@ app.post('/api/webhook/sepay', async (req, res) => {
       return res.status(200).json({ success: false, message: 'Số tiền <= 0' });
     }
 
-    // 3. Tách lấy ID người chơi (Ưu tiên GCxxxx, nếu không có lấy số đứng đầu câu)
+    // 3. Bóc tách ID người chơi:
+    // Hỗ trợ cả GC6138215 lẫn số thuần đứng đầu như 6138215- ...[span_0](start_span)[span_0](end_span)
     let uid = null;
     const matchGC = cleanContent.match(/GC\s*(\d{6,9})/i);
     if (matchGC) {
@@ -200,12 +199,18 @@ app.post('/api/webhook/sepay', async (req, res) => {
       return res.status(200).json({ success: false, message: 'Không tìm thấy ID' });
     }
 
-    // 4. Tìm kiếm người dùng nạp tiền trong Firestore
+    console.log(`Bắt đầu xử lý nạp cho UID: ${uid} với số tiền: ${amountNum}`);
+
+    // 4. Tìm kiếm người dùng trong Firestore (hỗ trợ cả DocID, String lẫn Number)
     let userRef = db.collection('users').doc(String(uid));
     let userSnap = await userRef.get();
 
     if (!userSnap.exists) {
-      const qSnap = await db.collection('users').where('uid', '==', String(uid)).limit(1).get();
+      let qSnap = await db.collection('users').where('uid', '==', String(uid)).limit(1).get();
+      if (qSnap.empty) {
+        qSnap = await db.collection('users').where('uid', '==', Number(uid)).limit(1).get();
+      }
+
       if (!qSnap.empty) {
         userRef = qSnap.docs[0].ref;
         userSnap = qSnap.docs[0];
@@ -220,13 +225,13 @@ app.post('/api/webhook/sepay', async (req, res) => {
     // 5. Đối chiếu số tiền với các gói đào
     let matchedPkgKey = null;
     for (const [k, p] of Object.entries(PACKAGES_CONFIG)) {
-      if (p.cost === amountNum) {
+      if (Number(p.cost) === amountNum) {
         matchedPkgKey = k;
         break;
       }
     }
 
-    // Nếu không khớp gói -> Cộng tiền thẳng vào ví chính
+    // Nếu không khớp gói nào -> Cộng tiền thẳng vào Ví chính
     if (!matchedPkgKey) {
       await userRef.update({
         balance: admin.firestore.FieldValue.increment(amountNum)
@@ -236,18 +241,19 @@ app.post('/api/webhook/sepay', async (req, res) => {
     }
 
     const pkgInfo = PACKAGES_CONFIG[matchedPkgKey];
+    const now = Date.now();
 
-    // 6. Kích hoạt dàn máy đào 12 ngày
-    const newInstance = { pkgId: matchedPkgKey, activatedAt: Date.now() };
+    // 6. Kích hoạt dàn máy đào 12 ngày cho người nạp
+    const newInstance = { pkgId: matchedPkgKey, activatedAt: now };
 
     await userRef.update({
       [`owned_packages.${matchedPkgKey}`]: admin.firestore.FieldValue.increment(1),
       active_instances: admin.firestore.FieldValue.arrayUnion(newInstance),
       has_paid_package: true,
-      last_active_at: Date.now()
+      last_active_at: now
     });
 
-    // 7. Xử lý chia hoa hồng F1 (15%) & F2 (5%)
+    // 7. Xử lý chia hoa hồng F1 (15%) và F2 (5%) an toàn
     let f1Uid = userData.sponsor_uid || userData.sponsor || null;
     if (f1Uid) {
       f1Uid = String(f1Uid).trim();
@@ -255,7 +261,7 @@ app.post('/api/webhook/sepay', async (req, res) => {
       let f1Snap = await f1Ref.get();
 
       if (!f1Snap.exists) {
-        const qF1 = await db.collection('users').where('uid', '==', f1Uid).limit(1).get();
+        const qF1 = await db.collection('users').where('uid', 'in', [f1Uid, Number(f1Uid)]).limit(1).get();
         if (!qF1.empty) {
           f1Ref = qF1.docs[0].ref;
           f1Snap = qF1.docs[0];
@@ -280,7 +286,7 @@ app.post('/api/webhook/sepay', async (req, res) => {
           let f2Snap = await f2Ref.get();
 
           if (!f2Snap.exists) {
-            const qF2 = await db.collection('users').where('uid', '==', f2Uid).limit(1).get();
+            const qF2 = await db.collection('users').where('uid', 'in', [f2Uid, Number(f2Uid)]).limit(1).get();
             if (!qF2.empty) {
               f2Ref = qF2.docs[0].ref;
               f2Snap = qF2.docs[0];
@@ -325,11 +331,13 @@ app.post('/api/webhook/sepay', async (req, res) => {
 // ==========================================
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`GreenCloud Backend đang chạy tại port ${PORT}`);
+  console.log(`Server Backend GreenCloud đang chạy trên cổng ${PORT}`);
   sendTelegram("🚀 *Hệ Thống Backend GreenCloud Đã Khởi Động Live Trên Render!*");
 });
 
-// Cơ chế tự Ping mỗi 10 phút để server Render không bị ngủ
+// Tự động ping mỗi 10 phút để server Render không bao giờ ngủ
 setInterval(() => {
-  https.get('https://greencloud-mining-liver.onrender.com', () => {}).on('error', () => {});
+  https.get('https://greencloud-mining-liver.onrender.com', (res) => {
+    // Ping giữ máy chủ online
+  }).on('error', () => {});
 }, 10 * 60 * 1000);
