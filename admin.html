@@ -4,6 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>GreenCloud Admin - Quản Trị Hệ Thống</title>
+
+  <!-- Firebase App & Firestore SDK Compat -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
   <style>
     * {
       box-sizing: border-box;
@@ -23,6 +28,40 @@
     }
     .mono {
       font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    }
+
+    /* Màn hình khóa đăng nhập Admin */
+    #adminLockOverlay {
+      position: fixed;
+      inset: 0;
+      background: #030712;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 999999;
+      padding: 16px;
+    }
+    .lock-card {
+      background: #0f172a;
+      border: 1px solid #1e293b;
+      border-radius: 16px;
+      padding: 24px 20px;
+      width: 100%;
+      max-width: 360px;
+      text-align: center;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
+    }
+    .lock-icon {
+      width: 52px;
+      height: 52px;
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid #10b981;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      margin: 0 auto 12px;
     }
 
     /* Top Bar */
@@ -137,7 +176,7 @@
       margin-top: 2px;
     }
 
-    /* Responsive Mobile Cards (Replaces wide tables) */
+    /* Responsive Mobile Cards */
     .item-card {
       background: #0b1120;
       border: 1px solid #1e293b;
@@ -440,6 +479,18 @@
 </head>
 <body>
 
+  <!-- MÀN HÌNH KHÓA BẢO MẬT MẬT KHẨU TD000 -->
+  <div id="adminLockOverlay">
+    <div class="lock-card">
+      <div class="lock-icon">🔒</div>
+      <h2 style="font-size:16px; font-weight:800; color:#fff; margin-bottom:4px;">GREENCLOUD ADMIN</h2>
+      <p style="font-size:11.5px; color:#94a3b8; margin-bottom:16px;">Vui lòng nhập mật khẩu quản trị để tiếp tục</p>
+      <input type="password" class="input-field mono" id="adminPassInput" placeholder="Nhập mật khẩu..." style="text-align:center; font-size:14px; letter-spacing:2px; margin-bottom:12px;" onkeydown="if(event.key==='Enter') verifyAdminPass()">
+      <button class="btn btn-primary" style="width:100%; padding:10px 0; font-size:13px;" onclick="verifyAdminPass()">Mở Khóa Bảng Điều Khiển</button>
+      <div id="lockErrorMsg" style="color:#ef4444; font-size:11px; margin-top:10px; display:none;">❌ Mật khẩu không chính xác!</div>
+    </div>
+  </div>
+
   <!-- Top Bar -->
   <header class="top-bar">
     <div class="brand">
@@ -449,7 +500,10 @@
         <div class="brand-sub"><span class="status-dot"></span> Quản Trị Hệ Thống 24/7</div>
       </div>
     </div>
-    <button class="btn btn-secondary btn-sm" onclick="testTelegramBot()">⚡ Test Telegram Bot</button>
+    <div style="display:flex; gap:6px;">
+      <button class="btn btn-secondary btn-sm" onclick="testTelegramBot()">⚡ Test Bot</button>
+      <button class="btn btn-danger btn-sm" onclick="logoutAdmin()">🚪 Khóa</button>
+    </div>
   </header>
 
   <div class="container">
@@ -459,18 +513,18 @@
       <div class="stats-grid">
         <div class="stat-card">
           <div class="stat-label">Tổng Thợ Đào</div>
-          <div class="stat-val mono" id="statUsersCount">4</div>
-          <div class="stat-desc">3 kích hoạt gói (75%)</div>
+          <div class="stat-val mono" id="statUsersCount">0</div>
+          <div class="stat-desc" id="statPaidRatio">0 kích hoạt gói</div>
         </div>
         <div class="stat-card">
           <div class="stat-label">Tổng Tiền Nạp (VND)</div>
-          <div class="stat-val mono" style="color:#10b981;" id="statTotalDeposits">464.000 đ</div>
+          <div class="stat-val mono" style="color:#10b981;" id="statTotalDeposits">0 đ</div>
           <div class="stat-desc">MB: 0829594887</div>
         </div>
         <div class="stat-card">
           <div class="stat-label">Lệnh Rút Chờ Duyệt</div>
-          <div class="stat-val mono" style="color:#fbbf24;" id="statPendingWithdraw">1 Lệnh</div>
-          <div class="stat-desc">150.000 đ cần chuyển</div>
+          <div class="stat-val mono" style="color:#fbbf24;" id="statPendingWithdraw">0 Lệnh</div>
+          <div class="stat-desc" id="statPendingAmount">0 đ cần chuyển</div>
         </div>
         <div class="stat-card">
           <div class="stat-label">Bot Telegram</div>
@@ -510,7 +564,7 @@
         </div>
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
           <button class="btn btn-blue" onclick="switchNavTab('tabDownlines', document.querySelectorAll('.nav-item')[3])">🌳 Kiểm Tra Cấp Dưới (Tree)</button>
-          <button class="btn btn-primary" onclick="switchNavTab('tabWithdrawals', document.querySelectorAll('.nav-item')[1])">📤 Xử Lý Lệnh Rút (1)</button>
+          <button class="btn btn-primary" onclick="switchNavTab('tabWithdrawals', document.querySelectorAll('.nav-item')[1])">📤 Xử Lý Lệnh Rút</button>
         </div>
       </div>
     </div>
@@ -520,7 +574,7 @@
       <div class="card">
         <div class="card-title">
           <span>DANH SÁCH LỆNH RÚT TIỀN VỀ NGÂN HÀNG</span>
-          <span class="badge badge-warning" id="withdrawBadgeCount">1 Chờ Duyệt</span>
+          <span class="badge badge-warning" id="withdrawBadgeCount">0 Chờ Duyệt</span>
         </div>
         <div id="withdrawListContainer"></div>
       </div>
@@ -628,7 +682,7 @@
       <div class="modal-header">
         <div>
           <div class="modal-title" id="editModalUserName">Chỉnh Sửa Thành Viên</div>
-          <div class="mono" style="font-size:11px; color:#38bdf8;" id="editModalUserUid">UID: GC-5829104821</div>
+          <div class="mono" style="font-size:11px; color:#38bdf8;" id="editModalUserUid">UID: GC-...</div>
         </div>
         <button class="modal-close" onclick="closeModal('modalEditMember')">✕</button>
       </div>
@@ -758,8 +812,56 @@
 
   <script>
     /* ========================================================
-       CONFIG TELEGRAM BOT & MOCK DATABASE
+       1. BẢO MẬT MẬT KHẨU TD000 CHO ADMIN
     ======================================================== */
+    const ADMIN_PASSWORD_HASH = 'td000';
+
+    function checkAdminAuth() {
+      if (sessionStorage.getItem('GC_ADMIN_LOGGED') === 'true') {
+        document.getElementById('adminLockOverlay').style.display = 'none';
+      } else {
+        document.getElementById('adminLockOverlay').style.display = 'flex';
+      }
+    }
+
+    function verifyAdminPass() {
+      const input = document.getElementById('adminPassInput').value.trim();
+      const err = document.getElementById('lockErrorMsg');
+      if (input === ADMIN_PASSWORD_HASH) {
+        sessionStorage.setItem('GC_ADMIN_LOGGED', 'true');
+        document.getElementById('adminLockOverlay').style.display = 'none';
+        showToast('✓ Đăng nhập Quản Trị thành công!');
+      } else {
+        err.style.display = 'block';
+        document.getElementById('adminPassInput').value = '';
+      }
+    }
+
+    function logoutAdmin() {
+      sessionStorage.removeItem('GC_ADMIN_LOGGED');
+      document.getElementById('adminLockOverlay').style.display = 'flex';
+      document.getElementById('adminPassInput').value = '';
+      document.getElementById('lockErrorMsg').style.display = 'none';
+    }
+
+    /* ========================================================
+       2. CẤU HÌNH FIREBASE FIRESTORE REALTIME (greencluodmine)
+    ======================================================== */
+    const firebaseConfig = {
+      apiKey: "AIzaSyCnJWqfUn_opx--SGJ94DsEwKYV0-DGZsQ",
+      authDomain: "greencluodmine.firebaseapp.com",
+      projectId: "greencluodmine",
+      storageBucket: "greencluodmine.firebasestorage.app",
+      messagingSenderId: "573357395481",
+      appId: "1:573357395481:web:3485a5fc91f8563471a488",
+      measurementId: "G-KKFHVMFZ5Y"
+    };
+
+    if (!firebase.apps.length) {
+      firebase.initializeApp(firebaseConfig);
+    }
+    const db = firebase.firestore();
+
     const TELEGRAM_BOT_TOKEN = '9196510643:AAGzXlYNEeCxz_Pchrg7528VBkaB53sXpd4';
     const TELEGRAM_CHAT_ID = '7865394196';
 
@@ -773,159 +875,100 @@
       showToast("✓ Đã gửi thông điệp kiểm tra tới Telegram Bot!");
     }
 
-    /* Mạng lưới thành viên hoàn chỉnh với cấu trúc Cây Tuyến Dưới (Downline Tree) */
-    let membersData = [
-      {
-        uid: '5829104821',
-        name: 'Hà Trung Đức',
-        phone: '0988776655',
-        pass: 'duc123456',
-        pin: '123456',
-        status: 'active',
-        sponsor: null, // Gốc (Root)
-        balance: 245000,
-        upgradeBalance: 20000,
-        overclock: 6,
-        giftSpins: 3,
-        bank: { name: 'MBBank', acc: '0388999888', holder: 'HA TRUNG DUC' },
-        packages: { free: 1, '76k': 2, '104k': 1, '208k': 0, '416k': 0, '832k': 0, '1500k': 0 },
-        createdAt: '01/11/2026'
-      },
-      {
-        uid: '6192847102',
-        name: 'Nguyễn Văn An',
-        phone: '0912345678',
-        pass: 'an999',
-        pin: '654321',
-        status: 'active',
-        sponsor: '5829104821', // F1 của Hà Trung Đức
-        balance: 85000,
-        upgradeBalance: 15000,
-        overclock: 3,
-        giftSpins: 1,
-        bank: { name: 'Vietcombank', acc: '1012398481', holder: 'NGUYEN VAN AN' },
-        packages: { free: 1, '76k': 0, '104k': 1, '208k': 0, '416k': 0, '832k': 0, '1500k': 0 },
-        createdAt: '01/11/2026'
-      },
-      {
-        uid: '9283741029',
-        name: 'Lê Hoàng Long',
-        phone: '0977889900',
-        pass: 'longrig4080',
-        pin: '112233',
-        status: 'active',
-        sponsor: '5829104821', // F1 của Hà Trung Đức
-        balance: 310000,
-        upgradeBalance: 40000,
-        overclock: 8,
-        giftSpins: 2,
-        bank: { name: 'Techcombank', acc: '19034829102', holder: 'LE HOANG LONG' },
-        packages: { free: 1, '76k': 0, '104k': 0, '208k': 1, '416k': 0, '832k': 0, '1500k': 0 },
-        createdAt: '02/11/2026'
-      },
-      {
-        uid: '7849102931',
-        name: 'Trần Thị Mai',
-        phone: '0981122334',
-        pass: 'mai789',
-        pin: '888999',
-        status: 'active',
-        sponsor: '6192847102', // F1 của An, F2 của Đức
-        balance: 42000,
-        upgradeBalance: 20000,
-        overclock: 0,
-        giftSpins: 0,
-        bank: { name: 'MBBank', acc: '0981122334', holder: 'TRAN THI MAI' },
-        packages: { free: 1, '76k': 1, '104k': 0, '208k': 0, '416k': 0, '832k': 0, '1500k': 0 },
-        createdAt: '02/11/2026'
-      },
-      {
-        uid: '3349182019',
-        name: 'Phạm Minh Tuấn',
-        phone: '0934567890',
-        pass: 'tuanfree',
-        pin: '000000',
-        status: 'active',
-        sponsor: '5829104821', // F1 của Hà Trung Đức (chưa nạp gói trả phí)
-        balance: 1200,
-        upgradeBalance: 20000,
-        overclock: 0,
-        giftSpins: 0,
-        bank: { name: 'MBBank', acc: '0934567890', holder: 'PHAM MINH TUAN' },
-        packages: { free: 1, '76k': 0, '104k': 0, '208k': 0, '416k': 0, '832k': 0, '1500k': 0 },
-        createdAt: '02/11/2026'
-      }
-    ];
-
-    let withdrawalsData = [
-      {
-        id: 'WD-9182',
-        uid: '5829104821',
-        name: 'Hà Trung Đức',
-        bank: 'MBBank',
-        acc: '0388999888',
-        holder: 'HA TRUNG DUC',
-        amount: 150000,
-        pinUsed: '123456',
-        time: '02/11/2026 14:35',
-        status: 'pending'
-      }
-    ];
-
-    let depositsData = [
-      {
-        id: 'DP-101',
-        uid: '5829104821',
-        name: 'Hà Trung Đức',
-        type: 'Nạp Gói Khởi Động 76K',
-        code: 'GC5829104821',
-        amount: 76000,
-        time: '01/11/2026 10:15',
-        status: 'success'
-      },
-      {
-        id: 'DP-102',
-        uid: '6192847102',
-        name: 'Nguyễn Văn An',
-        type: 'Nạp Gói Tiêu Chuẩn 104K',
-        code: 'GC6192847102',
-        amount: 104000,
-        time: '01/11/2026 14:20',
-        status: 'success'
-      },
-      {
-        id: 'DP-103',
-        uid: '9283741029',
-        name: 'Lê Hoàng Long',
-        type: 'Nạp Gói Nâng Cao 208K',
-        code: 'GC9283741029',
-        amount: 208000,
-        time: '02/11/2026 09:40',
-        status: 'success'
-      },
-      {
-        id: 'DP-104',
-        uid: '7849102931',
-        name: 'Trần Thị Mai',
-        type: 'Nạp Gói Khởi Động 76K',
-        code: 'GC7849102931',
-        amount: 76000,
-        time: '02/11/2026 11:05',
-        status: 'success'
-      }
-    ];
+    let membersData = [];
+    let withdrawalsData = [];
+    let depositsData = [];
 
     /* ========================================================
-       RENDER FUNCTIONS
+       3. LẮNG NGHE DỮ LIỆU ĐÁM MÂY THỜI GIAN THỰC (REALTIME)
+    ======================================================== */
+    function initRealtimeListeners() {
+      // Lắng nghe Members (users)
+      db.collection('users').onSnapshot(snap => {
+        membersData = snap.docs.map(doc => {
+          const d = doc.data();
+          return {
+            uid: d.uid || doc.id,
+            name: d.full_name || d.name || 'Thợ Đào',
+            phone: d.phone || '',
+            pass: d.password || d.pass || '',
+            pin: d.pin || '123456',
+            status: d.status || 'active',
+            sponsor: d.sponsor_uid || d.sponsor || null,
+            balance: d.balance || 0,
+            upgradeBalance: d.upgrade_balance || d.upgradeBalance || 0,
+            overclock: d.overclock_percent || d.overclock || 0,
+            giftSpins: d.gift_spins || d.giftSpins || 0,
+            bank: d.saved_bank || d.bank || { name: 'MBBank', acc: '', holder: '' },
+            packages: d.owned_packages || d.packages || { free: 1 },
+            createdAt: d.created_at ? new Date(d.created_at.toDate ? d.created_at.toDate() : d.created_at).toLocaleDateString('vi-VN') : 'Mới tạo'
+          };
+        });
+
+        document.getElementById('statUsersCount').textContent = membersData.length;
+        const paidCount = membersData.filter(m => Object.entries(m.packages).some(([k, v]) => k !== 'free' && v > 0)).length;
+        document.getElementById('statPaidRatio').textContent = `${paidCount} kích hoạt gói (${membersData.length ? Math.round(paidCount/membersData.length*100) : 0}%)`;
+
+        renderMembers();
+        populateDownlineUserSelect();
+        renderDownlineTreeForSelected();
+      });
+
+      // Lắng nghe Withdrawals
+      db.collection('withdrawals').orderBy('created_at', 'desc').onSnapshot(snap => {
+        withdrawalsData = snap.docs.map(doc => {
+          const d = doc.data();
+          return {
+            id: d.id || doc.id,
+            uid: d.uid,
+            name: d.full_name || 'Khách',
+            bank: d.bank,
+            acc: d.acc_num || d.acc,
+            holder: d.acc_holder || d.holder,
+            amount: d.amount || 0,
+            time: d.created_at ? new Date(d.created_at.toDate ? d.created_at.toDate() : d.created_at).toLocaleString('vi-VN') : 'Vừa xong',
+            status: d.status || 'pending'
+          };
+        });
+        renderWithdrawals();
+      });
+
+      // Lắng nghe Deposits
+      db.collection('deposits').orderBy('created_at', 'desc').onSnapshot(snap => {
+        let total = 0;
+        depositsData = snap.docs.map(doc => {
+          const d = doc.data();
+          total += (d.amount || 0);
+          return {
+            id: doc.id,
+            uid: d.uid || d.user_uid,
+            name: d.full_name || 'Khách GC',
+            type: d.package_name || 'Nạp Gói Máy Đào',
+            code: d.code || '',
+            amount: d.amount || 0,
+            time: d.created_at ? new Date(d.created_at.toDate ? d.created_at.toDate() : d.created_at).toLocaleString('vi-VN') : 'Vừa xong',
+            status: 'success'
+          };
+        });
+        document.getElementById('statTotalDeposits').textContent = total.toLocaleString('vi-VN') + ' đ';
+        renderDeposits();
+        renderDownlineTreeForSelected();
+      });
+    }
+
+    /* ========================================================
+       4. CÁC HÀM XỬ LÝ GIAO DIỆN & DUYỆT ĐƠN
     ======================================================== */
     function renderWithdrawals() {
       const container = document.getElementById('withdrawListContainer');
       const badge = document.getElementById('withdrawBadgeCount');
       const statPend = document.getElementById('statPendingWithdraw');
-      const pendingCount = withdrawalsData.filter(w => w.status === 'pending').length;
+      const pendingItems = withdrawalsData.filter(w => w.status === 'pending');
+      const pendingSum = pendingItems.reduce((acc, cur) => acc + cur.amount, 0);
 
-      badge.textContent = `${pendingCount} Chờ Duyệt`;
-      statPend.textContent = `${pendingCount} Lệnh`;
+      badge.textContent = `${pendingItems.length} Chờ Duyệt`;
+      statPend.textContent = `${pendingItems.length} Lệnh`;
+      document.getElementById('statPendingAmount').textContent = `${pendingSum.toLocaleString('vi-VN')} đ cần chuyển`;
 
       if (withdrawalsData.length === 0) {
         container.innerHTML = '<div style="text-align:center; color:#64748b; padding:16px;">Không có lệnh rút tiền nào.</div>';
@@ -966,35 +1009,45 @@
           ${w.status === 'pending' ? `
             <div style="display:flex; gap:8px; margin-top:6px;">
               <button class="btn btn-primary" style="flex:1;" onclick="approveWithdrawal('${w.id}')">✓ Duyệt & Đã CK</button>
-              <button class="btn btn-danger" style="flex:1;" onclick="rejectWithdrawal('${w.id}')">✕ Từ Chối</button>
+              <button class="btn btn-danger" style="flex:1;" onclick="rejectWithdrawal('${w.id}')">✕ Từ Chối & Hoàn Tiền</button>
             </div>
           ` : `
-            <div style="font-size:10.5px; color:#64748b; text-align:center; padding-top:4px;">Giao dịch đã được xử lý hoàn tất.</div>
+            <div style="font-size:10.5px; color:#64748b; text-align:center; padding-top:4px;">Giao dịch đã được xử lý hoàn tất trên đám mây.</div>
           `}
         </div>
       `).join('');
     }
 
-    function approveWithdrawal(wId) {
+    async function approveWithdrawal(wId) {
       const item = withdrawalsData.find(w => w.id === wId);
       if (!item) return;
-      item.status = 'approved';
-      renderWithdrawals();
-      showToast('✓ Đã phê duyệt và cập nhật trạng thái chuyển khoản!');
-      sendTelegramAdmin(`✅ *Lệnh Rút Tiền Đã Được Duyệt Thành Công!*\n- Thợ đào: ${item.name} (GC-${item.uid})\n- Số tiền: ${item.amount.toLocaleString('vi-VN')} đ\n- Ngân hàng: ${item.bank} - STK: \`${item.acc}\`\n- Chủ thẻ: ${item.holder}`);
+      if (!confirm(`Xác nhận đã chuyển khoản thành công ${item.amount.toLocaleString('vi-VN')} đ cho ${item.holder}?`)) return;
+
+      await db.collection('withdrawals').doc(wId).update({ status: 'approved' });
+      showToast('✓ Đã phê duyệt và cập nhật trạng thái trên Firestore!');
+      sendTelegramAdmin(`✅ *Lệnh Rút Tiền Đã Được Duyệt!*\n- Thợ đào: ${item.name} (GC-${item.uid})\n- Số tiền: *${item.amount.toLocaleString('vi-VN')} đ*\n- Ngân hàng: *${item.bank}* - STK: \`${item.acc}\`\n- Chủ thẻ: *${item.holder}*`);
     }
 
-    function rejectWithdrawal(wId) {
+    async function rejectWithdrawal(wId) {
       const item = withdrawalsData.find(w => w.id === wId);
       if (!item) return;
-      item.status = 'rejected';
-      renderWithdrawals();
-      showToast('✕ Đã từ chối lệnh rút tiền!');
-      sendTelegramAdmin(`❌ *Lệnh Rút Tiền Bị Từ Chối*\n- Thợ đào: ${item.name} (GC-${item.uid})\n- Số tiền: ${item.amount.toLocaleString('vi-VN')} đ\n- Lý do: Thông tin tài khoản không hợp lệ hoặc sai mã PIN.`);
+      if (!confirm(`Từ chối đơn ${wId} và HOÀN LẠI ${item.amount.toLocaleString('vi-VN')} đ vào ví cho khách?`)) return;
+
+      await db.collection('withdrawals').doc(wId).update({ status: 'rejected', note: 'Admin từ chối duyệt' });
+      await db.collection('users').doc(item.uid).update({
+        balance: firebase.firestore.FieldValue.increment(item.amount)
+      });
+
+      showToast('✕ Đã từ chối lệnh rút tiền và hoàn lại số dư cho khách!');
+      sendTelegramAdmin(`❌ *Lệnh Rút Tiền Bị Từ Chối & Đã Hoàn Tiền*\n- Thợ đào: ${item.name} (GC-${item.uid})\n- Số tiền hoàn trả: *${item.amount.toLocaleString('vi-VN')} đ*`);
     }
 
     function renderDeposits() {
       const container = document.getElementById('depositListContainer');
+      if (depositsData.length === 0) {
+        container.innerHTML = '<div style="text-align:center; color:#64748b; padding:16px;">Chưa có giao dịch nạp nào.</div>';
+        return;
+      }
       container.innerHTML = depositsData.map(d => `
         <div class="item-card">
           <div class="item-header">
@@ -1022,8 +1075,10 @@
 
     function renderMembers(list = membersData) {
       const container = document.getElementById('memberListContainer');
-      document.getElementById('statUsersCount').textContent = membersData.length;
-
+      if (list.length === 0) {
+        container.innerHTML = '<div style="text-align:center; color:#64748b; padding:16px;">Không tìm thấy thợ đào nào.</div>';
+        return;
+      }
       container.innerHTML = list.map(m => {
         const totalP = Object.values(m.packages).reduce((a, b) => a + b, 0);
         const hasPaid = Object.entries(m.packages).some(([k, v]) => k !== 'free' && v > 0);
@@ -1049,7 +1104,7 @@
             </div>
             <div class="item-row">
               <span>Ngân Hàng:</span>
-              <span>${m.bank.name} - ${m.bank.acc}</span>
+              <span>${m.bank.name || 'MBBank'} - ${m.bank.acc || 'Chưa thiết lập'}</span>
             </div>
             <div style="display:flex; gap:6px; margin-top:6px;">
               <button class="btn btn-blue btn-sm" style="flex:1;" onclick="openEditMemberModal('${m.uid}')">⚙️ Sửa Chi Tiết</button>
@@ -1075,13 +1130,18 @@
     }
 
     /* ========================================================
-       CHỨC NĂNG CỐT LÕI: KIỂM TRA CẤP DƯỚI CỦA TẤT CẢ THÀNH VIÊN
+       5. KIỂM TRA PHẢ HỆ CẤP DƯỚI (CÂY HOA HỒNG REALTIME)
     ======================================================== */
     function populateDownlineUserSelect() {
       const sel = document.getElementById('downlineSelectUser');
+      if (!sel) return;
+      const cur = sel.value;
       sel.innerHTML = membersData.map(m => `
         <option value="${m.uid}">${m.name} (UID: GC-${m.uid}) - SĐT: ${m.phone}</option>
       `).join('');
+      if (cur && membersData.some(m => m.uid === cur)) {
+        sel.value = cur;
+      }
     }
 
     function jumpToUserDownline(uid) {
@@ -1095,15 +1155,12 @@
       const user = membersData.find(m => m.uid === selectedUid);
       if (!user) return;
 
-      // 1. Tìm thông tin cấp trên (Sponsor / Upline)
       const upline = membersData.find(m => m.uid === user.sponsor);
       document.getElementById('downlineSponsorName').textContent = upline ? `${upline.name} (GC-${upline.uid})` : 'Hệ Thống Gốc (Root)';
 
-      // 2. Tìm danh sách F1 trực tiếp
       const f1List = membersData.filter(m => m.sponsor === user.uid);
       document.getElementById('downlineF1Count').textContent = `${f1List.length} người`;
 
-      // 3. Tìm danh sách F2 (Cấp dưới của từng F1)
       let f2List = [];
       f1List.forEach(f1 => {
         const subF2 = membersData.filter(m => m.sponsor === f1.uid);
@@ -1111,27 +1168,18 @@
       });
       document.getElementById('downlineF2Count').textContent = `${f2List.length} người`;
 
-      // 4. Tính toán tổng doanh số nạp tiền của toàn đội F1 + F2
       let totalTeamVolume = 0;
-      let totalCommissionEarned = 0;
-
       f1List.forEach(f1 => {
         const f1Deposits = depositsData.filter(d => d.uid === f1.uid);
-        const f1TotalDep = f1Deposits.reduce((acc, cur) => acc + cur.amount, 0);
-        totalTeamVolume += f1TotalDep;
-        totalCommissionEarned += f1TotalDep * 0.07; // F1: 7%
+        totalTeamVolume += f1Deposits.reduce((acc, cur) => acc + cur.amount, 0);
       });
-
       f2List.forEach(f2 => {
         const f2Deposits = depositsData.filter(d => d.uid === f2.uid);
-        const f2TotalDep = f2Deposits.reduce((acc, cur) => acc + cur.amount, 0);
-        totalTeamVolume += f2TotalDep;
-        totalCommissionEarned += f2TotalDep * 0.03; // F2: 3%
+        totalTeamVolume += f2Deposits.reduce((acc, cur) => acc + cur.amount, 0);
       });
 
       document.getElementById('downlineTotalVolume').textContent = totalTeamVolume.toLocaleString('vi-VN') + ' đ';
 
-      // 5. Vẽ cây mạng lưới phân cấp trực quan
       const container = document.getElementById('downlineTreeContainer');
       if (f1List.length === 0) {
         container.innerHTML = `
@@ -1148,8 +1196,6 @@
         const f1TotalDep = f1Deposits.reduce((acc, cur) => acc + cur.amount, 0);
         const f1HasPaid = f1TotalDep > 0;
         const f1Comm = f1TotalDep * 0.07;
-
-        // Tìm F2 thuộc nhánh của F1 này
         const myF2s = membersData.filter(m => m.sponsor === f1.uid);
 
         treeHtml += `
@@ -1167,11 +1213,10 @@
             <div class="tree-meta">
               <span>📱 SĐT: ${f1.phone}</span>
               <span>📅 Tham gia: ${f1.createdAt}</span>
-              <span>💵 Hoa hồng đóng góp (7%): <b style="color:#10b981;">+${f1Comm.toLocaleString('vi-VN')} đ</b></span>
-              <span>👥 F2 Tuyến Dưới: <b>${myF2s.length} người</b></span>
+              <span>💵 Hoa hồng F1 (7%): <b style="color:#10b981;">+${f1Comm.toLocaleString('vi-VN')} đ</b></span>
+              <span>👥 Nhánh F2: <b>${myF2s.length} người</b></span>
             </div>
 
-            <!-- Nhánh F2 hiển thị lồng vào bên trong -->
             ${myF2s.length > 0 ? `
               <div style="margin-top:8px; padding-top:8px; border-top:1px dashed #1e293b;">
                 ${myF2s.map(f2 => {
@@ -1195,7 +1240,7 @@
                       <div class="tree-meta">
                         <span>📱 SĐT: ${f2.phone}</span>
                         <span>Giới thiệu bởi F1: <b>${f1.name}</b></span>
-                        <span>💵 Hoa hồng gián tiếp (3%): <b style="color:#38bdf8;">+${f2Comm.toLocaleString('vi-VN')} đ</b></span>
+                        <span>💵 Hoa hồng F2 (3%): <b style="color:#38bdf8;">+${f2Comm.toLocaleString('vi-VN')} đ</b></span>
                       </div>
                     </div>
                   `;
@@ -1210,7 +1255,7 @@
     }
 
     /* ========================================================
-       MODAL CHỈNH SỬA THÀNH VIÊN (5 PHẦN)
+       6. MODAL CHỈNH SỬA THÀNH VIÊN VÀ LƯU VÀO FIRESTORE
     ======================================================== */
     let currentEditingUid = null;
 
@@ -1222,19 +1267,16 @@
       document.getElementById('editModalUserName').textContent = `Chỉnh Sửa: ${user.name}`;
       document.getElementById('editModalUserUid').textContent = `Mã Định Danh: GC-${user.uid}`;
 
-      // Tab 1
       document.getElementById('editUserFullName').value = user.name;
       document.getElementById('editUserPhone').value = user.phone;
       document.getElementById('editUserPass').value = user.pass;
       document.getElementById('editUserPin').value = user.pin;
       document.getElementById('editUserStatus').value = user.status;
 
-      // Tab 2
       document.getElementById('editUserBalance').value = user.balance;
       document.getElementById('editUserUpgradeBalance').value = user.upgradeBalance;
       document.getElementById('editBalanceReason').value = '';
 
-      // Tab 3
       const pkgContainer = document.getElementById('editPackagesList');
       const PKG_NAMES = {
         free: 'Gói Miễn Phí (Free)',
@@ -1253,12 +1295,10 @@
       `).join('');
       document.getElementById('editUserOverclock').value = user.overclock;
 
-      // Tab 4
-      document.getElementById('editUserBankName').value = user.bank.name;
-      document.getElementById('editUserBankAcc').value = user.bank.acc;
-      document.getElementById('editUserBankHolder').value = user.bank.holder;
+      document.getElementById('editUserBankName').value = user.bank.name || 'MBBank';
+      document.getElementById('editUserBankAcc').value = user.bank.acc || '';
+      document.getElementById('editUserBankHolder').value = user.bank.holder || '';
 
-      // Tab 5
       document.getElementById('editUserSponsorUid').value = user.sponsor || '';
       document.getElementById('editUserGiftSpins').value = user.giftSpins;
 
@@ -1295,45 +1335,45 @@
       }
     }
 
-    function saveMemberEdits() {
-      const user = membersData.find(m => m.uid === currentEditingUid);
-      if (!user) return;
+    async function saveMemberEdits() {
+      if (!currentEditingUid) return;
 
-      user.name = document.getElementById('editUserFullName').value.trim();
-      user.phone = document.getElementById('editUserPhone').value.trim();
-      user.pass = document.getElementById('editUserPass').value.trim();
-      user.pin = document.getElementById('editUserPin').value.trim();
-      user.status = document.getElementById('editUserStatus').value;
-
-      user.balance = parseFloat(document.getElementById('editUserBalance').value) || 0;
-      user.upgradeBalance = parseFloat(document.getElementById('editUserUpgradeBalance').value) || 0;
-
-      // Lưu số lượng máy đào
+      const packagesObj = {};
       document.querySelectorAll('.pkg-input').forEach(inp => {
         const key = inp.getAttribute('data-key');
-        user.packages[key] = parseInt(inp.value) || 0;
+        packagesObj[key] = parseInt(inp.value) || 0;
       });
-      user.overclock = parseInt(document.getElementById('editUserOverclock').value) || 0;
 
-      user.bank.name = document.getElementById('editUserBankName').value;
-      user.bank.acc = document.getElementById('editUserBankAcc').value.trim();
-      user.bank.holder = document.getElementById('editUserBankHolder').value.trim().toUpperCase();
+      const updatedData = {
+        full_name: document.getElementById('editUserFullName').value.trim(),
+        phone: document.getElementById('editUserPhone').value.trim(),
+        password: document.getElementById('editUserPass').value.trim(),
+        pin: document.getElementById('editUserPin').value.trim(),
+        status: document.getElementById('editUserStatus').value,
+        balance: parseFloat(document.getElementById('editUserBalance').value) || 0,
+        upgrade_balance: parseFloat(document.getElementById('editUserUpgradeBalance').value) || 0,
+        owned_packages: packagesObj,
+        overclock_percent: parseInt(document.getElementById('editUserOverclock').value) || 0,
+        saved_bank: {
+          bankName: document.getElementById('editUserBankName').value,
+          accountNum: document.getElementById('editUserBankAcc').value.trim(),
+          accountName: document.getElementById('editUserBankHolder').value.trim().toUpperCase()
+        },
+        sponsor_uid: document.getElementById('editUserSponsorUid').value.trim() || null,
+        gift_spins: parseInt(document.getElementById('editUserGiftSpins').value) || 0
+      };
 
-      user.sponsor = document.getElementById('editUserSponsorUid').value.trim() || null;
-      user.giftSpins = parseInt(document.getElementById('editUserGiftSpins').value) || 0;
+      await db.collection('users').doc(currentEditingUid).update(updatedData);
+
+      closeModal('modalEditMember');
+      showToast('✓ Đã lưu toàn bộ thông tin thành viên lên Firestore!');
 
       const reason = document.getElementById('editBalanceReason').value.trim();
-
-      renderMembers();
-      populateDownlineUserSelect();
-      closeModal('modalEditMember');
-      showToast('✓ Đã lưu toàn bộ thông tin thành viên thành công!');
-
-      sendTelegramAdmin(`👤 *Cập Nhật Thông Tin Thợ Đào*\n- Quản trị viên vừa chỉnh sửa thợ đào: ${user.name} (GC-${user.uid})\n- Số dư Ví: ${user.balance.toLocaleString('vi-VN')} đ | Hũ: ${user.upgradeBalance.toLocaleString('vi-VN')} đ\n- Trạng thái: ${user.status}\n${reason ? '- Ghi chú: ' + reason : ''}`);
+      sendTelegramAdmin(`👤 *Cập Nhật Thông Tin Thợ Đào*\n- Quản trị viên vừa chỉnh sửa thợ đào: ${updatedData.full_name} (GC-${currentEditingUid})\n- Số dư Ví: ${updatedData.balance.toLocaleString('vi-VN')} đ | Hũ: ${updatedData.upgrade_balance.toLocaleString('vi-VN')} đ\n- Trạng thái: ${updatedData.status}\n${reason ? '- Ghi chú: ' + reason : ''}`);
     }
 
     /* ========================================================
-       MODAL & NAVIGATION UTILS
+       7. UTILITIES
     ======================================================== */
     function openModal(id) {
       const el = document.getElementById(id);
@@ -1362,13 +1402,10 @@
       setTimeout(() => t.classList.remove('show'), 2600);
     }
 
-    // INIT
+    // KHỞI CHẠY HỆ THỐNG
     window.addEventListener('DOMContentLoaded', () => {
-      renderWithdrawals();
-      renderDeposits();
-      renderMembers();
-      populateDownlineUserSelect();
-      renderDownlineTreeForSelected();
+      checkAdminAuth();
+      initRealtimeListeners();
     });
   </script>
 </body>
