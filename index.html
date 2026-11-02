@@ -425,6 +425,7 @@
       gap: 6px;
       touch-action: manipulation;
       transition: all 0.15s ease;
+      text-decoration: none;
     }
     .btn:active {
       transform: scale(0.97);
@@ -443,6 +444,11 @@
       background: linear-gradient(135deg, #0284c7, #0369a1);
       color: #fff;
       box-shadow: 0 4px 12px rgba(2, 132, 199, 0.3);
+    }
+    .btn-tele {
+      background: linear-gradient(135deg, #229ED9, #0088cc);
+      color: #fff;
+      box-shadow: 0 4px 14px rgba(34, 158, 217, 0.4);
     }
     .btn-sm {
       padding: 6px 12px;
@@ -686,7 +692,7 @@
     <!-- News Marquee -->
     <div class="news-strip">
       <span class="news-badge">TIN TỨC</span>
-      <span class="news-marquee">Chu kỳ hoàn vốn 12 ngày cố định • Khung giờ rút tiền: 10:00 - 17:00 hàng ngày • MB Bank 0829594887 tự động khớp tiền 24/7 • Tặng ngay 20.000 đ vào Hũ Nâng Cấp khi tạo tài khoản!</span>
+      <span class="news-marquee">Chu kỳ hoàn vốn 12 ngày cố định • Khung giờ rút tiền: 10:00 - 17:00 hàng ngày • Nhóm Telegram VIP: t.me/greencloudvip • Tặng ngay 20.000 đ vào Hũ Nâng Cấp khi tạo tài khoản!</span>
     </div>
 
     <!-- Content Tabs -->
@@ -873,6 +879,11 @@
             <span style="color:#10b981; font-weight:800;">F1: 15% • F2: 5%</span>
           </div>
 
+          <!-- BANNER NHÓM TELEGRAM CHÍNH THỨC -->
+          <a href="https://t.me/greencloudvip" target="_blank" class="btn btn-tele" style="margin-bottom:12px; font-size:12px; border-radius:10px;">
+            ✈️ THAM GIA NHÓM TELEGRAM VIP (HỖ TRỢ & SỰ KIỆN)
+          </a>
+
           <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px;">
             <div style="background:#020617; border:1px solid #1e293b; border-radius:10px; padding:10px; text-align:center;">
               <div style="font-size:10.5px; color:#64748b;">Thành viên F1</div>
@@ -890,10 +901,14 @@
 
           <div class="input-group">
             <label class="input-label">LIÊN KẾT MỜI CỦA BẠN</label>
-            <div style="display:flex; gap:6px;">
+            <div style="display:flex; gap:6px; margin-bottom:8px;">
               <input type="text" class="input-control mono" id="refLinkInput" value="" readonly>
-              <button class="btn btn-secondary btn-sm" onclick="window.copyRefLink()">Copy</button>
+              <button class="btn btn-secondary btn-sm" onclick="window.copyRefLink()">Copy Link</button>
             </div>
+            <!-- NÚT SAO CHÉP LỜI MỜI KÈM LINK TELEGRAM -->
+            <button class="btn btn-secondary btn-sm" style="width:100%; color:#38bdf8; border-color:#0284c7;" onclick="window.copyRefInviteMsg()">
+              📋 Sao Chép Lời Mời Bạn Bè (Kèm Link Nhóm Telegram)
+            </button>
           </div>
         </div>
 
@@ -988,14 +1003,14 @@
           </div>
         </div>
 
-        <!-- Hỗ trợ -->
+        <!-- Hỗ trợ & Telegram -->
         <div class="card">
           <div class="card-title">
             <span>THÔNG TIN & HỖ TRỢ</span>
           </div>
           <div style="display:flex; flex-direction:column; gap:6px;">
+            <a href="https://t.me/greencloudvip" target="_blank" class="btn btn-tele btn-sm" style="text-align:center;">✈️ Kênh / Nhóm Telegram VIP (t.me/greencloudvip)</a>
             <button class="btn btn-secondary btn-sm" onclick="window.openModal('modalIntro')">📖 Giới Thiệu Nền Tảng GreenCloud</button>
-            <button class="btn btn-secondary btn-sm" onclick="window.showToast('Kênh cộng đồng hỗ trợ trực tuyến: GreenCloud Global')">🌐 Kênh Cộng Đồng Khai Thác</button>
             <button class="btn btn-secondary btn-sm" onclick="window.showToast('Tổng đài CSKH 24/7: support@greencloud.vn')">🎧 Trung Tâm CSKH 24/7</button>
           </div>
         </div>
@@ -1049,7 +1064,26 @@
 
   <div id="sysToast">Thông báo</div>
 
-  <!-- Modals -->
+  <!-- ==================== POPUP CHÀO MỪNG TELEGRAM VIP KHI VÀO WEB ==================== -->
+  <div class="modal-backdrop" id="modalTeleWelcome">
+    <div class="modal-sheet" style="text-align:center; padding:22px 18px; border:1.5px solid #229ED9;">
+      <div style="font-size:52px; margin-bottom:10px; animation:pulseAnim 1.6s infinite;">✈️</div>
+      <div style="font-size:16px; font-weight:800; color:#fff; margin-bottom:6px;">NHÓM THỢ ĐÀO TELEGRAM VIP</div>
+      <p style="font-size:12px; color:#cbd5e1; line-height:1.5; margin-bottom:16px;">
+        Chào mừng bạn đến với <b>GreenCloud Mining</b>!<br>
+        Hãy tham gia ngay nhóm Telegram chính thức để nhận thông báo nhận code nạp, sự kiện tặng quà và hỗ trợ 24/7 từ Admin.
+      </p>
+
+      <a href="https://t.me/greencloudvip" target="_blank" class="btn btn-tele" style="font-size:13.5px; padding:12px; margin-bottom:8px; border-radius:10px;" onclick="window.closeModal('modalTeleWelcome')">
+        👉 THAM GIA NGAY: t.me/greencloudvip
+      </a>
+      <button class="btn btn-secondary btn-sm" style="width:100%; border-radius:8px;" onclick="window.closeModal('modalTeleWelcome')">
+        Đã Tham Gia / Để Sau
+      </button>
+    </div>
+  </div>
+
+  <!-- Modals khác -->
 
   <!-- Modal Đăng Ký / Đăng Nhập -->
   <div class="modal-backdrop" id="modalAuth">
@@ -1472,6 +1506,8 @@
         <br>
         <p>⏰ <b>Quy định rút tiền:</b> Cổng rút tiền mở từ <b>10:00 sáng đến 17:00 chiều</b> hàng ngày để hệ thống và Admin duyệt chi.</p>
         <br>
+        <p>✈️ <b>Kênh Telegram VIP:</b> <a href="https://t.me/greencloudvip" target="_blank" style="color:#38bdf8;">t.me/greencloudvip</a></p>
+        <br>
         <p>🏦 <b>MB Bank:</b> Số tài khoản <b>0829594887</b> (DANG HIEU THANG) hỗ trợ SePay tự động.</p>
       </div>
     </div>
@@ -1491,6 +1527,7 @@
   <script>
     const DURATION_DAYS = 12;
     const DURATION_MS = DURATION_DAYS * 24 * 60 * 60 * 1000;
+    const TELEGRAM_GROUP_URL = 'https://t.me/greencloudvip';
 
     function isWithdrawWindowOpen() {
       const now = new Date();
@@ -2152,7 +2189,6 @@
       window.openModal('modalWithdraw');
     };
 
-    // SỬA TRIỆT ĐỂ: TRỪ SỐ DƯ NGAY LẬP TỨC TRÊN FIRESTORE & BIẾN RUNTIME
     window.submitWithdraw = async function() {
       if (isActionLocked) return;
 
@@ -2176,16 +2212,13 @@
       isActionLocked = true;
       const orderId = 'WD' + Date.now().toString().slice(-6);
 
-      // 1. Trừ ngay số dư cục bộ
       user.balance = Math.max(0, user.balance - amount);
       updateUI();
 
-      // 2. Trừ trực tiếp trên Firebase Firestore
       await db.collection('users').doc(user.telegramId).update({
         balance: firebase.firestore.FieldValue.increment(-amount)
       });
 
-      // 3. Tạo lệnh rút trạng thái pending
       const orderRef = db.collection('withdrawals').doc(orderId);
       await orderRef.set({
         id: orderId,
@@ -2317,6 +2350,14 @@
       window.showToast('✓ Đã sao chép liên kết mời!');
     };
 
+    // SAO CHÉP LỜI MỜI KÈM LINK REF VÀ LINK NHÓM TELEGRAM
+    window.copyRefInviteMsg = function() {
+      const refLink = document.getElementById('refLinkInput').value;
+      const msg = `🚀 Tham gia GreenCloud Mining - Đào Bitcoin đám mây nhận tiền mỗi giây!\n🎁 Đăng ký nhận ngay 20.000đ vào quỹ:\n👉 Link đăng ký: ${refLink}\n✈️ Nhóm Telegram hỗ trợ & nhận quà: ${TELEGRAM_GROUP_URL}`;
+      navigator.clipboard.writeText(msg);
+      window.showToast('✓ Đã sao chép tin nhắn mời kèm link Telegram!');
+    };
+
     window.claimDailyTask = async function() {
       if (isActionLocked) return;
       if (!user.isLoggedIn) { window.openAuthModal('register'); return; }
@@ -2359,7 +2400,6 @@
       }
     };
 
-    // SỬA LOGIC HIỂN THỊ TIỀN NẠP & HOA HỒNG 15% CHO DANH SÁCH F1
     window.openF1ListModal = async function() {
       const cPaid = document.getElementById('f1PaidContainer');
       const cUnpaid = document.getElementById('f1UnpaidContainer');
@@ -2388,14 +2428,12 @@
         const d = doc.data();
         const f1Uid = d.uid || doc.id;
 
-        // 1. Quét collection deposits
         const depSnap = await db.collection('deposits').where('uid', '==', f1Uid).get();
         let totalDeposit = 0;
         depSnap.forEach(dp => {
           totalDeposit += (dp.data().amount || 0);
         });
 
-        // 2. Dự phòng: Nếu chưa ghi deposits, tự động tính theo các gói đã kích hoạt
         if (totalDeposit === 0 && d.owned_packages) {
           for (const [pId, qty] of Object.entries(d.owned_packages)) {
             if (pId !== 'free' && PACKAGES_CONFIG[pId] && qty > 0) {
@@ -2404,7 +2442,6 @@
           }
         }
 
-        // Tính hoa hồng F1: 15%
         const commission15 = totalDeposit * 0.15;
         const phoneFormatted = d.phone ? (d.phone.slice(0, 3) + '****' + d.phone.slice(-3)) : f1Uid;
         const joinDate = d.created_at ? new Date(d.created_at.toDate ? d.created_at.toDate() : d.created_at).toLocaleDateString('vi-VN') : 'Mới';
@@ -2702,6 +2739,11 @@
       requestAnimationFrame(gameLoop);
       startSystemToastLoop();
 
+      // BẬT POPUP CHÀO MỪNG TELEGRAM VIP KHI TRUY CẬP
+      setTimeout(() => {
+        window.openModal('modalTeleWelcome');
+      }, 1200);
+
       setInterval(() => {
         const baseHeight = 40;
         const rate = calculateYieldPerSecond();
@@ -2711,7 +2753,6 @@
         drawWave();
       }, 120);
 
-      // Cập nhật phần tiền đào được tích lũy lên Firestore định kỳ
       setInterval(() => {
         if (user.isLoggedIn && user.telegramId && earnedAccumulator > 0) {
           const delta = earnedAccumulator;
