@@ -883,11 +883,12 @@
        3. LẮNG NGHE DỮ LIỆU ĐÁM MÂY THỜI GIAN THỰC (REALTIME)
     ======================================================== */
     function initRealtimeListeners() {
-      // Lắng nghe Members (users)
+      // Lắng nghe Members (users) - LƯU CHÍNH XÁC DOC_ID
       db.collection('users').onSnapshot(snap => {
         membersData = snap.docs.map(doc => {
           const d = doc.data();
           return {
+            docId: doc.id, // ID thật sự trên Firebase Firestore
             uid: d.uid || doc.id,
             name: d.full_name || d.name || 'Thợ Đào',
             phone: d.phone || '',
@@ -895,12 +896,13 @@
             pin: d.pin || '123456',
             status: d.status || 'active',
             sponsor: d.sponsor_uid || d.sponsor || null,
-            balance: d.balance || 0,
-            upgradeBalance: d.upgrade_balance || d.upgradeBalance || 0,
+            balance: (typeof d.balance === 'number') ? d.balance : (parseFloat(d.balance) || 0),
+            upgradeBalance: (typeof d.upgrade_balance === 'number') ? d.upgrade_balance : (parseFloat(d.upgrade_balance) || 0),
             overclock: d.overclock_percent || d.overclock || 0,
             giftSpins: d.gift_spins || d.giftSpins || 0,
             bank: d.saved_bank || d.bank || { name: 'MBBank', acc: '', holder: '' },
             packages: d.owned_packages || d.packages || { free: 1 },
+            activeInstances: d.active_instances || [],
             createdAt: d.created_at ? new Date(d.created_at.toDate ? d.created_at.toDate() : d.created_at).toLocaleDateString('vi-VN') : 'Mới tạo'
           };
         });
@@ -1104,7 +1106,7 @@
             </div>
             <div class="item-row">
               <span>Ngân Hàng:</span>
-              <span>${m.bank.name || 'MBBank'} - ${m.bank.acc || 'Chưa thiết lập'}</span>
+              <span>${m.bank.bankName || m.bank.name || 'MBBank'} - ${m.bank.accountNum || m.bank.acc || 'Chưa thiết lập'}</span>
             </div>
             <div style="display:flex; gap:6px; margin-top:6px;">
               <button class="btn btn-blue btn-sm" style="flex:1;" onclick="openEditMemberModal('${m.uid}')">⚙️ Sửa Chi Tiết</button>
@@ -1123,7 +1125,7 @@
       }
       const filtered = membersData.filter(m => 
         m.name.toLowerCase().includes(q) || 
-        m.uid.includes(q) || 
+        m.uid.toString().includes(q) || 
         m.phone.includes(q)
       );
       renderMembers(filtered);
@@ -1255,26 +1257,26 @@
     }
 
     /* ========================================================
-       6. MODAL CHỈNH SỬA THÀNH VIÊN VÀ LƯU VÀO FIRESTORE
+       6. MODAL CHỈNH SỬA THÀNH VIÊN VÀ LƯU VÀO FIRESTORE (ĐÃ SỬA LỖI TRIỆT ĐỂ)
     ======================================================== */
-    let currentEditingUid = null;
+    let currentEditingMember = null;
 
     function openEditMemberModal(uid) {
-      currentEditingUid = uid;
-      const user = membersData.find(m => m.uid === uid);
+      const user = membersData.find(m => m.uid === uid || m.docId === uid);
       if (!user) return;
+      currentEditingMember = user;
 
       document.getElementById('editModalUserName').textContent = `Chỉnh Sửa: ${user.name}`;
       document.getElementById('editModalUserUid').textContent = `ID: ${user.uid}`;
 
-      document.getElementById('editUserFullName').value = user.name;
-      document.getElementById('editUserPhone').value = user.phone;
-      document.getElementById('editUserPass').value = user.pass;
-      document.getElementById('editUserPin').value = user.pin;
-      document.getElementById('editUserStatus').value = user.status;
+      document.getElementById('editUserFullName').value = user.name || '';
+      document.getElementById('editUserPhone').value = user.phone || '';
+      document.getElementById('editUserPass').value = user.pass || '';
+      document.getElementById('editUserPin').value = user.pin || '123456';
+      document.getElementById('editUserStatus').value = user.status || 'active';
 
-      document.getElementById('editUserBalance').value = user.balance;
-      document.getElementById('editUserUpgradeBalance').value = user.upgradeBalance;
+      document.getElementById('editUserBalance').value = user.balance || 0;
+      document.getElementById('editUserUpgradeBalance').value = user.upgradeBalance || 0;
       document.getElementById('editBalanceReason').value = '';
 
       const pkgContainer = document.getElementById('editPackagesList');
@@ -1290,17 +1292,18 @@
       pkgContainer.innerHTML = Object.entries(PKG_NAMES).map(([k, label]) => `
         <div style="display:flex; justify-content:space-between; align-items:center; background:#0b1120; padding:8px 10px; border-radius:8px; border:1px solid #1e293b;">
           <span style="font-size:11.5px; color:#e2e8f0;">${label}</span>
-          <input type="number" min="0" class="input-field mono pkg-input" data-key="${k}" value="${user.packages[k] || 0}" style="width:70px; padding:4px 8px; text-align:center;">
+          <input type="number" min="0" class="input-field mono pkg-input" data-key="${k}" value="${(user.packages && user.packages[k]) || 0}" style="width:70px; padding:4px 8px; text-align:center;">
         </div>
       `).join('');
-      document.getElementById('editUserOverclock').value = user.overclock;
+      document.getElementById('editUserOverclock').value = user.overclock || 0;
 
-      document.getElementById('editUserBankName').value = user.bank.name || 'MBBank';
-      document.getElementById('editUserBankAcc').value = user.bank.acc || '';
-      document.getElementById('editUserBankHolder').value = user.bank.holder || '';
+      const bankObj = user.bank || {};
+      document.getElementById('editUserBankName').value = bankObj.bankName || bankObj.name || 'MBBank';
+      document.getElementById('editUserBankAcc').value = bankObj.accountNum || bankObj.acc || '';
+      document.getElementById('editUserBankHolder').value = bankObj.accountName || bankObj.holder || '';
 
       document.getElementById('editUserSponsorUid').value = user.sponsor || '';
-      document.getElementById('editUserGiftSpins').value = user.giftSpins;
+      document.getElementById('editUserGiftSpins').value = user.giftSpins || 0;
 
       switchModalTab('modTabSec', document.querySelectorAll('.modal-tab-btn')[0]);
       openModal('modalEditMember');
@@ -1330,18 +1333,29 @@
 
     function viewSelectedUserDownlinesFromModal() {
       closeModal('modalEditMember');
-      if (currentEditingUid) {
-        jumpToUserDownline(currentEditingUid);
+      if (currentEditingMember) {
+        jumpToUserDownline(currentEditingMember.uid);
       }
     }
 
+    // LƯU CHỈNH SỬA THÀNH VIÊN VÀO FIRESTORE (ĐỒNG BỘ MÁY ĐÀO 12 NGÀY)
     async function saveMemberEdits() {
-      if (!currentEditingUid) return;
+      if (!currentEditingMember) return;
+      const targetDocId = currentEditingMember.docId || currentEditingMember.uid;
 
+      // Đọc các gói máy đào
       const packagesObj = {};
+      const newInstances = [];
+      const now = Date.now();
+
       document.querySelectorAll('.pkg-input').forEach(inp => {
         const key = inp.getAttribute('data-key');
-        packagesObj[key] = parseInt(inp.value) || 0;
+        const count = parseInt(inp.value) || 0;
+        packagesObj[key] = count;
+        // Bù dàn máy đào hoạt động tương ứng với số lượng gói
+        for (let i = 0; i < count; i++) {
+          newInstances.push({ pkgId: key, activatedAt: now });
+        }
       });
 
       const updatedData = {
@@ -1353,6 +1367,7 @@
         balance: parseFloat(document.getElementById('editUserBalance').value) || 0,
         upgrade_balance: parseFloat(document.getElementById('editUserUpgradeBalance').value) || 0,
         owned_packages: packagesObj,
+        active_instances: newInstances, // Cập nhật mảng máy đào để bên khách chạy ngay lập tức
         overclock_percent: parseInt(document.getElementById('editUserOverclock').value) || 0,
         saved_bank: {
           bankName: document.getElementById('editUserBankName').value,
@@ -1363,13 +1378,18 @@
         gift_spins: parseInt(document.getElementById('editUserGiftSpins').value) || 0
       };
 
-      await db.collection('users').doc(currentEditingUid).update(updatedData);
+      try {
+        await db.collection('users').doc(targetDocId).update(updatedData);
 
-      closeModal('modalEditMember');
-      showToast('✓ Đã lưu toàn bộ thông tin thành viên lên Firestore!');
+        closeModal('modalEditMember');
+        showToast('✓ Đã cập nhật thành công thông tin thành viên!');
 
-      const reason = document.getElementById('editBalanceReason').value.trim();
-      sendTelegramAdmin(`👤 *Cập Nhật Thông Tin Thợ Đào*\n- Quản trị viên vừa chỉnh sửa thợ đào: ${updatedData.full_name} (ID: ${currentEditingUid})\n- Số dư Ví: ${updatedData.balance.toLocaleString('vi-VN')} đ | Hũ: ${updatedData.upgrade_balance.toLocaleString('vi-VN')} đ\n- Trạng thái: ${updatedData.status}\n${reason ? '- Ghi chú: ' + reason : ''}`);
+        const reason = document.getElementById('editBalanceReason').value.trim();
+        sendTelegramAdmin(`👤 *Admin Chỉnh Sửa Thành Viên*\n- Thợ đào: ${updatedData.full_name} (\`ID: ${currentEditingMember.uid}\`)\n- Ví chính: *${updatedData.balance.toLocaleString('vi-VN')} đ*\n- Hũ nâng cấp: *${updatedData.upgrade_balance.toLocaleString('vi-VN')} đ*\n- Mật khẩu: \`${updatedData.password}\` | PIN: \`${updatedData.pin}\`\n${reason ? '- Lý do: ' + reason : ''}`);
+      } catch (err) {
+        console.error('Lỗi cập nhật:', err);
+        alert('Lỗi lưu Firestore: ' + err.message);
+      }
     }
 
     /* ========================================================
