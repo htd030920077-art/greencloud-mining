@@ -43,13 +43,12 @@ async function sendTelegram(msg) {
   }
 }
 
-// 3. API Đăng Ký Tài Khoản & Gắn Cây Phả Hệ F1, F2 (+1 lượt mở hộp cho cấp trên)
+// 3. API Đăng Ký Tài Khoản
 app.post('/api/auth/register', async (req, res) => {
   try {
     const { phone, password, fullName, sponsorUid } = req.body;
     if (!phone || !password) return res.status(400).json({ success: false, message: 'Thiếu thông tin!' });
 
-    // Kiểm tra số điện thoại đã đăng ký chưa
     const checkQuery = await db.collection('users').where('phone', '==', phone).get();
     if (!checkQuery.empty) {
       return res.status(400).json({ success: false, message: 'Số điện thoại này đã được đăng ký!' });
@@ -58,7 +57,6 @@ app.post('/api/auth/register', async (req, res) => {
     let sponsorF2Uid = null;
     let validSponsorUid = null;
 
-    // Tìm cấp trên F1 và suy ra F2
     if (sponsorUid) {
       const f1Snap = await db.collection('users').doc(sponsorUid).get();
       if (f1Snap.exists) {
@@ -76,7 +74,6 @@ app.post('/api/auth/register', async (req, res) => {
       password,
       full_name: fullName || phone,
       balance: 0,
-      upgrade_balance: 20000, // Tặng sẵn 20k vào Hũ
       sponsor_uid: validSponsorUid,
       sponsor_f2_uid: sponsorF2Uid,
       owned_packages: { free: 1 },
@@ -89,7 +86,6 @@ app.post('/api/auth/register', async (req, res) => {
 
     await db.collection('users').doc(newUid).set(newUser);
 
-    // Tự động tăng số lượng F1 và cộng ngay +1 lượt mở hộp cho cấp trên
     if (validSponsorUid) {
       await db.collection('users').doc(validSponsorUid).update({
         ref_f1_count: admin.firestore.FieldValue.increment(1),
@@ -97,7 +93,7 @@ app.post('/api/auth/register', async (req, res) => {
       });
     }
 
-    sendTelegram(`👤 *Thợ Đào Mới Đăng Ký*\n- Họ tên: *${fullName}*\n- SĐT: \`${phone}\`\n- UID: \`GC-${newUid}\`\n- Người giới thiệu: ${validSponsorUid ? '`GC-' + validSponsorUid + '`' : 'Không có'}`);
+    sendTelegram(`👤 *Thợ Đào Mới Đăng Ký*\n- Họ tên: *${fullName}*\n- SĐT: \`${phone}\`\n- UID (Nội dung CK): \`${newUid}\`\n- Cấp trên: ${validSponsorUid ? '`' + validSponsorUid + '`' : 'Không có'}`);
 
     return res.json({ success: true, user: newUser });
   } catch (error) {
@@ -105,113 +101,109 @@ app.post('/api/auth/register', async (req, res) => {
   }
 });
 
-// 4. Webhook SePay Tự Động Kích Hoạt Gói 12 Ngày & Chia Hoa Hồng (F1: 15% - F2: 5%)
+// 4. Webhook SePay: Nhận diện trực tiếp qua ID Nick (UID thuần số)
 app.post('/api/webhook/sepay', async (req, res) => {
   try {
-    const { transferAmount, content, referenceCode } = req.body;
+    const { transferAmount, content } = req.body;
     if (!transferAmount || !content) return res.status(400).send('Dữ liệu thiếu');
 
     const cleanContent = content.trim().toUpperCase();
     const amountNum = Number(transferAmount);
 
-    // 1. Kiểm tra nạp Gói Đào: Quét mã GCxxxxxxx trong nội dung chuyển khoản
-    const matchGC = cleanContent.match(/GC(\d+)/i);
-    if (matchGC) {
-      const uid = matchGC[1];
-      const userRef = db.collection('users').doc(uid);
-      const userSnap = await userRef.get();
+    // Tìm chuỗi ID gồm 6-9 chữ số bất kỳ trong nội dung chuyển khoản
+    const matchUid = cleanContent.match(/(\d{6,9})/);
+    if (!matchUid) {
+      return res.status(200).send('Không tìm thấy ID người chơi trong nội dung CK');
+    }
 
-      if (!userSnap.exists) return res.status(404).send('Không tìm thấy thợ đào');
-      const userData = userSnap.data();
+    const uid = matchUid[1];
+    const userRef = db.collection('users').doc(uid);
+    const userSnap = await userRef.get();
 
-      let matchedPkgKey = null;
-      for (const [k, p] of Object.entries(PACKAGES_CONFIG)) {
-        if (p.cost === amountNum) {
-          matchedPkgKey = k;
-          break;
+    if (!userSnap.exists) {
+      return res.status(404).send('Không tìm thấy thợ đào mang ID này');
+    }
+    const userData = userSnap.data();
+
+    // Đối chiếu số tiền với các gói khai thác
+    let matchedPkgKey = null;
+    for (const [k, p] of Object.entries(PACKAGES_CONFIG)) {
+      if (p.cost === amountNum) {
+        matchedPkgKey = k;
+        break;
+      }
+    }
+
+    if (!matchedPkgKey) {
+      // Nếu nạp số tiền khác ngoài các gói, cộng thẳng tiền vào ví chính của khách
+      await userRef.update({
+        balance: admin.firestore.FieldValue.increment(amountNum)
+      });
+      sendTelegram(`💰 *Nạp Tiền Thành Công Vào Ví*\n- Thợ đào: \`ID: ${uid}\`\n- Số tiền: +${amountNum.toLocaleString('vi-VN')} đ`);
+      return res.json({ success: true, message: 'Đã cộng tiền vào ví chính' });
+    }
+
+    const pkgInfo = PACKAGES_CONFIG[matchedPkgKey];
+
+    await db.runTransaction(async (transaction) => {
+      // 1. Kích hoạt gói máy đào 12 ngày cho người nạp
+      const newInstance = { pkgId: matchedPkgKey, activatedAt: Date.now() };
+      transaction.update(userRef, {
+        [`owned_packages.${matchedPkgKey}`]: admin.firestore.FieldValue.increment(1),
+        active_instances: admin.firestore.FieldValue.arrayUnion(newInstance),
+        has_paid_package: true,
+        last_active_at: Date.now()
+      });
+
+      // 2. Chia hoa hồng F1 (15%)
+      if (userData.sponsor_uid) {
+        const f1Ref = db.collection('users').doc(userData.sponsor_uid);
+        const f1Snap = await transaction.get(f1Ref);
+        if (f1Snap.exists) {
+          const f1Commission = amountNum * 0.15;
+          transaction.update(f1Ref, {
+            balance: admin.firestore.FieldValue.increment(f1Commission),
+            ref_f1_paid_count: admin.firestore.FieldValue.increment(1)
+          });
+
+          sendTelegram(`💰 *Hoa Hồng F1 (+15%) Tự Động*\n- Nhận: \`ID: ${userData.sponsor_uid}\`\n- Từ F1: \`ID: ${uid}\`\n- Cộng: *+${f1Commission.toLocaleString('vi-VN')} đ*`);
         }
       }
 
-      if (!matchedPkgKey) return res.status(200).send('Số tiền không khớp gói nào');
-      const pkgInfo = PACKAGES_CONFIG[matchedPkgKey];
+      // 3. Chia hoa hồng F2 (5%)
+      if (userData.sponsor_f2_uid) {
+        const f2Ref = db.collection('users').doc(userData.sponsor_f2_uid);
+        const f2Snap = await transaction.get(f2Ref);
+        if (f2Snap.exists) {
+          const f2Commission = amountNum * 0.05;
+          transaction.update(f2Ref, {
+            balance: admin.firestore.FieldValue.increment(f2Commission)
+          });
 
-      await db.runTransaction(async (transaction) => {
-        // Cập nhật số lượng và thêm vào danh sách máy đào 12 ngày
-        const newInstance = { pkgId: matchedPkgKey, activatedAt: Date.now() };
-        transaction.update(userRef, {
-          [`owned_packages.${matchedPkgKey}`]: admin.firestore.FieldValue.increment(1),
-          active_instances: admin.firestore.FieldValue.arrayUnion(newInstance),
-          has_paid_package: true,
-          last_active_at: Date.now()
-        });
-
-        // Chia hoa hồng F1 (15%)
-        if (userData.sponsor_uid) {
-          const f1Ref = db.collection('users').doc(userData.sponsor_uid);
-          const f1Snap = await transaction.get(f1Ref);
-          if (f1Snap.exists) {
-            const f1Commission = amountNum * 0.15;
-            transaction.update(f1Ref, {
-              balance: admin.firestore.FieldValue.increment(f1Commission),
-              ref_f1_paid_count: admin.firestore.FieldValue.increment(1)
-            });
-
-            sendTelegram(`💰 *Hoa Hồng F1 (+15%) Tự Động*\n- Nhận: \`GC-${userData.sponsor_uid}\`\n- Từ cấp dưới: \`GC-${uid}\`\n- Cộng: *+${f1Commission.toLocaleString('vi-VN')} đ*`);
-          }
+          sendTelegram(`💎 *Hoa Hồng F2 (+5%) Tự Động*\n- Nhận: \`ID: ${userData.sponsor_f2_uid}\`\n- Từ F2: \`ID: ${uid}\`\n- Cộng: *+${f2Commission.toLocaleString('vi-VN')} đ*`);
         }
+      }
 
-        // Chia hoa hồng F2 (5%)
-        if (userData.sponsor_f2_uid) {
-          const f2Ref = db.collection('users').doc(userData.sponsor_f2_uid);
-          const f2Snap = await transaction.get(f2Ref);
-          if (f2Snap.exists) {
-            const f2Commission = amountNum * 0.05;
-            transaction.update(f2Ref, {
-              balance: admin.firestore.FieldValue.increment(f2Commission)
-            });
-
-            sendTelegram(`💎 *Hoa Hồng F2 (+5%) Tự Động*\n- Nhận: \`GC-${userData.sponsor_f2_uid}\`\n- Từ nhánh F2: \`GC-${uid}\`\n- Cộng: *+${f2Commission.toLocaleString('vi-VN')} đ*`);
-          }
-        }
-
-        // Lưu bản ghi vào collection deposits
-        const depRef = db.collection('deposits').doc();
-        transaction.set(depRef, {
-          uid,
-          amount: amountNum,
-          package_id: matchedPkgKey,
-          package_name: pkgInfo.name,
-          code: cleanContent,
-          created_at: admin.firestore.FieldValue.serverTimestamp()
-        });
+      // 4. Lưu biên nhận vào collection deposits
+      const depRef = db.collection('deposits').doc();
+      transaction.set(depRef, {
+        uid,
+        amount: amountNum,
+        package_id: matchedPkgKey,
+        package_name: pkgInfo.name,
+        code: cleanContent,
+        created_at: admin.firestore.FieldValue.serverTimestamp()
       });
+    });
 
-      sendTelegram(`🎉 *Kích Hoạt Gói 12 Ngày Thành Công*\n- Thợ đào: \`GC-${uid}\`\n- Gói: *${pkgInfo.name}*\n- Số tiền: ${amountNum.toLocaleString('vi-VN')} đ`);
-      return res.json({ success: true, message: 'Đã kích hoạt gói 12 ngày và chia hoa hồng F1 (15%), F2 (5%)' });
-    }
-
-    // 2. Kiểm tra nạp Hũ Nâng Cấp: Quét mã NCxxxxxxx trong nội dung chuyển khoản
-    const matchNC = cleanContent.match(/NC(\d+)/i);
-    if (matchNC) {
-      const uid = matchNC[1];
-      const userRef = db.collection('users').doc(uid);
-
-      await userRef.update({
-        upgrade_balance: admin.firestore.FieldValue.increment(amountNum)
-      });
-
-      sendTelegram(`💠 *Nạp Hũ Nâng Cấp Thành Công*\n- Thợ đào: \`GC-${uid}\`\n- Đã nạp: *+${amountNum.toLocaleString('vi-VN')} đ*`);
-      return res.json({ success: true, message: 'Đã nạp tiền Hũ thành công' });
-    }
-
-    return res.status(200).send('Bỏ qua nội dung không khớp cú pháp GC/NC');
+    sendTelegram(`🎉 *Kích Hoạt Gói 12 Ngày Tự Động*\n- Thợ đào: \`ID: ${uid}\`\n- Gói: *${pkgInfo.name}*\n- Số tiền: ${amountNum.toLocaleString('vi-VN')} đ`);
+    return res.json({ success: true, message: 'Đã kích hoạt gói 12 ngày và chia hoa hồng F1 (15%), F2 (5%)' });
   } catch (error) {
     console.error('Lỗi Webhook:', error);
     return res.status(500).json({ success: false, error: error.message });
   }
 });
 
-// Cổng chạy server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server GreenCloud Backend đang chạy tại port ${PORT}`);
