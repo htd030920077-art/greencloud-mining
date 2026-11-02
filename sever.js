@@ -25,7 +25,7 @@ if (!admin.apps.length) {
 }
 const db = admin.firestore();
 
-// 2. Cấu hình Telegram Bot (Chuẩn HTTPS gốc của Node.js)
+// 2. Cấu hình Telegram Bot (Chuẩn HTTPS Node.js, an toàn tuyệt đối)
 const TELEGRAM_BOT_TOKEN = '9196510643:AAGzXlYNEeCxz_Pchrg7528VBkaB53sXpd4';
 const TELEGRAM_CHAT_ID = '7865394196';
 
@@ -63,7 +63,7 @@ function sendTelegram(msg) {
   }
 }
 
-// Danh mục Gói Đào 12 Ngày
+// Danh mục Gói Đào (12 Ngày Hoàn Vốn)
 const PACKAGES_CONFIG = {
   '76k': { name: 'Gói Khởi Động 76K', cost: 76000, daily: 16720 },
   '104k': { name: 'Gói Tiêu Chuẩn 104K', cost: 104000, daily: 22880 },
@@ -115,7 +115,7 @@ app.post('/api/auth/register', async (req, res) => {
       password,
       full_name: fullName || phone,
       balance: 0,
-      upgrade_balance: 20000, // Tặng sẵn 20k vào hũ
+      upgrade_balance: 20000, // Tặng sẵn 20k vào quỹ hũ
       sponsor_uid: validSponsorUid,
       sponsor_f2_uid: sponsorF2Uid,
       owned_packages: { free: 1 },
@@ -173,21 +173,26 @@ app.post('/api/webhook/sepay', async (req, res) => {
 
     // 2. Chuẩn hóa nội dung
     const rawContent = body.content || body.description || body.code || '';
-    const cleanContent = rawContent.toString().trim();
+    const cleanContent = rawContent.toString().trim().toUpperCase();
 
     if (amountNum <= 0) {
       console.log('Bỏ qua: Số tiền không hợp lệ:', amountNum);
       return res.status(200).json({ success: false, message: 'Số tiền <= 0' });
     }
 
-    // 3. Tách lấy ID người chơi (xử lý cả trường hợp dính gạch ngang như 6138215-...)[span_1](start_span)[span_1](end_span)
+    // 3. Tách lấy ID người chơi (Ưu tiên GCxxxx, nếu không có lấy số đứng đầu câu)
     let uid = null;
-    const matchHead = cleanContent.match(/^(\d{6,9})/);
-    if (matchHead) {
-      uid = matchHead[1];
+    const matchGC = cleanContent.match(/GC\s*(\d{6,9})/i);
+    if (matchGC) {
+      uid = matchGC[1];
     } else {
-      const matchAny = cleanContent.match(/(\d{6,9})/);
-      if (matchAny) uid = matchAny[1];
+      const matchHead = cleanContent.match(/^(\d{6,9})/);
+      if (matchHead) {
+        uid = matchHead[1];
+      } else {
+        const matchAny = cleanContent.match(/(\d{6,9})/);
+        if (matchAny) uid = matchAny[1];
+      }
     }
 
     if (!uid) {
@@ -242,7 +247,7 @@ app.post('/api/webhook/sepay', async (req, res) => {
       last_active_at: Date.now()
     });
 
-    // 7. XỬ LÝ CHIA HOA HỒNG F1 (15%) & F2 (5%) AN TOÀN TUYỆT ĐỐI
+    // 7. Xử lý chia hoa hồng F1 (15%) & F2 (5%)
     let f1Uid = userData.sponsor_uid || userData.sponsor || null;
     if (f1Uid) {
       f1Uid = String(f1Uid).trim();
@@ -326,7 +331,5 @@ app.listen(PORT, () => {
 
 // Cơ chế tự Ping mỗi 10 phút để server Render không bị ngủ
 setInterval(() => {
-  https.get('https://greencloud-mining-liver.onrender.com', (res) => {
-    // Ping giữ máy chủ online
-  }).on('error', () => {});
+  https.get('https://greencloud-mining-liver.onrender.com', () => {}).on('error', () => {});
 }, 10 * 60 * 1000);
