@@ -1,6 +1,6 @@
 // ==========================================
 // FILE: server.js - GREENCLOUD MINING FULL BACKEND
-// Cài đặt: npm install express firebase-admin cors
+// Cài đặt thư viện: npm install express firebase-admin cors
 // ==========================================
 const express = require('express');
 const admin = require('firebase-admin');
@@ -25,7 +25,7 @@ if (!admin.apps.length) {
 }
 const db = admin.firestore();
 
-// 2. Cấu hình Telegram Bot (Chuẩn HTTPS Node.js, không sợ lỗi fetch)
+// 2. Cấu hình Telegram Bot (Chuẩn HTTPS gốc của Node.js)
 const TELEGRAM_BOT_TOKEN = '9196510643:AAGzXlYNEeCxz_Pchrg7528VBkaB53sXpd4';
 const TELEGRAM_CHAT_ID = '7865394196';
 
@@ -92,9 +92,16 @@ app.post('/api/auth/register', async (req, res) => {
     let validSponsorUid = null;
 
     if (sponsorUid) {
-      const f1Snap = await db.collection('users').doc(sponsorUid).get();
-      if (f1Snap.exists) {
-        validSponsorUid = sponsorUid;
+      let f1Snap = await db.collection('users').doc(String(sponsorUid).trim()).get();
+      if (!f1Snap.exists) {
+        const qF1 = await db.collection('users').where('uid', '==', String(sponsorUid).trim()).limit(1).get();
+        if (!qF1.empty) {
+          f1Snap = qF1.docs[0];
+        }
+      }
+
+      if (f1Snap && f1Snap.exists) {
+        validSponsorUid = f1Snap.data().uid || f1Snap.id;
         sponsorF2Uid = f1Snap.data().sponsor_uid || null;
       }
     }
@@ -123,7 +130,13 @@ app.post('/api/auth/register', async (req, res) => {
     await db.collection('users').doc(newUid).set(newUser);
 
     if (validSponsorUid) {
-      await db.collection('users').doc(validSponsorUid).update({
+      let spRef = db.collection('users').doc(validSponsorUid);
+      let spSnap = await spRef.get();
+      if (!spSnap.exists) {
+        const qSp = await db.collection('users').where('uid', '==', validSponsorUid).limit(1).get();
+        if (!qSp.empty) spRef = qSp.docs[0].ref;
+      }
+      await spRef.update({
         ref_f1_count: admin.firestore.FieldValue.increment(1),
         gift_spins: admin.firestore.FieldValue.increment(1)
       }).catch(() => {});
@@ -147,7 +160,7 @@ app.post('/api/withdraw/alert', (req, res) => {
 });
 
 // ==========================================
-// 5. WEBHOOK SEPAY (TỰ ĐỘNG KÍCH HOẠT & CHIA HOA HỒNG)
+// 5. WEBHOOK SEPAY (TỰ ĐỘNG KÍCH HOẠT & CHIA HOA HỒNG F1: 15% • F2: 5%)
 // ==========================================
 app.post('/api/webhook/sepay', async (req, res) => {
   console.log('--- [SEPAY WEBHOOK RECEIVED] ---', JSON.stringify(req.body));
@@ -167,7 +180,7 @@ app.post('/api/webhook/sepay', async (req, res) => {
       return res.status(200).json({ success: false, message: 'Số tiền <= 0' });
     }
 
-    // 3. Tách lấy ID người chơi (xử lý sạch kể cả khi dính dấu gạch ngang như 6138215-...)
+    // 3. Tách lấy ID người chơi (xử lý cả trường hợp dính gạch ngang như 6138215-...)[span_1](start_span)[span_1](end_span)
     let uid = null;
     const matchHead = cleanContent.match(/^(\d{6,9})/);
     if (matchHead) {
@@ -182,15 +195,15 @@ app.post('/api/webhook/sepay', async (req, res) => {
       return res.status(200).json({ success: false, message: 'Không tìm thấy ID' });
     }
 
-    // 4. Tìm kiếm người dùng trong Firestore
-    let userRef = db.collection('users').doc(uid);
+    // 4. Tìm kiếm người dùng nạp tiền trong Firestore
+    let userRef = db.collection('users').doc(String(uid));
     let userSnap = await userRef.get();
 
     if (!userSnap.exists) {
-      const querySnap = await db.collection('users').where('uid', '==', uid).limit(1).get();
-      if (!querySnap.empty) {
-        userRef = querySnap.docs[0].ref;
-        userSnap = querySnap.docs[0];
+      const qSnap = await db.collection('users').where('uid', '==', String(uid)).limit(1).get();
+      if (!qSnap.empty) {
+        userRef = qSnap.docs[0].ref;
+        userSnap = qSnap.docs[0];
       } else {
         console.log('Không tìm thấy User Firestore với UID:', uid);
         return res.status(200).json({ success: false, message: 'Tài khoản không tồn tại' });
@@ -219,60 +232,82 @@ app.post('/api/webhook/sepay', async (req, res) => {
 
     const pkgInfo = PACKAGES_CONFIG[matchedPkgKey];
 
-    // 6. Kích hoạt dàn máy đào 12 ngày & Chia hoa hồng F1 (15%), F2 (5%)
-    await db.runTransaction(async (transaction) => {
-      const newInstance = { pkgId: matchedPkgKey, activatedAt: Date.now() };
+    // 6. Kích hoạt dàn máy đào 12 ngày
+    const newInstance = { pkgId: matchedPkgKey, activatedAt: Date.now() };
 
-      // Kích hoạt dàn máy cho người nạp
-      transaction.update(userRef, {
-        [`owned_packages.${matchedPkgKey}`]: admin.firestore.FieldValue.increment(1),
-        active_instances: admin.firestore.FieldValue.arrayUnion(newInstance),
-        has_paid_package: true,
-        last_active_at: Date.now()
-      });
-
-      // Trả hoa hồng F1 (15%)
-      if (userData.sponsor_uid) {
-        const f1Ref = db.collection('users').doc(userData.sponsor_uid);
-        const f1Snap = await transaction.get(f1Ref);
-        if (f1Snap.exists) {
-          const f1Comm = amountNum * 0.15;
-          transaction.update(f1Ref, {
-            balance: admin.firestore.FieldValue.increment(f1Comm),
-            ref_f1_paid_count: admin.firestore.FieldValue.increment(1)
-          });
-          sendTelegram(`💰 *HOA HỒNG F1 (+15%) TỰ ĐỘNG*\n- Cấp trên: \`ID: ${userData.sponsor_uid}\`\n- Nhận từ F1: \`ID: ${uid}\`\n- Số tiền: *+${f1Comm.toLocaleString('vi-VN')} đ*`);
-        }
-      }
-
-      // Trả hoa hồng F2 (5%)
-      if (userData.sponsor_f2_uid) {
-        const f2Ref = db.collection('users').doc(userData.sponsor_f2_uid);
-        const f2Snap = await transaction.get(f2Ref);
-        if (f2Snap.exists) {
-          const f2Comm = amountNum * 0.05;
-          transaction.update(f2Ref, {
-            balance: admin.firestore.FieldValue.increment(f2Comm)
-          });
-          sendTelegram(`💎 *HOA HỒNG F2 (+5%) TỰ ĐỘNG*\n- Cấp trên F2: \`ID: ${userData.sponsor_f2_uid}\`\n- Nhận từ F2: \`ID: ${uid}\`\n- Số tiền: *+${f2Comm.toLocaleString('vi-VN')} đ*`);
-        }
-      }
-
-      // Lưu lịch sử vào deposits
-      const depRef = db.collection('deposits').doc();
-      transaction.set(depRef, {
-        uid: uid,
-        amount: amountNum,
-        package_id: matchedPkgKey,
-        package_name: pkgInfo.name,
-        code: cleanContent,
-        created_at: admin.firestore.FieldValue.serverTimestamp()
-      });
+    await userRef.update({
+      [`owned_packages.${matchedPkgKey}`]: admin.firestore.FieldValue.increment(1),
+      active_instances: admin.firestore.FieldValue.arrayUnion(newInstance),
+      has_paid_package: true,
+      last_active_at: Date.now()
     });
 
-    sendTelegram(`🎉 *KÍCH HOẠT GÓI ĐÀO (12 NGÀY) TỰ ĐỘNG*\n- Thợ đào: \`ID: ${uid}\`\n- Gói kích hoạt: *${pkgInfo.name}*\n- Số tiền: *${amountNum.toLocaleString('vi-VN')} đ*\n- Nội dung: \`${cleanContent}\``);
+    // 7. XỬ LÝ CHIA HOA HỒNG F1 (15%) & F2 (5%) AN TOÀN TUYỆT ĐỐI
+    let f1Uid = userData.sponsor_uid || userData.sponsor || null;
+    if (f1Uid) {
+      f1Uid = String(f1Uid).trim();
+      let f1Ref = db.collection('users').doc(f1Uid);
+      let f1Snap = await f1Ref.get();
 
-    return res.status(200).json({ success: true, message: 'Đã kích hoạt gói 12 ngày thành công' });
+      if (!f1Snap.exists) {
+        const qF1 = await db.collection('users').where('uid', '==', f1Uid).limit(1).get();
+        if (!qF1.empty) {
+          f1Ref = qF1.docs[0].ref;
+          f1Snap = qF1.docs[0];
+        }
+      }
+
+      if (f1Snap && f1Snap.exists) {
+        const f1Comm = Math.round(amountNum * 0.15);
+        await f1Ref.update({
+          balance: admin.firestore.FieldValue.increment(f1Comm),
+          ref_f1_paid_count: admin.firestore.FieldValue.increment(1)
+        });
+        sendTelegram(`💰 *HOA HỒNG F1 (+15%) TỰ ĐỘNG*\n- Cấp trên F1: \`ID: ${f1Uid}\`\n- Nhận từ F1: \`ID: ${uid}\`\n- Số tiền: *+${f1Comm.toLocaleString('vi-VN')} đ*`);
+
+        // Tìm cấp trên F2
+        const f1Data = f1Snap.data();
+        let f2Uid = userData.sponsor_f2_uid || f1Data.sponsor_uid || null;
+
+        if (f2Uid) {
+          f2Uid = String(f2Uid).trim();
+          let f2Ref = db.collection('users').doc(f2Uid);
+          let f2Snap = await f2Ref.get();
+
+          if (!f2Snap.exists) {
+            const qF2 = await db.collection('users').where('uid', '==', f2Uid).limit(1).get();
+            if (!qF2.empty) {
+              f2Ref = qF2.docs[0].ref;
+              f2Snap = qF2.docs[0];
+            }
+          }
+
+          if (f2Snap && f2Snap.exists) {
+            const f2Comm = Math.round(amountNum * 0.05);
+            await f2Ref.update({
+              balance: admin.firestore.FieldValue.increment(f2Comm)
+            });
+            sendTelegram(`💎 *HOA HỒNG F2 (+5%) TỰ ĐỘNG*\n- Cấp trên F2: \`ID: ${f2Uid}\`\n- Nhận từ F2: \`ID: ${uid}\`\n- Số tiền: *+${f2Comm.toLocaleString('vi-VN')} đ*`);
+          }
+        }
+      } else {
+        console.log('Không tìm thấy cấp trên F1 mang ID:', f1Uid);
+      }
+    }
+
+    // 8. Lưu lịch sử nạp vào collection deposits
+    await db.collection('deposits').add({
+      uid: String(uid),
+      amount: amountNum,
+      package_id: matchedPkgKey,
+      package_name: pkgInfo.name,
+      code: cleanContent,
+      created_at: admin.firestore.FieldValue.serverTimestamp()
+    });
+
+    sendTelegram(`🎉 *KÍCH HOẠT GÓI ĐÀO (12 NGÀY) TỰ ĐỘNG*\n- Thợ đào: \`ID: ${uid}\`\n- Gói kích hoạt: *${pkgInfo.name}*\n- Số tiền: *${amountNum.toLocaleString('vi-VN')} đ*\n- Nội dung CK: \`${cleanContent}\``);
+
+    return res.status(200).json({ success: true, message: 'Đã kích hoạt gói 12 ngày và chia hoa hồng thành công' });
 
   } catch (error) {
     console.error('Lỗi xử lý SePay Webhook:', error);
