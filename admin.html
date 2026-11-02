@@ -611,7 +611,7 @@
           <span>🌳 KIỂM TRA THÀNH VIÊN CẤP DƯỚI (CÂY HOA HỒNG)</span>
         </div>
         <p style="font-size:11px; color:#94a3b8; margin-bottom:12px;">
-          Chọn bất kỳ thợ đào nào dưới đây để xem toàn bộ phả hệ cấp dưới (F1 hưởng 7%, F2 hưởng 3%), tiến độ nạp tiền và doanh số đội nhóm:
+          Chọn bất kỳ thợ đào nào dưới đây để xem toàn bộ phả hệ cấp dưới (F1 hưởng 15%, F2 hưởng 5%), tiến độ nạp tiền và doanh số đội nhóm:
         </p>
 
         <div style="margin-bottom:14px;">
@@ -643,7 +643,7 @@
         <!-- Cây thành viên chi tiết -->
         <div style="font-size:12px; font-weight:700; color:#fff; margin:14px 0 8px 0; display:flex; justify-content:space-between; align-items:center;">
           <span>DANH SÁCH CHI TIẾT CẤP DƯỚI (F1 & F2)</span>
-          <span style="font-size:10px; color:#10b981;">F1: 7% • F2: 3%</span>
+          <span style="font-size:10px; color:#10b981; font-weight:800;">F1: 15% • F2: 5%</span>
         </div>
 
         <div id="downlineTreeContainer"></div>
@@ -957,7 +957,7 @@
     }
 
     /* ========================================================
-       4. CÁC HÀM XỬ LÝ GIAO DIỆN & DUYỆT ĐƠN
+       4. CÁC HÀM XỬ LÝ GIAO DIỆN & DUYỆT ĐƠN (MANUAL)
     ======================================================== */
     function renderWithdrawals() {
       const container = document.getElementById('withdrawListContainer');
@@ -1130,7 +1130,7 @@
     }
 
     /* ========================================================
-       5. KIỂM TRA PHẢ HỆ CẤP DƯỚI (CÂY HOA HỒNG REALTIME)
+       5. KIỂM TRA PHẢ HỆ CẤP DƯỚI (CÂY HOA HỒNG F1: 15% • F2: 5%)
     ======================================================== */
     function populateDownlineUserSelect() {
       const sel = document.getElementById('downlineSelectUser');
@@ -1195,14 +1195,14 @@
         const f1Deposits = depositsData.filter(d => d.uid === f1.uid);
         const f1TotalDep = f1Deposits.reduce((acc, cur) => acc + cur.amount, 0);
         const f1HasPaid = f1TotalDep > 0;
-        const f1Comm = f1TotalDep * 0.07;
+        const f1Comm = f1TotalDep * 0.15; // Cập nhật hoa hồng F1: 15%
         const myF2s = membersData.filter(m => m.sponsor === f1.uid);
 
         treeHtml += `
           <div class="tree-node f1">
             <div class="tree-header">
               <div>
-                <span class="badge badge-success" style="font-size:9.5px;">CẤP 1 (F1 - 7%)</span>
+                <span class="badge badge-success" style="font-size:9.5px;">CẤP 1 (F1 - 15%)</span>
                 <span class="tree-name" style="margin-left:4px;">${f1.name}</span>
                 <span class="mono" style="color:#38bdf8; font-size:10.5px;">(GC-${f1.uid})</span>
               </div>
@@ -1213,7 +1213,7 @@
             <div class="tree-meta">
               <span>📱 SĐT: ${f1.phone}</span>
               <span>📅 Tham gia: ${f1.createdAt}</span>
-              <span>💵 Hoa hồng F1 (7%): <b style="color:#10b981;">+${f1Comm.toLocaleString('vi-VN')} đ</b></span>
+              <span>💵 Hoa hồng F1 (15%): <b style="color:#10b981;">+${f1Comm.toLocaleString('vi-VN')} đ</b></span>
               <span>👥 Nhánh F2: <b>${myF2s.length} người</b></span>
             </div>
 
@@ -1223,13 +1223,13 @@
                   const f2Deposits = depositsData.filter(d => d.uid === f2.uid);
                   const f2TotalDep = f2Deposits.reduce((acc, cur) => acc + cur.amount, 0);
                   const f2HasPaid = f2TotalDep > 0;
-                  const f2Comm = f2TotalDep * 0.03;
+                  const f2Comm = f2TotalDep * 0.05; // Cập nhật hoa hồng F2: 5%
 
                   return `
                     <div class="tree-node f2">
                       <div class="tree-header">
                         <div>
-                          <span class="badge badge-blue" style="font-size:9.5px;">CẤP 2 (F2 - 3%)</span>
+                          <span class="badge badge-blue" style="font-size:9.5px;">CẤP 2 (F2 - 5%)</span>
                           <span class="tree-name" style="margin-left:4px;">${f2.name}</span>
                           <span class="mono" style="color:#38bdf8; font-size:10.5px;">(GC-${f2.uid})</span>
                         </div>
@@ -1240,7 +1240,7 @@
                       <div class="tree-meta">
                         <span>📱 SĐT: ${f2.phone}</span>
                         <span>Giới thiệu bởi F1: <b>${f1.name}</b></span>
-                        <span>💵 Hoa hồng F2 (3%): <b style="color:#38bdf8;">+${f2Comm.toLocaleString('vi-VN')} đ</b></span>
+                        <span>💵 Hoa hồng F2 (5%): <b style="color:#38bdf8;">+${f2Comm.toLocaleString('vi-VN')} đ</b></span>
                       </div>
                     </div>
                   `;
