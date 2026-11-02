@@ -553,7 +553,7 @@
           </div>
           <div class="item-row">
             <span>Cú Pháp Nhận Diện:</span>
-            <span class="mono" style="color:#10b981;">GC... (Gói) • NC... (Hũ)</span>
+            <span class="mono" style="color:#10b981;">Nhập đúng ID Nick (VD: 5413894)</span>
           </div>
         </div>
       </div>
@@ -682,7 +682,7 @@
       <div class="modal-header">
         <div>
           <div class="modal-title" id="editModalUserName">Chỉnh Sửa Thành Viên</div>
-          <div class="mono" style="font-size:11px; color:#38bdf8;" id="editModalUserUid">UID: GC-...</div>
+          <div class="mono" style="font-size:11px; color:#38bdf8;" id="editModalUserUid">ID: ...</div>
         </div>
         <button class="modal-close" onclick="closeModal('modalEditMember')">✕</button>
       </div>
@@ -914,7 +914,7 @@
         renderDownlineTreeForSelected();
       });
 
-      // Lắng nghe Withdrawals
+      // Lắng nghe Withdrawals (CHỈ DUYỆT BẰNG TAY, KHÔNG TỰ ĐỘNG)
       db.collection('withdrawals').orderBy('created_at', 'desc').onSnapshot(snap => {
         withdrawalsData = snap.docs.map(doc => {
           const d = doc.data();
@@ -980,7 +980,7 @@
           <div class="item-header">
             <div>
               <div class="item-title">${w.name}</div>
-              <div class="mono" style="font-size:10.5px; color:#38bdf8;">UID: GC-${w.uid} • Mã: ${w.id}</div>
+              <div class="mono" style="font-size:10.5px; color:#38bdf8;">ID: ${w.uid} • Mã: ${w.id}</div>
             </div>
             <span class="badge ${w.status === 'pending' ? 'badge-warning' : (w.status === 'approved' ? 'badge-success' : 'badge-danger')}">
               ${w.status === 'pending' ? 'Chờ Phê Duyệt' : (w.status === 'approved' ? 'Đã Chuyển Khoản' : 'Đã Từ Chối')}
@@ -1025,7 +1025,7 @@
 
       await db.collection('withdrawals').doc(wId).update({ status: 'approved' });
       showToast('✓ Đã phê duyệt và cập nhật trạng thái trên Firestore!');
-      sendTelegramAdmin(`✅ *Lệnh Rút Tiền Đã Được Duyệt!*\n- Thợ đào: ${item.name} (GC-${item.uid})\n- Số tiền: *${item.amount.toLocaleString('vi-VN')} đ*\n- Ngân hàng: *${item.bank}* - STK: \`${item.acc}\`\n- Chủ thẻ: *${item.holder}*`);
+      sendTelegramAdmin(`✅ *Lệnh Rút Tiền Đã Được Duyệt!*\n- Thợ đào: ${item.name} (ID: ${item.uid})\n- Số tiền: *${item.amount.toLocaleString('vi-VN')} đ*\n- Ngân hàng: *${item.bank}* - STK: \`${item.acc}\`\n- Chủ thẻ: *${item.holder}*`);
     }
 
     async function rejectWithdrawal(wId) {
@@ -1039,7 +1039,7 @@
       });
 
       showToast('✕ Đã từ chối lệnh rút tiền và hoàn lại số dư cho khách!');
-      sendTelegramAdmin(`❌ *Lệnh Rút Tiền Bị Từ Chối & Đã Hoàn Tiền*\n- Thợ đào: ${item.name} (GC-${item.uid})\n- Số tiền hoàn trả: *${item.amount.toLocaleString('vi-VN')} đ*`);
+      sendTelegramAdmin(`❌ *Lệnh Rút Tiền Bị Từ Chối & Đã Hoàn Tiền*\n- Thợ đào: ${item.name} (ID: ${item.uid})\n- Số tiền hoàn trả: *${item.amount.toLocaleString('vi-VN')} đ*`);
     }
 
     function renderDeposits() {
@@ -1053,7 +1053,7 @@
           <div class="item-header">
             <div>
               <div class="item-title">${d.type}</div>
-              <div class="mono" style="font-size:10.5px; color:#38bdf8;">${d.name} (GC-${d.uid})</div>
+              <div class="mono" style="font-size:10.5px; color:#38bdf8;">${d.name} (ID: ${d.uid})</div>
             </div>
             <span class="badge badge-success">Đã Khớp SePay</span>
           </div>
@@ -1062,7 +1062,7 @@
             <span class="mono" style="color:#10b981; font-weight:800; font-size:13.5px;">+${d.amount.toLocaleString('vi-VN')} đ</span>
           </div>
           <div class="item-row">
-            <span>Nội Dung / Mã CK:</span>
+            <span>Nội Dung / ID Nick:</span>
             <span class="mono" style="color:#fff; background:#020617; padding:1px 6px; border-radius:4px;">${d.code}</span>
           </div>
           <div class="item-row">
@@ -1088,7 +1088,7 @@
             <div class="item-header">
               <div>
                 <div class="item-title">${m.name}</div>
-                <div class="mono" style="font-size:10.5px; color:#38bdf8;">GC-${m.uid} • SĐT: ${m.phone}</div>
+                <div class="mono" style="font-size:10.5px; color:#38bdf8;">ID: ${m.uid} • SĐT: ${m.phone}</div>
               </div>
               <span class="badge ${m.status === 'active' ? 'badge-success' : 'badge-danger'}">
                 ${m.status === 'active' ? (hasPaid ? 'Đã Nạp Gói' : 'Chưa Nạp') : 'Bị Khóa'}
@@ -1137,7 +1137,7 @@
       if (!sel) return;
       const cur = sel.value;
       sel.innerHTML = membersData.map(m => `
-        <option value="${m.uid}">${m.name} (UID: GC-${m.uid}) - SĐT: ${m.phone}</option>
+        <option value="${m.uid}">${m.name} (ID: ${m.uid}) - SĐT: ${m.phone}</option>
       `).join('');
       if (cur && membersData.some(m => m.uid === cur)) {
         sel.value = cur;
@@ -1156,7 +1156,7 @@
       if (!user) return;
 
       const upline = membersData.find(m => m.uid === user.sponsor);
-      document.getElementById('downlineSponsorName').textContent = upline ? `${upline.name} (GC-${upline.uid})` : 'Hệ Thống Gốc (Root)';
+      document.getElementById('downlineSponsorName').textContent = upline ? `${upline.name} (ID: ${upline.uid})` : 'Hệ Thống Gốc (Root)';
 
       const f1List = membersData.filter(m => m.sponsor === user.uid);
       document.getElementById('downlineF1Count').textContent = `${f1List.length} người`;
@@ -1195,7 +1195,7 @@
         const f1Deposits = depositsData.filter(d => d.uid === f1.uid);
         const f1TotalDep = f1Deposits.reduce((acc, cur) => acc + cur.amount, 0);
         const f1HasPaid = f1TotalDep > 0;
-        const f1Comm = f1TotalDep * 0.15; // Cập nhật hoa hồng F1: 15%
+        const f1Comm = f1TotalDep * 0.15; // Hoa hồng F1: 15%
         const myF2s = membersData.filter(m => m.sponsor === f1.uid);
 
         treeHtml += `
@@ -1204,7 +1204,7 @@
               <div>
                 <span class="badge badge-success" style="font-size:9.5px;">CẤP 1 (F1 - 15%)</span>
                 <span class="tree-name" style="margin-left:4px;">${f1.name}</span>
-                <span class="mono" style="color:#38bdf8; font-size:10.5px;">(GC-${f1.uid})</span>
+                <span class="mono" style="color:#38bdf8; font-size:10.5px;">(ID: ${f1.uid})</span>
               </div>
               <span class="badge ${f1HasPaid ? 'badge-success' : 'badge-warning'}">
                 ${f1HasPaid ? 'Đã Nạp ' + f1TotalDep.toLocaleString('vi-VN') + ' đ' : 'Chưa Nạp Gói'}
@@ -1223,7 +1223,7 @@
                   const f2Deposits = depositsData.filter(d => d.uid === f2.uid);
                   const f2TotalDep = f2Deposits.reduce((acc, cur) => acc + cur.amount, 0);
                   const f2HasPaid = f2TotalDep > 0;
-                  const f2Comm = f2TotalDep * 0.05; // Cập nhật hoa hồng F2: 5%
+                  const f2Comm = f2TotalDep * 0.05; // Hoa hồng F2: 5%
 
                   return `
                     <div class="tree-node f2">
@@ -1231,7 +1231,7 @@
                         <div>
                           <span class="badge badge-blue" style="font-size:9.5px;">CẤP 2 (F2 - 5%)</span>
                           <span class="tree-name" style="margin-left:4px;">${f2.name}</span>
-                          <span class="mono" style="color:#38bdf8; font-size:10.5px;">(GC-${f2.uid})</span>
+                          <span class="mono" style="color:#38bdf8; font-size:10.5px;">(ID: ${f2.uid})</span>
                         </div>
                         <span class="badge ${f2HasPaid ? 'badge-success' : 'badge-warning'}">
                           ${f2HasPaid ? 'Đã Nạp ' + f2TotalDep.toLocaleString('vi-VN') + ' đ' : 'Chưa Nạp'}
@@ -1265,7 +1265,7 @@
       if (!user) return;
 
       document.getElementById('editModalUserName').textContent = `Chỉnh Sửa: ${user.name}`;
-      document.getElementById('editModalUserUid').textContent = `Mã Định Danh: GC-${user.uid}`;
+      document.getElementById('editModalUserUid').textContent = `ID: ${user.uid}`;
 
       document.getElementById('editUserFullName').value = user.name;
       document.getElementById('editUserPhone').value = user.phone;
@@ -1369,7 +1369,7 @@
       showToast('✓ Đã lưu toàn bộ thông tin thành viên lên Firestore!');
 
       const reason = document.getElementById('editBalanceReason').value.trim();
-      sendTelegramAdmin(`👤 *Cập Nhật Thông Tin Thợ Đào*\n- Quản trị viên vừa chỉnh sửa thợ đào: ${updatedData.full_name} (GC-${currentEditingUid})\n- Số dư Ví: ${updatedData.balance.toLocaleString('vi-VN')} đ | Hũ: ${updatedData.upgrade_balance.toLocaleString('vi-VN')} đ\n- Trạng thái: ${updatedData.status}\n${reason ? '- Ghi chú: ' + reason : ''}`);
+      sendTelegramAdmin(`👤 *Cập Nhật Thông Tin Thợ Đào*\n- Quản trị viên vừa chỉnh sửa thợ đào: ${updatedData.full_name} (ID: ${currentEditingUid})\n- Số dư Ví: ${updatedData.balance.toLocaleString('vi-VN')} đ | Hũ: ${updatedData.upgrade_balance.toLocaleString('vi-VN')} đ\n- Trạng thái: ${updatedData.status}\n${reason ? '- Ghi chú: ' + reason : ''}`);
     }
 
     /* ========================================================
