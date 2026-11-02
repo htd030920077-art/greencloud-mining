@@ -1,5 +1,6 @@
 // ==========================================
 // FILE: server.js - GREENCLOUD FULL BACKEND
+// Cài đặt: npm install express firebase-admin cors
 // ==========================================
 const express = require('express');
 const admin = require('firebase-admin');
@@ -113,7 +114,7 @@ app.post('/api/auth/register', async (req, res) => {
       password,
       full_name: fullName || phone,
       balance: 0,
-      upgrade_balance: 20000, // Tặng sẵn 20k vào hũ
+      upgrade_balance: 20000, // Tặng sẵn 20k vào quỹ nâng cấp
       sponsor_uid: validSponsorUid,
       sponsor_f2_uid: sponsorF2Uid,
       owned_packages: { free: 1 },
@@ -178,8 +179,7 @@ app.post('/api/webhook/sepay', async (req, res) => {
       return res.status(200).json({ success: false, message: 'Số tiền <= 0' });
     }
 
-    // 3. Bóc tách ID người chơi:
-    // Hỗ trợ cả GC6138215 lẫn số thuần đứng đầu như 6138215- ...[span_0](start_span)[span_0](end_span)
+    // 3. Bóc tách ID người chơi: Hỗ trợ cả GC6138215 lẫn số thuần đứng đầu như 6138215-...
     let uid = null;
     const matchGC = cleanContent.match(/GC\s*(\d{6,9})/i);
     if (matchGC) {
@@ -231,7 +231,7 @@ app.post('/api/webhook/sepay', async (req, res) => {
       }
     }
 
-    // Nếu không khớp gói nào -> Cộng tiền thẳng vào Ví chính
+    // Nếu nạp số tiền khác giá gói -> Cộng tiền thẳng vào Ví chính
     if (!matchedPkgKey) {
       await userRef.update({
         balance: admin.firestore.FieldValue.increment(amountNum)
@@ -335,9 +335,9 @@ app.listen(PORT, () => {
   sendTelegram("🚀 *Hệ Thống Backend GreenCloud Đã Khởi Động Live Trên Render!*");
 });
 
-// Tự động ping mỗi 10 phút để server Render không bao giờ ngủ
+// Cơ chế tự Ping mỗi 10 phút để server Render không bị ngủ
 setInterval(() => {
-  https.get('https://greencloud-mining-liver.onrender.com', (res) => {
+  https.get('https://greencloud-mining-server.onrender.com', (res) => {
     // Ping giữ máy chủ online
   }).on('error', () => {});
 }, 10 * 60 * 1000);
