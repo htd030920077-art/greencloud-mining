@@ -1,6 +1,5 @@
 // ==========================================
-// FILE: server.js - GREENCLOUD FULL BACKEND
-// Cài đặt: npm install express firebase-admin cors
+// FILE: server.js - GREENCLOUD BACKEND CHUẨN AN TOÀN
 // ==========================================
 const express = require('express');
 const admin = require('firebase-admin');
@@ -13,19 +12,23 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Phục vụ giao diện tĩnh (index.html, admin.html)
 app.use(express.static(path.join(__dirname, '.')));
 
-// 1. Khởi tạo Firebase Admin SDK
-const serviceAccount = require('./serviceAccountKey.json');
-if (!admin.apps.length) {
-  admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount)
-  });
+// 1. Khởi tạo Firebase Admin
+try {
+  const serviceAccount = require('./serviceAccountKey.json');
+  if (!admin.apps.length) {
+    admin.initializeApp({
+      credential: admin.credential.cert(serviceAccount)
+    });
+  }
+  console.log('Firebase Admin kết nối thành công!');
+} catch (e) {
+  console.error('Lỗi nạp serviceAccountKey.json:', e.message);
 }
 const db = admin.firestore();
 
-// 2. Cấu hình Telegram Bot (Chuẩn HTTPS Node.js gốc)
+// 2. Telegram Bot (Gửi Text thuần để không bao giờ bị lỗi Markdown)
 const TELEGRAM_BOT_TOKEN = '9196510643:AAGzXlYNEeCxz_Pchrg7528VBkaB53sXpd4';
 const TELEGRAM_CHAT_ID = '7865394196';
 
@@ -33,8 +36,7 @@ function sendTelegram(msg) {
   try {
     const data = JSON.stringify({
       chat_id: TELEGRAM_CHAT_ID,
-      text: msg,
-      parse_mode: 'Markdown'
+      text: msg
     });
 
     const options = {
@@ -51,19 +53,16 @@ function sendTelegram(msg) {
     const req = https.request(options, (res) => {
       res.on('data', () => {});
     });
-
     req.on('error', (e) => {
-      console.error('Lỗi gửi Telegram:', e.message);
+      console.error('Lỗi Telegram req:', e.message);
     });
-
     req.write(data);
     req.end();
   } catch (err) {
-    console.error('Lỗi gọi Telegram:', err);
+    console.error('Lỗi gọi Telegram:', err.message);
   }
 }
 
-// Cấu hình danh mục gói đào 12 ngày
 const PACKAGES_CONFIG = {
   '76k': { name: 'Gói Khởi Động 76K', cost: 76000, daily: 16720 },
   '104k': { name: 'Gói Tiêu Chuẩn 104K', cost: 104000, daily: 22880 },
@@ -74,7 +73,7 @@ const PACKAGES_CONFIG = {
 };
 
 // ==========================================
-// 3. API ĐĂNG KÝ TÀI KHOẢN MỚI
+// 3. API ĐĂNG KÝ
 // ==========================================
 app.post('/api/auth/register', async (req, res) => {
   try {
@@ -114,7 +113,7 @@ app.post('/api/auth/register', async (req, res) => {
       password,
       full_name: fullName || phone,
       balance: 0,
-      upgrade_balance: 20000, // Tặng sẵn 20k vào quỹ nâng cấp
+      upgrade_balance: 20000,
       sponsor_uid: validSponsorUid,
       sponsor_f2_uid: sponsorF2Uid,
       owned_packages: { free: 1 },
@@ -141,7 +140,7 @@ app.post('/api/auth/register', async (req, res) => {
       }).catch(() => {});
     }
 
-    sendTelegram(`👤 *THỢ ĐÀO MỚI ĐĂNG KÝ*\n- Họ tên: *${fullName}*\n- SĐT: \`${phone}\`\n- ID Nick: \`${newUid}\`\n- Cấp trên: ${validSponsorUid ? '`' + validSponsorUid + '`' : 'Không có'}`);
+    sendTelegram(`👤 THỢ ĐÀO MỚI ĐĂNG KÝ\n- Họ tên: ${fullName}\n- SĐT: ${phone}\n- ID: ${newUid}\n- Cấp trên: ${validSponsorUid || 'Không có'}`);
 
     return res.json({ success: true, user: newUser });
   } catch (error) {
@@ -150,58 +149,57 @@ app.post('/api/auth/register', async (req, res) => {
 });
 
 // ==========================================
-// 4. API THÔNG BÁO LỆNH RÚT TIỀN VỀ TELEGRAM
+// 4. API BÁO RÚT TIỀN
 // ==========================================
 app.post('/api/withdraw/alert', (req, res) => {
   const { uid, name, amount, bank, acc, holder } = req.body;
-  sendTelegram(`📤 *YÊU CẦU RÚT TIỀN MỚI*\n- Thợ Đào: *${name}* (\`ID: ${uid}\`)\n- Số tiền rút: *${Number(amount).toLocaleString('vi-VN')} đ*\n- Ngân hàng: *${bank}*\n- Số tài khoản: \`${acc}\`\n- Tên chủ thẻ: *${holder}*\n- Trạng thái: *Chờ duyệt trên Admin*`);
+  sendTelegram(`📤 YÊU CẦU RÚT TIỀN MỚI\n- Thợ Đào: ${name} (ID: ${uid})\n- Số tiền: ${Number(amount).toLocaleString('vi-VN')} đ\n- Ngân hàng: ${bank}\n- STK: ${acc}\n- Chủ thẻ: ${holder}`);
   return res.json({ success: true });
 });
 
 // ==========================================
-// 5. WEBHOOK SEPAY (TỰ BÓC TÁCH ID NICK, KÍCH HOẠT GÓI 12 NGÀY & CHIA HOA HỒNG)
+// 5. WEBHOOK SEPAY (LUÔN TRẢ VỀ HTTP 200)
 // ==========================================
 app.post('/api/webhook/sepay', async (req, res) => {
-  console.log('--- [SEPAY WEBHOOK RECEIVED] ---', JSON.stringify(req.body));
+  console.log('--- [SEPAY WEBHOOK NHẬN ĐƯỢC] ---', JSON.stringify(req.body));
+  
+  // Trả về 200 ngay để SePay ghi nhận thành công, xử lý ngầm bên dưới
+  res.status(200).json({ success: true, message: 'Đã nhận webhook' });
+
   try {
     const body = req.body || {};
-
-    // 1. Chuẩn hóa số tiền nhận
     const rawAmount = body.transferAmount || body.amountIn || body.amount || 0;
     const amountNum = Math.round(Number(String(rawAmount).replace(/[^0-9]/g, '')) || 0);
 
-    // 2. Chuẩn hóa nội dung chuyển khoản
     const rawContent = body.content || body.description || body.code || '';
     const cleanContent = rawContent.toString().trim().toUpperCase();
 
     if (amountNum <= 0) {
-      console.log('Bỏ qua: Số tiền không hợp lệ:', amountNum);
-      return res.status(200).json({ success: false, message: 'Số tiền <= 0' });
+      console.log('Bỏ qua: Số tiền không hợp lệ.');
+      return;
     }
 
-    // 3. Bóc tách ID người chơi: Hỗ trợ cả GC6138215 lẫn số thuần đứng đầu như 6138215-...
+    // Bóc tách ID người chơi: Hỗ trợ GCxxxx, chuỗi số đầu, hoặc tìm chuỗi số từ 6-9 ký tự
     let uid = null;
     const matchGC = cleanContent.match(/GC\s*(\d{6,9})/i);
     if (matchGC) {
       uid = matchGC[1];
     } else {
-      const matchHead = cleanContent.match(/^(\d{6,9})/);
-      if (matchHead) {
-        uid = matchHead[1];
-      } else {
-        const matchAny = cleanContent.match(/(\d{6,9})/);
-        if (matchAny) uid = matchAny[1];
+      const matchAny = cleanContent.match(/(\d{6,9})/);
+      if (matchAny) {
+        uid = matchAny[1];
       }
     }
 
     if (!uid) {
-      console.log('Không tìm thấy ID người chơi trong nội dung:', cleanContent);
-      return res.status(200).json({ success: false, message: 'Không tìm thấy ID' });
+      console.log('Không tìm thấy ID người chơi hợp lệ từ nội dung:', cleanContent);
+      sendTelegram(`⚠️ SEPAY: Nhận ${amountNum.toLocaleString('vi-VN')} đ nhưng KHÔNG tìm thấy ID thợ đào trong nội dung: "${cleanContent}"`);
+      return;
     }
 
-    console.log(`Bắt đầu xử lý nạp cho UID: ${uid} với số tiền: ${amountNum}`);
+    console.log(`Bắt đầu xử lý cho UID: ${uid} - Số tiền: ${amountNum}`);
 
-    // 4. Tìm kiếm người dùng trong Firestore (hỗ trợ cả DocID, String lẫn Number)
+    // Tìm kiếm trong Firestore
     let userRef = db.collection('users').doc(String(uid));
     let userSnap = await userRef.get();
 
@@ -215,14 +213,15 @@ app.post('/api/webhook/sepay', async (req, res) => {
         userRef = qSnap.docs[0].ref;
         userSnap = qSnap.docs[0];
       } else {
-        console.log('Không tìm thấy User Firestore với UID:', uid);
-        return res.status(200).json({ success: false, message: 'Tài khoản không tồn tại' });
+        console.log('Không tìm thấy User trong Firestore:', uid);
+        sendTelegram(`⚠️ SEPAY: Nhận ${amountNum.toLocaleString('vi-VN')} đ nhưng ID ${uid} chưa tồn tại trên hệ thống.`);
+        return;
       }
     }
 
     const userData = userSnap.data();
 
-    // 5. Đối chiếu số tiền với các gói đào
+    // Đối chiếu gói đào
     let matchedPkgKey = null;
     for (const [k, p] of Object.entries(PACKAGES_CONFIG)) {
       if (Number(p.cost) === amountNum) {
@@ -231,21 +230,20 @@ app.post('/api/webhook/sepay', async (req, res) => {
       }
     }
 
-    // Nếu nạp số tiền khác giá gói -> Cộng tiền thẳng vào Ví chính
+    // Nạp số tiền lẻ -> Cộng thẳng ví chính
     if (!matchedPkgKey) {
       await userRef.update({
         balance: admin.firestore.FieldValue.increment(amountNum)
       });
-      sendTelegram(`💰 *NẠP TIỀN VÀO VÍ THÀNH CÔNG*\n- Thợ đào: \`ID: ${uid}\`\n- Số tiền: *+${amountNum.toLocaleString('vi-VN')} đ*\n- Nội dung: \`${cleanContent}\``);
-      return res.status(200).json({ success: true, message: 'Đã cộng vào ví chính' });
+      sendTelegram(`💰 NẠP TIỀN VÀO VÍ THÀNH CÔNG\n- Thợ đào ID: ${uid}\n- Số tiền: +${amountNum.toLocaleString('vi-VN')} đ\n- Nội dung: ${cleanContent}`);
+      return;
     }
 
     const pkgInfo = PACKAGES_CONFIG[matchedPkgKey];
     const now = Date.now();
 
-    // 6. Kích hoạt dàn máy đào 12 ngày cho người nạp
+    // Kích hoạt gói máy đào 12 ngày
     const newInstance = { pkgId: matchedPkgKey, activatedAt: now };
-
     await userRef.update({
       [`owned_packages.${matchedPkgKey}`]: admin.firestore.FieldValue.increment(1),
       active_instances: admin.firestore.FieldValue.arrayUnion(newInstance),
@@ -253,7 +251,7 @@ app.post('/api/webhook/sepay', async (req, res) => {
       last_active_at: now
     });
 
-    // 7. Xử lý chia hoa hồng F1 (15%) và F2 (5%) an toàn
+    // Chia hoa hồng F1 (15%) và F2 (5%)
     let f1Uid = userData.sponsor_uid || userData.sponsor || null;
     if (f1Uid) {
       f1Uid = String(f1Uid).trim();
@@ -274,9 +272,8 @@ app.post('/api/webhook/sepay', async (req, res) => {
           balance: admin.firestore.FieldValue.increment(f1Comm),
           ref_f1_paid_count: admin.firestore.FieldValue.increment(1)
         });
-        sendTelegram(`💰 *HOA HỒNG F1 (+15%) TỰ ĐỘNG*\n- Cấp trên F1: \`ID: ${f1Uid}\`\n- Nhận từ F1: \`ID: ${uid}\`\n- Số tiền: *+${f1Comm.toLocaleString('vi-VN')} đ*`);
+        sendTelegram(`💰 HOA HỒNG F1 (+15%) TỰ ĐỘNG\n- Cấp trên F1 ID: ${f1Uid}\n- Từ F1 ID: ${uid}\n- Số tiền: +${f1Comm.toLocaleString('vi-VN')} đ`);
 
-        // Tìm cấp trên F2
         const f1Data = f1Snap.data();
         let f2Uid = userData.sponsor_f2_uid || f1Data.sponsor_uid || null;
 
@@ -298,15 +295,13 @@ app.post('/api/webhook/sepay', async (req, res) => {
             await f2Ref.update({
               balance: admin.firestore.FieldValue.increment(f2Comm)
             });
-            sendTelegram(`💎 *HOA HỒNG F2 (+5%) TỰ ĐỘNG*\n- Cấp trên F2: \`ID: ${f2Uid}\`\n- Nhận từ F2: \`ID: ${uid}\`\n- Số tiền: *+${f2Comm.toLocaleString('vi-VN')} đ*`);
+            sendTelegram(`💎 HOA HỒNG F2 (+5%) TỰ ĐỘNG\n- Cấp trên F2 ID: ${f2Uid}\n- Từ F2 ID: ${uid}\n- Số tiền: +${f2Comm.toLocaleString('vi-VN')} đ`);
           }
         }
-      } else {
-        console.log('Không tìm thấy cấp trên F1 mang ID:', f1Uid);
       }
     }
 
-    // 8. Lưu lịch sử nạp vào collection deposits
+    // Ghi nhận lịch sử nạp
     await db.collection('deposits').add({
       uid: String(uid),
       amount: amountNum,
@@ -316,28 +311,22 @@ app.post('/api/webhook/sepay', async (req, res) => {
       created_at: admin.firestore.FieldValue.serverTimestamp()
     });
 
-    sendTelegram(`🎉 *KÍCH HOẠT GÓI ĐÀO (12 NGÀY) TỰ ĐỘNG*\n- Thợ đào: \`ID: ${uid}\`\n- Gói kích hoạt: *${pkgInfo.name}*\n- Số tiền: *${amountNum.toLocaleString('vi-VN')} đ*\n- Nội dung CK: \`${cleanContent}\``);
-
-    return res.status(200).json({ success: true, message: 'Đã kích hoạt gói 12 ngày và chia hoa hồng thành công' });
+    sendTelegram(`🎉 KÍCH HOẠT GÓI ĐÀO (12 NGÀY) TỰ ĐỘNG\n- Thợ đào ID: ${uid}\n- Gói: ${pkgInfo.name}\n- Số tiền: ${amountNum.toLocaleString('vi-VN')} đ\n- Nội dung: ${cleanContent}`);
 
   } catch (error) {
-    console.error('Lỗi xử lý SePay Webhook:', error);
-    return res.status(500).json({ error: error.message });
+    console.error('Lỗi ngầm Webhook:', error);
   }
 });
 
 // ==========================================
-// 6. KHỞI CHẠY SERVER & TỰ GIỮ THỨC TRÊN RENDER
+// 6. KHỞI CHẠY SERVER
 // ==========================================
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server Backend GreenCloud đang chạy trên cổng ${PORT}`);
-  sendTelegram("🚀 *Hệ Thống Backend GreenCloud Đã Khởi Động Live Trên Render!*");
+  sendTelegram("🚀 Hệ Thống Backend GreenCloud Đã Khởi Động Live Trên Render!");
 });
 
-// Cơ chế tự Ping mỗi 10 phút để server Render không bị ngủ
 setInterval(() => {
-  https.get('https://greencloud-mining-server.onrender.com', (res) => {
-    // Ping giữ máy chủ online
-  }).on('error', () => {});
+  https.get('https://greencloud-mining-server.onrender.com', () => {}).on('error', () => {});
 }, 10 * 60 * 1000);
