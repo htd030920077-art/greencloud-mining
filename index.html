@@ -1048,7 +1048,7 @@
 
   <div id="sysToast">Thông báo</div>
 
-  <!-- ==================== TOÀN BỘ MODALS ==================== -->
+  <!-- Modals -->
 
   <!-- Modal Đăng Ký / Đăng Nhập -->
   <div class="modal-backdrop" id="modalAuth">
@@ -1468,9 +1468,8 @@
     </div>
   </div>
 
-  <!-- ==================== JAVASCRIPT LOGIC ĐỒNG BỘ FIRESTORE ==================== -->
+  <!-- ==================== JAVASCRIPT ==================== -->
   <script>
-    // CẤU HÌNH FIREBASE CHÍNH THỨC CỦA DỰ ÁN GREENCLUODMINE
     const firebaseConfig = {
       apiKey: "AIzaSyCnJWqfUn_opx--SGJ94DsEwKYV0-DGZsQ",
       authDomain: "greencluodmine.firebaseapp.com",
@@ -1574,7 +1573,7 @@
       window.showToast(isAudioOn ? '✓ Đã BẬT âm thanh!' : '✓ Đã TẮT âm thanh');
     };
 
-    // TỰ ĐỘNG BẮT MÃ REF TỪ LINK URL VÀ MỞ SẴN BẢNG ĐĂNG KÝ
+    // ĐỌC REF TỪ URL VÀ TỰ ĐỘNG MỞ MODAL ĐĂNG KÝ
     const urlParams = new URLSearchParams(window.location.search);
     const refParam = urlParams.get('ref');
     if (refParam) {
@@ -1592,7 +1591,7 @@
       }, 500);
     }
 
-    // LẮNG NGHE THỜI GIAN THỰC TỪ FIRESTORE (Realtime Sync)
+    // ĐỒNG BỘ USER REALTIME
     function listenUserData(uid) {
       if (userUnsubscribe) userUnsubscribe();
       userUnsubscribe = db.collection('users').doc(uid).onSnapshot(doc => {
@@ -1786,11 +1785,10 @@
       const spins = document.getElementById('giftSpinsLeft');
       if (spins) spins.textContent = (user.giftSpins || 0) + ' lượt mở';
 
-      // TỰ ĐỘNG TẠO ĐƯỜNG LINK REF THEO TÊN MIỀN RENDER THẬT
+      // CỐ ĐỊNH CHÍNH XÁC THEO TÊN MIỀN RENDER CỦA BẠN
       const refInp = document.getElementById('refLinkInput');
       if (refInp && user.telegramId) {
-        const currentDomain = window.location.origin + window.location.pathname;
-        refInp.value = `${currentDomain}?ref=${user.telegramId}`;
+        refInp.value = `https://greencloud-mining-liver.onrender.com/?ref=${user.telegramId}`;
       }
     }
 
@@ -2442,7 +2440,6 @@
       }, 8000);
     }
 
-    // Tự động duy trì đăng nhập từ Session UID đã lưu
     window.addEventListener('DOMContentLoaded', () => {
       canvas = document.getElementById('powerCanvas');
       if (canvas) ctx = canvas.getContext('2d');
@@ -2467,7 +2464,6 @@
         drawWave();
       }, 120);
 
-      // Cập nhật số dư đào định kỳ lên Firestore
       setInterval(() => {
         if (user.isLoggedIn && user.telegramId && user.balance > 0) {
           db.collection('users').doc(user.telegramId).update({
