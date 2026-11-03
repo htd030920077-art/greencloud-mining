@@ -1,5 +1,5 @@
 // ==========================================
-// FILE: server.js - GREENCLOUD BACKEND CHUẨN AN TOÀN
+// FILE: server.js - GREENCLOUD FULL BACKEND
 // ==========================================
 const express = require('express');
 const admin = require('firebase-admin');
@@ -12,9 +12,10 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Phục vụ giao diện tĩnh
 app.use(express.static(path.join(__dirname, '.')));
 
-// 1. Khởi tạo Firebase Admin
+// 1. Khởi tạo Firebase Admin SDK
 try {
   const serviceAccount = require('./serviceAccountKey.json');
   if (!admin.apps.length) {
@@ -24,11 +25,11 @@ try {
   }
   console.log('Firebase Admin kết nối thành công!');
 } catch (e) {
-  console.error('Lỗi nạp serviceAccountKey.json:', e.message);
+  console.error('Lỗi khởi tạo Firebase:', e.message);
 }
 const db = admin.firestore();
 
-// 2. Telegram Bot (Gửi Text thuần để không bao giờ bị lỗi Markdown)
+// 2. Telegram Bot qua HTTPS gốc (Gửi Text thuần chống crash)
 const TELEGRAM_BOT_TOKEN = '9196510643:AAGzXlYNEeCxz_Pchrg7528VBkaB53sXpd4';
 const TELEGRAM_CHAT_ID = '7865394196';
 
@@ -53,9 +54,11 @@ function sendTelegram(msg) {
     const req = https.request(options, (res) => {
       res.on('data', () => {});
     });
+
     req.on('error', (e) => {
-      console.error('Lỗi Telegram req:', e.message);
+      console.error('Lỗi gửi Telegram:', e.message);
     });
+
     req.write(data);
     req.end();
   } catch (err) {
@@ -63,6 +66,7 @@ function sendTelegram(msg) {
   }
 }
 
+// Cấu hình danh mục gói đào 12 ngày
 const PACKAGES_CONFIG = {
   '76k': { name: 'Gói Khởi Động 76K', cost: 76000, daily: 16720 },
   '104k': { name: 'Gói Tiêu Chuẩn 104K', cost: 104000, daily: 22880 },
@@ -73,7 +77,7 @@ const PACKAGES_CONFIG = {
 };
 
 // ==========================================
-// 3. API ĐĂNG KÝ
+// 3. API ĐĂNG KÝ TÀI KHOẢN MỚI
 // ==========================================
 app.post('/api/auth/register', async (req, res) => {
   try {
@@ -149,16 +153,29 @@ app.post('/api/auth/register', async (req, res) => {
 });
 
 // ==========================================
-// 4. API BÁO RÚT TIỀN
+// 4. API THÔNG BÁO LỆNH RÚT TIỀN VỀ TELEGRAM (CHUẨN XÁC 100%)
 // ==========================================
 app.post('/api/withdraw/alert', (req, res) => {
-  const { uid, name, amount, bank, acc, holder } = req.body;
-  sendTelegram(`📤 YÊU CẦU RÚT TIỀN MỚI\n- Thợ Đào: ${name} (ID: ${uid})\n- Số tiền: ${Number(amount).toLocaleString('vi-VN')} đ\n- Ngân hàng: ${bank}\n- STK: ${acc}\n- Chủ thẻ: ${holder}`);
-  return res.json({ success: true });
+  try {
+    const { uid, name, amount, bank, acc, holder } = req.body || {};
+    const textMsg = `📤 YÊU CẦU RÚT TIỀN MỚI\n` +
+                    `- Thợ Đào: ${name || 'N/A'} (ID: ${uid})\n` +
+                    `- Số tiền rút: ${Number(amount || 0).toLocaleString('vi-VN')} đ\n` +
+                    `- Ngân hàng: ${bank}\n` +
+                    `- STK: ${acc}\n` +
+                    `- Chủ thẻ: ${holder}\n` +
+                    `- Trạng thái: Chờ duyệt trên Admin`;
+
+    sendTelegram(textMsg);
+    return res.status(200).json({ success: true, message: 'Đã phát thông báo rút tiền' });
+  } catch (err) {
+    console.error('Lỗi endpoint alert rút tiền:', err.message);
+    return res.status(200).json({ success: false, error: err.message });
+  }
 });
 
 // ==========================================
-// 5. WEBHOOK SEPAY (LUÔN TRẢ VỀ HTTP 200)
+// 5. WEBHOOK SEPAY (TỰ BÓC TÁCH ID NICK, KÍCH HOẠT GÓI 12 NGÀY & CHIA HOA HỒNG)
 // ==========================================
 app.post('/api/webhook/sepay', async (req, res) => {
   console.log('--- [SEPAY WEBHOOK NHẬN ĐƯỢC] ---', JSON.stringify(req.body));
@@ -179,15 +196,18 @@ app.post('/api/webhook/sepay', async (req, res) => {
       return;
     }
 
-    // Bóc tách ID người chơi: Hỗ trợ GCxxxx, chuỗi số đầu, hoặc tìm chuỗi số từ 6-9 ký tự
+    // Bóc tách ID người chơi: Hỗ trợ GCxxxx, chuỗi số đầu hoặc số 6-9 ký tự
     let uid = null;
     const matchGC = cleanContent.match(/GC\s*(\d{6,9})/i);
     if (matchGC) {
       uid = matchGC[1];
     } else {
-      const matchAny = cleanContent.match(/(\d{6,9})/);
-      if (matchAny) {
-        uid = matchAny[1];
+      const matchHead = cleanContent.match(/^(\d{6,9})/);
+      if (matchHead) {
+        uid = matchHead[1];
+      } else {
+        const matchAny = cleanContent.match(/(\d{6,9})/);
+        if (matchAny) uid = matchAny[1];
       }
     }
 
@@ -319,7 +339,7 @@ app.post('/api/webhook/sepay', async (req, res) => {
 });
 
 // ==========================================
-// 6. KHỞI CHẠY SERVER
+// 6. KHỞI CHẠY SERVER & TỰ GIỮ THỨC
 // ==========================================
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
