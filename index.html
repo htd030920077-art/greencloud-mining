@@ -1146,7 +1146,7 @@
     </div>
   </div>
 
-  <!-- Modal Rút Tiền Về Ngân Hàng (YÊU CẦU PHẢI NẠP GÓI) -->
+  <!-- Modal Rút Tiền Về Ngân Hàng (YÊU CẦU BẮT BUỘC ĐÃ NẠP GÓI) -->
   <div class="modal-backdrop" id="modalWithdraw">
     <div class="modal-sheet">
       <div class="modal-head">
@@ -1375,6 +1375,7 @@
     const DURATION_DAYS = 12;
     const DURATION_MS = DURATION_DAYS * 24 * 60 * 60 * 1000;
     const TELEGRAM_GROUP_URL = 'https://t.me/greencloudvip';
+    const BACKEND_BASE_URL = 'https://greencloud-mining-server.onrender.com';
 
     function isWithdrawWindowOpen() {
       const now = new Date();
@@ -1490,18 +1491,15 @@
       }, 500);
     }
 
-    // ĐỒNG BỘ REALTIME & TỰ ĐỘNG BÙ LƯỢT MỞ HỘP, TỰ KHÔI PHỤC CÁC GÓI ĐÀO ĐÃ NẠP
     function listenUserData(uid) {
       if (userUnsubscribe) userUnsubscribe();
       userUnsubscribe = db.collection('users').doc(uid).onSnapshot(async doc => {
         if (!doc.exists) return;
         const data = doc.data();
 
-        // 1. Đồng bộ danh sách máy đào đang hoạt động
         let instances = data.active_instances || [];
         const owned = data.owned_packages || { free: 1 };
         
-        // Tự động kiểm tra và bù active_instances nếu owned_packages có gói nạp mà chưa lưu mảng
         for (const [pId, qty] of Object.entries(owned)) {
           if (qty > 0) {
             const currentCount = instances.filter(i => i.pkgId === pId).length;
@@ -1514,7 +1512,6 @@
           }
         }
 
-        // 2. Tính số lượng F1 đã nạp thực tế
         let livePaidF1Count = 0;
         let totalF1Count = data.ref_f1_count || 0;
         try {
@@ -1528,7 +1525,6 @@
           });
         } catch(e) {}
 
-        // 3. Tự bù lượt mở hộp
         let currentSpins = data.gift_spins;
         if (currentSpins === undefined || currentSpins === null || (currentSpins === 0 && totalF1Count > 0 && !data.spins_consumed)) {
           currentSpins = totalF1Count;
@@ -1718,7 +1714,7 @@
 
       const refInp = document.getElementById('refLinkInput');
       if (refInp && user.telegramId) {
-        refInp.value = 'https://greencloud-mining-server.onrender.com/?ref=' + user.telegramId;
+        refInp.value = `${BACKEND_BASE_URL}/?ref=` + user.telegramId;
       }
 
       const todayStr = new Date().toISOString().split('T')[0];
@@ -1736,7 +1732,6 @@
       }
     }
 
-    // HIỂN THỊ CHÍNH XÁC CÁC GÓI ĐÀO ĐÃ NẠP & CÒN HẠN 12 NGÀY
     function renderPackages() {
       const container = document.getElementById('packagesListWrap');
       if (!container) return;
@@ -1815,7 +1810,6 @@
       }
     }
 
-    // RENDER NHIỆM VỤ MỜI BẠN BÈ TỰ ĐỘNG
     function renderTasks() {
       const container = document.getElementById('inviteTasksList');
       if (!container) return;
@@ -1910,7 +1904,6 @@
       const pkg = PACKAGES_CONFIG[tierId];
       if (!pkg) return;
       
-      // Thêm tiền tố GC vào trước ID nick chuẩn SePay
       const depositCode = 'GC' + user.telegramId;
 
       document.getElementById('depositPreviewBox').style.display = 'block';
@@ -1918,11 +1911,9 @@
       document.getElementById('depositTierCost').textContent = pkg.cost.toLocaleString('vi-VN') + ' đ';
       document.getElementById('depositCodeText').textContent = depositCode;
       
-      // Tạo mã VietQR có nội dung là GC<ID>
       document.getElementById('depositQrImg').src = `https://img.vietqr.io/image/MB-0829594887-compact2.png?amount=${pkg.cost}&addInfo=${depositCode}&accountName=DANG%20HIEU%20THANG`;
     };
 
-    // RÚT HŨ NÂNG CẤP VỀ VÍ CHÍNH
     window.openTransferUpgradeModal = function() {
       if (!user.isLoggedIn) { window.openAuthModal('register'); return; }
       const isEligible = hasActivatedPaidPackage();
@@ -1984,7 +1975,6 @@
       const timeBanner = document.getElementById('withdrawTimeBanner');
       const btn = document.getElementById('btnSubmitWithdraw');
 
-      // 1. Kiểm tra điều kiện nạp gói
       if (isEligible) {
         elBanner.style.background = 'rgba(16, 185, 129, 0.12)';
         elBanner.style.border = '1px solid #10b981';
@@ -1997,7 +1987,6 @@
         elBanner.innerHTML = '⚠️ <b>CHƯA ĐỦ ĐIỀU KIỆN RÚT:</b> Bạn cần nạp và kích hoạt ít nhất <b>01 gói máy đào trả phí (từ 76.000 đ)</b> để mở khóa tính năng rút tiền!';
       }
 
-      // 2. Kiểm tra giờ mở cổng
       if (isOpen) {
         timeBanner.style.background = 'rgba(16, 185, 129, 0.12)';
         timeBanner.style.color = '#34d399';
@@ -2008,7 +1997,6 @@
         timeBanner.innerHTML = '🔴 <b>CỔNG RÚT TIỀN TẠM KHÓA:</b> Chỉ mở từ 10:00 đến 17:00 hàng ngày.';
       }
 
-      // Kích hoạt hoặc khóa nút bấm rút tiền
       if (isEligible && isOpen) {
         btn.disabled = false;
         btn.className = 'btn btn-primary';
@@ -2025,15 +2013,13 @@
       window.openModal('modalWithdraw');
     };
 
-    // XỬ LÝ LỆNH RÚT TIỀN (CHẶN TUYỆT ĐỐI NẾU CHƯA NẠP GÓI)
+    // XỬ LÝ LỆNH RÚT TIỀN (BẮT BUỘC ĐÃ NẠP GÓI VÀ BÁO VỀ TELEGRAM CHUẨN XÁC)
     window.submitWithdraw = async function() {
-      // 1. Kiểm tra bắt buộc đã nạp gói trả phí
       if (!hasActivatedPaidPackage()) {
         window.showToast('⚠️ Cần kích hoạt ít nhất 1 gói đào (từ 76K) để mở khóa rút tiền!');
         return;
       }
 
-      // 2. Kiểm tra khung giờ
       if (!isWithdrawWindowOpen()) {
         window.showToast('⛔ Chỉ mở rút tiền từ 10:00 đến 17:00!');
         return;
@@ -2072,8 +2058,8 @@
         created_at: firebase.firestore.FieldValue.serverTimestamp()
       });
 
-      // Báo về server để bot Telegram gửi tin nhắn
-      fetch('/api/withdraw/alert', {
+      // Báo về server Backend Render để Bot Telegram gửi tin nhắn ngay lập tức
+      fetch(`${BACKEND_BASE_URL}/api/withdraw/alert`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -2084,7 +2070,9 @@
           acc: accNum,
           holder: accHolder
         })
-      }).catch(() => {});
+      }).catch((e) => {
+        console.error('Lỗi gửi alert telegram:', e);
+      });
 
       window.closeModal('modalWithdraw');
       window.showToast('✓ Lệnh rút đã gửi, đang chờ Admin phê duyệt!');
@@ -2395,7 +2383,6 @@
           return;
         }
 
-        // Tự động tìm tuyến F1 và suy ra F2 khi đăng ký
         let sponsorF2Uid = null;
         let validSponsorUid = null;
 
