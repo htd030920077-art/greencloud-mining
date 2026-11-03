@@ -738,7 +738,7 @@
         <!-- HŨ TIỀN QUỸ NÂNG CẤP (GIỮ NGUYÊN SỐ TIỀN TẶNG & RÚT RA ĐƯỢC) -->
         <div class="card" style="background:linear-gradient(135deg, #091e3a, #0b1728); border:1.5px solid #0284c7;">
           <div class="card-title">
-            <span style="color:#38bdf8; display:flex; align-items:gap:5px;">💠 HŨ TIỀN QUỸ NÂNG CẤP</span>
+            <span style="color:#38bdf8; display:flex; align-items:center; gap:5px;">💠 HŨ TIỀN QUỸ NÂNG CẤP</span>
             <span class="badge-pill" id="upgradeWalletBadge" style="background:#451a03; color:#fcd34d; border-color:#d97706; font-size:9px;">CẦN GÓI ĐỂ RÚT VỀ VÍ</span>
           </div>
           <div style="display:flex; justify-content:space-between; align-items:baseline; margin:4px 0;">
@@ -1146,7 +1146,7 @@
     </div>
   </div>
 
-  <!-- Modal Rút Tiền Về Ngân Hàng -->
+  <!-- Modal Rút Tiền Về Ngân Hàng (YÊU CẦU PHẢI NẠP GÓI) -->
   <div class="modal-backdrop" id="modalWithdraw">
     <div class="modal-sheet">
       <div class="modal-head">
@@ -1154,8 +1154,9 @@
         <button class="modal-close" onclick="window.closeModal('modalWithdraw')">✕</button>
       </div>
 
+      <!-- Banner trạng thái điều kiện nạp gói -->
+      <div id="withdrawEligibilityBanner" style="padding:10px 12px; border-radius:10px; margin-bottom:10px; font-size:11.5px; line-height:1.4;"></div>
       <div id="withdrawTimeBanner" style="padding:10px 12px; border-radius:10px; margin-bottom:10px; font-size:11px; line-height:1.4;"></div>
-      <div id="withdrawNotice" style="padding:10px; border-radius:8px; margin-bottom:10px; font-size:11px;"></div>
 
       <div class="input-group">
         <label class="input-label">CHỌN NGÂN HÀNG THỤ HƯỞNG</label>
@@ -1349,6 +1350,8 @@
         <p>⚡ <b>Chu kỳ hoàn trả:</b> Cố định trong đúng <b>12 ngày</b> kể từ thời điểm kích hoạt gói, chia đều trả về ví từng giây 24/7.</p>
         <br>
         <p>⏰ <b>Quy định rút tiền:</b> Cổng rút tiền mở từ <b>10:00 sáng đến 17:00 chiều</b> hàng ngày để hệ thống và Admin duyệt chi.</p>
+        <br>
+        <p>🔒 <b>Điều kiện rút:</b> Bắt buộc phải sở hữu ít nhất 01 gói máy đào trả phí (từ 76.000 đ) để bảo đảm tài khoản thợ đào chính thức.</p>
         <br>
         <p>✈️ <b>Kênh Telegram VIP:</b> <a href="https://t.me/greencloudvip" target="_blank" style="color:#38bdf8;">t.me/greencloudvip</a></p>
         <br>
@@ -1575,6 +1578,7 @@
 
     function calculateYieldPerSecond() { return calculateDailyYield() / 86400; }
 
+    // HÀM KIỂM TRA ĐIỀU KIỆN ĐÃ TỪNG NẠP GÓI TRẢ PHÍ (>= 76K)
     function hasActivatedPaidPackage() {
       if (!user.isLoggedIn) return false;
       return (user.activeInstances && user.activeInstances.some(ins => ins.pkgId !== 'free')) ||
@@ -1971,22 +1975,48 @@
       isActionLocked = false;
     };
 
+    // MỞ BẢNG RÚT TIỀN (KIỂM TRA CẢ ĐIỀU KIỆN NẠP GÓI VÀ GIỜ MỞ CỔNG)
     window.openWithdrawModal = function() {
       if (!user.isLoggedIn) { window.openAuthModal('register'); return; }
+      const isEligible = hasActivatedPaidPackage();
       const isOpen = isWithdrawWindowOpen();
-      const banner = document.getElementById('withdrawTimeBanner');
+      const elBanner = document.getElementById('withdrawEligibilityBanner');
+      const timeBanner = document.getElementById('withdrawTimeBanner');
       const btn = document.getElementById('btnSubmitWithdraw');
-      if (isOpen) {
-        banner.style.background = 'rgba(16, 185, 129, 0.12)';
-        banner.style.color = '#34d399';
-        banner.innerHTML = '🟢 <b>ĐANG MỞ CỔNG RÚT TIỀN:</b> 10:00 - 17:00 hàng ngày.';
-        btn.disabled = false;
+
+      // 1. Kiểm tra điều kiện nạp gói
+      if (isEligible) {
+        elBanner.style.background = 'rgba(16, 185, 129, 0.12)';
+        elBanner.style.border = '1px solid #10b981';
+        elBanner.style.color = '#34d399';
+        elBanner.innerHTML = '✓ <b>ĐỦ ĐIỀU KIỆN:</b> Tài khoản đã kích hoạt gói máy đào trả phí.';
       } else {
-        banner.style.background = 'rgba(239, 68, 68, 0.12)';
-        banner.style.color = '#f87171';
-        banner.innerHTML = '🔴 <b>CỔNG RÚT TIỀN TẠM KHÓA:</b> Chỉ mở từ 10:00 đến 17:00 hàng ngày.';
-        btn.disabled = true;
+        elBanner.style.background = 'rgba(239, 68, 68, 0.15)';
+        elBanner.style.border = '1px solid #ef4444';
+        elBanner.style.color = '#fca5a5';
+        elBanner.innerHTML = '⚠️ <b>CHƯA ĐỦ ĐIỀU KIỆN RÚT:</b> Bạn cần nạp và kích hoạt ít nhất <b>01 gói máy đào trả phí (từ 76.000 đ)</b> để mở khóa tính năng rút tiền!';
       }
+
+      // 2. Kiểm tra giờ mở cổng
+      if (isOpen) {
+        timeBanner.style.background = 'rgba(16, 185, 129, 0.12)';
+        timeBanner.style.color = '#34d399';
+        timeBanner.innerHTML = '🟢 <b>ĐANG MỞ CỔNG RÚT TIỀN:</b> 10:00 - 17:00 hàng ngày.';
+      } else {
+        timeBanner.style.background = 'rgba(239, 68, 68, 0.12)';
+        timeBanner.style.color = '#f87171';
+        timeBanner.innerHTML = '🔴 <b>CỔNG RÚT TIỀN TẠM KHÓA:</b> Chỉ mở từ 10:00 đến 17:00 hàng ngày.';
+      }
+
+      // Kích hoạt hoặc khóa nút bấm rút tiền
+      if (isEligible && isOpen) {
+        btn.disabled = false;
+        btn.className = 'btn btn-primary';
+      } else {
+        btn.disabled = true;
+        btn.className = 'btn btn-secondary';
+      }
+
       if (user.savedBank && user.savedBank.accountNum) {
         document.getElementById('withdrawBankSelect').value = user.savedBank.bankName;
         document.getElementById('withdrawAccNum').value = user.savedBank.accountNum;
@@ -1995,8 +2025,20 @@
       window.openModal('modalWithdraw');
     };
 
+    // XỬ LÝ LỆNH RÚT TIỀN (CHẶN TUYỆT ĐỐI NẾU CHƯA NẠP GÓI)
     window.submitWithdraw = async function() {
-      if (!isWithdrawWindowOpen()) { window.showToast('⛔ Chỉ mở rút tiền từ 10:00 đến 17:00!'); return; }
+      // 1. Kiểm tra bắt buộc đã nạp gói trả phí
+      if (!hasActivatedPaidPackage()) {
+        window.showToast('⚠️ Cần kích hoạt ít nhất 1 gói đào (từ 76K) để mở khóa rút tiền!');
+        return;
+      }
+
+      // 2. Kiểm tra khung giờ
+      if (!isWithdrawWindowOpen()) {
+        window.showToast('⛔ Chỉ mở rút tiền từ 10:00 đến 17:00!');
+        return;
+      }
+
       const amount = parseFloat(document.getElementById('withdrawAmountVal').value);
       const bank = document.getElementById('withdrawBankSelect').value;
       const accNum = document.getElementById('withdrawAccNum').value.trim();
